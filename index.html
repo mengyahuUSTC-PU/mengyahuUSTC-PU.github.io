@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mengya Hu - Personal Website</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">MH</div>
+            <button class="menu-toggle" id="menuToggle">☰</button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#about">About</a></li>
+                <li><a href="#thoughts">Thoughts</a></li>
+                <li><a href="#projects">Projects</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero / About Section -->
+    <section id="about" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Mengya Hu</h1>
+                <p class="tagline">Scientist. Builder. Thinker.</p>
+                <p class="bio">Welcome to my corner of the internet. I share thoughts on science, technology, and the projects I'm working on.</p>
+                <div class="cta-buttons">
+                    <a href="#thoughts" class="btn btn-primary">Read My Thoughts</a>
+                    <a href="#projects" class="btn btn-secondary">See My Projects</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Thoughts / Blog Section -->
+    <section id="thoughts" class="section">
+        <div class="container">
+            <h2>Thoughts & Ideas</h2>
+            <div id="postsList" class="posts-grid">
+                <!-- Posts loaded here by JavaScript -->
+            </div>
+            <p id="noPostsMessage" class="empty-message">No posts yet. Check back soon!</p>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="projects" class="section alt-bg">
+        <div class="container">
+            <h2>Projects</h2>
+            <div id="projectsList" class="projects-grid">
+                <!-- Projects loaded here by JavaScript -->
+            </div>
+            <p id="noProjectsMessage" class="empty-message">No projects yet. Stay tuned!</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2025 Mengya Hu. Built with care.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

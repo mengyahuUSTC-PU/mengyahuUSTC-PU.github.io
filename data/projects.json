@@ -1,0 +1,16 @@
+[
+    {
+        "title": "Personal Website",
+        "emoji": "🌐",
+        "description": "A clean, modern portfolio built with HTML/CSS/JavaScript. Data-driven with JSON for easy content updates.",
+        "tags": ["HTML", "CSS", "JavaScript", "GitHub Pages"],
+        "url": "https://github.com/mengyahuUSTC-PU/mengyahuUSTC-PU.github.io"
+    },
+    {
+        "title": "Project Template",
+        "emoji": "📦",
+        "description": "Add your projects here! Include a title, description, tags, and link. Images can be added too.",
+        "tags": ["Template", "Example"],
+        "url": null
+    }
+]

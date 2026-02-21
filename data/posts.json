@@ -1,0 +1,14 @@
+[
+    {
+        "title": "Getting Started with This Website",
+        "date": "2025-02-21",
+        "excerpt": "A quick guide on how to add your own thoughts and ideas to this site. Just edit the posts.json file!",
+        "url": null
+    },
+    {
+        "title": "How to Add Blog Posts",
+        "date": "2025-02-15",
+        "excerpt": "To add a new post, simply add a JSON object to the data/posts.json file with title, date, and excerpt fields. That's it!",
+        "url": null
+    }
+]
