@@ -16,6 +16,8 @@
   --radius: 16px;
   --font-sans: -apple-system, 'SF Pro Text', 'Helvetica Neue', Arial,
     'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  /* "书卷" headings: serif display faces (user-selected type treatment) */
+  --font-serif: 'Source Serif 4', 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -68,10 +70,11 @@ a:hover { text-decoration: underline; }
 .hero { padding: 2.6rem 1.25rem 3.2rem; }
 .hero h1 {
   margin: 0;
+  font-family: var(--font-serif);
   font-size: clamp(2rem, 6vw, 3rem);
-  line-height: 1.12;
-  letter-spacing: -0.03em;
-  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: 0.01em;
+  font-weight: 900;
   max-width: 30rem;
   text-wrap: balance;
 }
@@ -81,7 +84,7 @@ a:hover { text-decoration: underline; }
 /* ---------- content ---------- */
 main { min-height: 55vh; padding: 2.4rem 1.25rem 4rem; }
 
-h1, h2, h3 { line-height: 1.3; letter-spacing: -0.015em; }
+h1, h2, h3 { font-family: var(--font-serif); font-weight: 600; line-height: 1.4; letter-spacing: 0.01em; }
 h2 { font-size: 1.3rem; }
 
 .section-label {
@@ -113,7 +116,7 @@ h2 { font-size: 1.3rem; }
 /* ---------- article: print-like ---------- */
 .article { max-width: 40rem; margin: 0 auto; }
 .article header { margin: 0.6rem 0 2.2rem; }
-.article header h1 { font-size: 1.9rem; margin: 0 0 0.6rem; text-wrap: balance; }
+.article header h1 { font-size: 1.9rem; font-weight: 900; margin: 0 0 0.6rem; text-wrap: balance; line-height: 1.45; }
 .article .post-meta { text-transform: none; letter-spacing: 0.02em; font-size: 0.85rem; color: var(--muted); font-weight: 400; }
 .article .translation-link { font-size: 0.85rem; }
 .article-body { font-size: 1rem; }
