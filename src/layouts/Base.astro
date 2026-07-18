@@ -44,6 +44,14 @@ const canonical = new URL(path, SITE_URL).href;
     )}
     <link rel="alternate" type="application/rss+xml" title={`${SITE_TITLE} (English)`} href="/en/rss.xml" />
     <link rel="alternate" type="application/rss+xml" title={`${SITE_TITLE}（中文）`} href="/zh/rss.xml" />
+    <!-- Google Analytics 4 -->
+    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-6F7TVKDCGG"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', 'G-6F7TVKDCGG');
+    </script>
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
