@@ -28,10 +28,15 @@ from config import (
     MAX_AGE_DAYS,
     RSS_FEEDS,
     SAFETY_KEYWORDS,
+    SCRAPE_SOURCES,
 )
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
-UA = {"User-Agent": "Mozilla/5.0 (brand-automation fetcher; personal blog pipeline)"}
+# Full browser UA: Substack and others 403 on obvious bot agents.
+UA = {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
+}
 NOW = datetime.now(timezone.utc)
 CUTOFF = NOW - timedelta(days=MAX_AGE_DAYS)
 
@@ -141,6 +146,46 @@ def fetch_rss():
     return items, failed
 
 
+def fetch_scraped():
+    """Page-scrape fallback for sources with no working feed (no dates available)."""
+    items, failed = [], []
+    for name, page_url, href_re, prefix in SCRAPE_SOURCES:
+        try:
+            resp = requests.get(page_url, headers=UA, timeout=25)
+            resp.raise_for_status()
+            hrefs = list(dict.fromkeys(re.findall(href_re, resp.text)))[:10]
+            if not hrefs:
+                raise ValueError("no links matched")
+        except Exception as exc:
+            failed.append({"source": name, "url": page_url, "error": str(exc)[:200]})
+            continue
+        for href in hrefs:
+            items.append(
+                {
+                    "source": name,
+                    "title": clean(href.rstrip("/").split("/")[-1].replace("-", " "), 200),
+                    "url": prefix + href,
+                    "summary": "(scraped link; open for details)",
+                    "published": "",
+                }
+            )
+    return items, failed
+
+
+def historical_urls():
+    """URLs seen in earlier pool files — used to drop repeats from undated scrapes."""
+    seen = set()
+    for f in sorted(DATA_DIR.glob("pool-*.json"))[-14:]:
+        if f.name == f"pool-{NOW.strftime('%Y-%m-%d')}.json":
+            continue
+        try:
+            for item in json.loads(f.read_text()).get("items", []):
+                seen.add(item.get("url", ""))
+        except Exception:
+            continue
+    return seen
+
+
 def main():
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     pool = {"fetched_at": NOW.isoformat(), "items": [], "failed_sources": []}
@@ -151,12 +196,13 @@ def main():
         except Exception as exc:
             pool["failed_sources"].append({"source": fn.__name__, "error": str(exc)[:200]})
 
-    rss_items, rss_failed = fetch_rss()
-    pool["items"].extend(rss_items)
-    pool["failed_sources"].extend(rss_failed)
+    for fetcher in (fetch_rss, fetch_scraped):
+        got, failed = fetcher()
+        pool["items"].extend(got)
+        pool["failed_sources"].extend(failed)
 
-    # De-duplicate by URL.
-    seen, unique = set(), []
+    # De-duplicate by URL, within today's pool and against recent history.
+    seen, unique = historical_urls(), []
     for item in pool["items"]:
         if item["url"] in seen:
             continue

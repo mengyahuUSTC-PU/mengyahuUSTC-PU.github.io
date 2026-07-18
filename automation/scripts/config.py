@@ -52,8 +52,7 @@ HN_TOP_LIMIT = 30
 RSS_FEEDS = [
     ("OpenAI Blog", "https://openai.com/news/rss.xml"),
     ("Google DeepMind Blog", "https://deepmind.google/blog/rss.xml"),
-    ("Meta AI Blog", "https://ai.meta.com/blog/rss/"),
-    ("Mistral AI", "https://mistral.ai/feed.xml"),
+    ("Mistral AI", "https://mistral.ai/rss.xml"),
     ("CAIS Newsletter", "https://newsletter.safe.ai/feed"),
     ("Import AI", "https://importai.substack.com/feed"),
     ("Don't Worry About the Vase", "https://thezvi.substack.com/feed"),
@@ -61,10 +60,16 @@ RSS_FEEDS = [
     ("Schneier on Security", "https://www.schneier.com/feed/atom/"),
     ("Krebs on Security", "https://krebsonsecurity.com/feed/"),
     ("Google Project Zero", "https://googleprojectzero.blogspot.com/feeds/posts/default"),
-    ("Stanford HAI", "https://hai.stanford.edu/rss.xml"),
     ("EU AI Act Newsletter", "https://artificialintelligenceact.eu/feed/"),
-    # Anthropic has no official RSS; community mirror first, page-scrape fallback in fetcher.
-    ("Anthropic News", "https://www.anthropic.com/rss.xml"),
+]
+
+# Sources with no working feed (verified 2026-07): scrape the index page and
+# extract article links. Fragile by design; failures are logged and skipped.
+# (name, page url, href regex, url prefix to make links absolute)
+SCRAPE_SOURCES = [
+    ("Anthropic News", "https://www.anthropic.com/news", r'href="(/news/[^"#?]+)"', "https://www.anthropic.com"),
+    ("Meta AI Blog", "https://ai.meta.com/blog/", r'href="(/blog/[^"#?]+)"', "https://ai.meta.com"),
+    ("Stanford HAI", "https://hai.stanford.edu/news", r'href="(/news/[^"#?]+)"', "https://hai.stanford.edu"),
 ]
 
 # How many days back an item may be dated and still enter the pool.
