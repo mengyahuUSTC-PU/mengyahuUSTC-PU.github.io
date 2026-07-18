@@ -8,7 +8,7 @@ slug: kimi-k3-open-weight-audit-gap
 translationOf: kimi-k3-open-weight-audit-gap
 ---
 
-7月16日，Moonshot AI 发布 Kimi K3，2.8万亿参数，官方直接把它舍入成"3T"，称之为首个"开放3T级"模型，权重定在7月27日开源（[Simon Willison](https://simonwillison.net/2026/Jul/16/kimi-k3/)）。同一份公告里还有一个不太协调的数字：K3 的 API 定价涨到输入 $3/百万 token、输出 $15/百万，是上一代 K2.6（$0.95/$4）的三倍多，价格已经和 Anthropic 的 Sonnet 系列打平。Simon Willison 用他常规的"鹈鹕骑自行车"测试跑了一遍，发现新模型只有一档思考强度——"max"，一次测试烧掉 13,241 个推理 token，合下来一次提问将近 25 美分。
+7月16日，Moonshot AI 发布 Kimi K3，2.8万亿参数，官方直接把它舍入成"3T"，称之为首个"开放3T级"模型，权重定在7月27日开源（[Moonshot 官方发布](https://www.kimi.com/blog/kimi-k3)）。同一份公告里还有一个不太协调的数字：K3 的 API 定价涨到输入 $3/百万 token、输出 $15/百万，是上一代 K2.6（$0.95/$4）的三倍多，价格已经和 Anthropic 的 Sonnet 系列打平。[Simon Willison 用他常规的"鹈鹕骑自行车"测试](https://simonwillison.net/2026/Jul/16/kimi-k3/)跑了一遍，发现新模型只有一档思考强度——"max"，一次测试烧掉 13,241 个推理 token，合下来一次提问将近 25 美分。
 
 这就是"3T级开源"这个说法第一次让人皱眉的地方：权重是要开源的，但没有任何东西是免费或轻量的。更值得注意的是没被提到的部分——Moonshot 在发布时既没有公布这次训练用了多少总算力，也没有公布能耗数据，更没有附带任何结构化的安全评估结果。参数规模上的"首个"，和审计意义上的"首个"，完全是两件事。
 
@@ -22,7 +22,7 @@ K3 不是 Moonshot 第一次这么干。上一代 K2.5 发布首周下载量接�
 
 ## 现在轮到 K3，进度条还没启动
 
-K3 参数规模比 K2.5 更大，发布节奏更快，超过此前最大的开源模型 DeepSeek V4 Pro（1.6T）成为新的体量纪录（[Simon Willison](https://simonwillison.net/2026/Jul/16/kimi-k3/)）。但截至发布，前面提到的那三样——训练算力、能耗、结构化安全评估——Moonshot 一样都没公布。也就是说，对 K2.5 起作用的那道"事后审计"防线，这一次连起点都还没出现。（有零星测试称 K3 的幻觉率相比 K2.6 从39%升到51%，但来源和方法论未经交叉验证，此处仅供参考，需要独立核实。）
+K3 参数规模比 K2.5 更大，发布节奏更快，超过此前最大的开源模型 DeepSeek V4 Pro（1.6T）成为新的体量纪录（[Moonshot 官方发布](https://www.kimi.com/blog/kimi-k3)）。但截至发布，前面提到的那三样——训练算力、能耗、结构化安全评估——Moonshot 一样都没公布。也就是说，对 K2.5 起作用的那道"事后审计"防线，这一次连起点都还没出现。（有零星测试称 K3 的幻觉率相比 K2.6 从39%升到51%，但来源和方法论未经交叉验证，此处仅供参考，需要独立核实。）
 
 这不是在苛责 Moonshot 一家公司。问题在于，"开源权重"这件事本身有一个结构性特点：一旦发布，就无法收回、无法通过 API 限流事后管控、也无法靠打补丁禁止某些用途（[arXiv:2508.03153](https://arxiv.org/abs/2508.03153)）。闭源模型的开发者可以在发现问题后调整访问权限、下线某个功能；开源权重模型做不到这一点——它一旦流出，安全对齐可以被微调直接剥除，市面上"DeepSeek R1 Distill Llama 8B Uncensored"这类去审查变体就是现成的例子。这意味着，理论上，安全把关必须发生在发布之前，而不是之后。
 
@@ -44,6 +44,7 @@ K3 参数规模比 K2.5 更大，发布节奏更快，超过此前最大的开�
 
 ## 参考来源
 
-- [Kimi K3](https://simonwillison.net/2026/Jul/16/kimi-k3/) — Kimi K3参数规模、开源时间表、定价、Artificial Analysis 数据、作者本人的鹈鹕测试结果
+- [Kimi K3 官方发布博客](https://www.kimi.com/blog/kimi-k3) — 参数规模、开源时间表、定价（一手来源）
+- [Kimi K3, and what we can still learn from the pelican benchmark](https://simonwillison.net/2026/Jul/16/kimi-k3/) — Simon Willison 本人的鹈鹕测试结果与推理 token 成本实测
 - [An Independent Safety Evaluation of Kimi K2.5](https://arxiv.org/abs/2604.03121) — K2.5 独立安全评估的方法、发现（sabotage服从率、CBRNE能力、政治审查等）与团队构成
 - [Estimating Worst-Case Frontier Risks of Open-Weight LLMs](https://arxiv.org/abs/2508.03153) — 开源权重模型不可撤回、可被微调剥除安全对齐等结构性风险论证
