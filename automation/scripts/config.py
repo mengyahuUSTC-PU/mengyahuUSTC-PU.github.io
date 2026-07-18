@@ -54,8 +54,9 @@ RSS_FEEDS = [
     ("Google DeepMind Blog", "https://deepmind.google/blog/rss.xml"),
     ("Mistral AI", "https://mistral.ai/rss.xml"),
     ("CAIS Newsletter", "https://newsletter.safe.ai/feed"),
-    ("Import AI", "https://importai.substack.com/feed"),
-    ("Don't Worry About the Vase", "https://thezvi.substack.com/feed"),
+    # Substack blocks Azure datacenter IPs; both authors mirror on WordPress.
+    ("Import AI", "https://jack-clark.net/feed/"),
+    ("Don't Worry About the Vase", "https://thezvi.wordpress.com/feed/"),
     ("Simon Willison", "https://simonwillison.net/atom/everything/"),
     ("Schneier on Security", "https://www.schneier.com/feed/atom/"),
     ("Krebs on Security", "https://krebsonsecurity.com/feed/"),
