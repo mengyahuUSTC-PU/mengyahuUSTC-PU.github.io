@@ -1,0 +1,46 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { t, postUrl, type Lang } from '../../lib/i18n';
+
+export function getStaticPaths() {
+  return [{ params: { lang: 'zh' } }, { params: { lang: 'en' } }];
+}
+
+const lang = Astro.params.lang as Lang;
+const otherLang: Lang = lang === 'zh' ? 'en' : 'zh';
+
+const briefings = (
+  await getCollection('blog', (p) => p.data.lang === lang && p.data.tags.includes('briefing'))
+).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+<Base
+  title={t(lang, 'home.briefings')}
+  description={
+    lang === 'zh'
+      ? '每日 AI 快讯：高信噪比的当日要闻与判断'
+      : 'Daily AI briefing: high signal-to-noise news and takes'
+  }
+  lang={lang}
+  path={`/${lang}/briefing/`}
+  altPath={`/${otherLang}/briefing/`}
+>
+  <h1>{t(lang, 'home.briefings')}</h1>
+  {briefings.length === 0 && <p>{t(lang, 'list.empty')}</p>}
+  <ul class="briefing-list">
+    {briefings.map((post) => (
+      <li class="briefing-item">
+        <span class="post-meta">{fmt.format(post.data.pubDate)}</span>
+        <a href={postUrl(lang, post.data.slug)}>{post.data.title}</a>
+      </li>
+    ))}
+  </ul>
+</Base>

@@ -33,9 +33,9 @@ const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
 >
   <div class="hero" slot="hero">
     {lang === 'zh' ? (
-      <h1>从工程视角，<br />看 <em>AI 前沿</em>与<em>安全</em></h1>
+      <h1>AI <em>前沿</em>与<em>安全</em></h1>
     ) : (
-      <h1><em>AI frontiers</em> and <em>safety</em>,<br />from an engineering point of view</h1>
+      <h1>AI <em>Frontier</em> &amp; <em>Safety</em></h1>
     )}
     <p class="tagline">{t(lang, 'home.tagline')}</p>
   </div>
@@ -61,12 +61,15 @@ const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
     <p class="section-label">{t(lang, 'home.briefings')}</p>
     {briefings.length === 0 && <p>{t(lang, 'list.empty')}</p>}
     <ul class="briefing-list">
-      {briefings.map((post) => (
+      {briefings.slice(0, 7).map((post) => (
         <li class="briefing-item">
           <span class="post-meta">{fmt.format(post.data.pubDate)}</span>
           <a href={postUrl(lang, post.data.slug)}>{post.data.title}</a>
         </li>
       ))}
     </ul>
+    {briefings.length > 7 && (
+      <p><a href={`/${lang}/briefing/`}>{lang === 'zh' ? '查看全部快讯 →' : 'All briefings →'}</a></p>
+    )}
   </section>
 </Base>
