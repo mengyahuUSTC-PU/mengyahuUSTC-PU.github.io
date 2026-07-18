@@ -9,6 +9,7 @@ cd "$REPO_ROOT"
 
 DATE=${1:-$(date -u +%F)}
 RANK=${2:-1}
+SCRIPTS=automation/scripts
 PROMPTS=automation/prompts
 DATA=automation/data
 DRAFTS=automation/drafts
