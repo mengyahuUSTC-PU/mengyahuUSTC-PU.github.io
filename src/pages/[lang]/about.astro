@@ -14,33 +14,68 @@ const otherLang: Lang = lang === 'zh' ? 'en' : 'zh';
   title={t(lang, 'about.title')}
   description={
     lang === 'zh'
-      ? '关于胡梦雅（Mengya (Mia) Hu）'
-      : 'About Mengya (Mia) Hu'
+      ? '关于胡梦雅（Mengya (Mia) Hu）——Responsible AI 方向的应用科学家'
+      : 'About Mengya (Mia) Hu — applied scientist working on Responsible AI'
   }
   lang={lang}
   path={`/${lang}/about/`}
   altPath={`/${otherLang}/about/`}
 >
-  <h1>{t(lang, 'about.title')}</h1>
-  {lang === 'en' ? (
-    <div>
-      <p>
-        I'm Mengya (Mia) Hu. I work on Responsible AI — safety, evaluation, and
-        governance — and I write here from an engineering point of view.
-      </p>
-      <p>
-        Opinions on this site are my own and do not represent my employer.
-      </p>
-      <p><em>(Full bio coming soon.)</em></p>
+  <article class="article">
+    <header>
+      <h1>{t(lang, 'about.title')}</h1>
+    </header>
+    <div class="article-body">
+      {lang === 'zh' ? (
+        <div>
+          <p>
+            我是胡梦雅（Mengya (Mia) Hu），Microsoft 高级应用科学家，在
+            Responsible AI 团队工作，方向是大模型的内容安全：LLM
+            内容审核系统、幻觉检测与缓解、安全与体验的权衡设计。
+          </p>
+          <p>
+            在此之前，我在 Princeton
+            读博士，做的是系外行星探测——为「星影」（Starshade）望远镜系统建仿真管线，并设计从光子计数图像中识别微弱信号的检测方法。本科毕业于中国科学技术大学。
+          </p>
+          <p>
+            从找行星到管住 AI，听起来跨度很大，但对我来说是同一件事：<strong>在巨大的噪声里，可靠地检测你关心的信号</strong>——那时是恒星光晕旁的一颗暗行星，现在是海量生成内容里的一句有害输出或一处幻觉。
+          </p>
+          <p>
+            这个博客从工程和机制视角写 AI
+            安全：可复现的评测、具体的攻防手法、政策落地的实际影响。每篇文章中英双语。
+          </p>
+          <p>本站所有观点仅代表个人，与雇主无关。</p>
+        </div>
+      ) : (
+        <div>
+          <p>
+            I'm Mengya (Mia) Hu, a Senior Applied Scientist at Microsoft working
+            on Responsible AI. My focus is LLM safety in production: content
+            moderation systems, hallucination detection and mitigation, and the
+            design trade-offs between safety and user experience.
+          </p>
+          <p>
+            Before that, I did my Ph.D. at Princeton on exoplanet detection —
+            building simulation pipelines for a starshade–telescope system and
+            designing detection methods that pull faint signals out of
+            photon-counting images. I did my undergrad at USTC.
+          </p>
+          <p>
+            Hunting planets and moderating AI sound worlds apart, but to me
+            they're the same problem: <strong>reliably detecting the signal you
+            care about inside overwhelming noise</strong> — once a dim planet
+            beside a star's glare, now a harmful output or a hallucinated claim
+            inside oceans of generated text.
+          </p>
+          <p>
+            This blog looks at AI safety from an engineering and mechanistic
+            point of view: reproducible evaluations, concrete attack-and-defense
+            techniques, and the real-world impact of policy. Every post is
+            published in both English and Chinese.
+          </p>
+          <p>All opinions here are my own and do not represent my employer.</p>
+        </div>
+      )}
     </div>
-  ) : (
-    <div>
-      <p>
-        我是胡梦雅（Mengya (Mia) Hu）。我的工作方向是 Responsible
-        AI——安全、评测与治理，这里的文章从工程视角出发。
-      </p>
-      <p>本站所有观点仅代表个人，与雇主无关。</p>
-      <p><em>（完整介绍稍后补充。）</em></p>
-    </div>
-  )}
+  </article>
 </Base>
