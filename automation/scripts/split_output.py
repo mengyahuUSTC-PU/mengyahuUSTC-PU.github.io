@@ -13,9 +13,14 @@ from pathlib import Path
 
 
 def strip_fences(text: str) -> str:
+    """If the payload is wrapped in a fenced block (```json / ```markdown / …),
+    return the largest fenced block; otherwise return the text unchanged.
+    Model chatter before/after the fence is dropped along with the fence."""
     text = text.strip()
-    m = re.search(r"```(?:json)?\s*(.*?)```", text, re.S)
-    return m.group(1).strip() if m else text
+    blocks = re.findall(r"```[a-zA-Z]*\n(.*?)```", text, re.S)
+    if blocks:
+        return max(blocks, key=len).strip()
+    return text
 
 
 def split_bilingual(text: str, prefix: str) -> None:

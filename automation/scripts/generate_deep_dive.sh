@@ -32,6 +32,7 @@ cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/deep-dive.md" \
   <(echo "## 今日日期：$DATE") \
   <(echo "## 选定选题 JSON") \
   <(echo "$TOPIC") \
-  | claude -p --output-format text > "$OUT"
+  | claude -p --output-format text --allowedTools "WebFetch" "WebSearch" \
+  | "$PY" "$SCRIPTS/split_output.py" json > "$OUT"
 
 echo "wrote $OUT"
