@@ -13,6 +13,8 @@ const otherLang: Lang = lang === 'zh' ? 'en' : 'zh';
 const posts = (await getCollection('blog', (p) => p.data.lang === lang)).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
+const deepDives = posts.filter((p) => !p.data.tags.includes('briefing'));
+const briefings = posts.filter((p) => p.data.tags.includes('briefing'));
 
 const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
   year: 'numeric',
@@ -39,10 +41,10 @@ const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
   </div>
 
   <section>
-    <p class="section-label">{t(lang, 'home.latest')}</p>
-    {posts.length === 0 && <p>{t(lang, 'list.empty')}</p>}
+    <p class="section-label">{t(lang, 'home.deepDives')}</p>
+    {deepDives.length === 0 && <p>{t(lang, 'list.empty')}</p>}
     <ul class="post-list">
-      {posts.map((post, i) => (
+      {deepDives.map((post, i) => (
         <li class={`post-card${i === 0 ? ' wide' : ''}`}>
           <div class="post-meta">
             {fmt.format(post.data.pubDate)}
@@ -50,6 +52,19 @@ const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
           </div>
           <h3><a href={postUrl(lang, post.data.slug)}>{post.data.title}</a></h3>
           <p>{post.data.description}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="briefing-section">
+    <p class="section-label">{t(lang, 'home.briefings')}</p>
+    {briefings.length === 0 && <p>{t(lang, 'list.empty')}</p>}
+    <ul class="briefing-list">
+      {briefings.map((post) => (
+        <li class="briefing-item">
+          <span class="post-meta">{fmt.format(post.data.pubDate)}</span>
+          <a href={postUrl(lang, post.data.slug)}>{post.data.title}</a>
         </li>
       ))}
     </ul>
