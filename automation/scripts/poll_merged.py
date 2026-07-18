@@ -11,6 +11,7 @@ State (processed PR numbers) lives in automation/data/state/merged.json.
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -59,11 +60,23 @@ def main():
             + "\n\n## 已发布的中文版全文\n\n" + zh.read_text()
         )
         try:
-            raw = subprocess.run(
-                ["claude", "-p", "--output-format", "text"],
-                input=prompt, cwd=REPO_ROOT, check=True,
-                capture_output=True, text=True, timeout=900,
-            ).stdout
+            raw = None
+            for attempt in (1, 2):
+                run = subprocess.run(
+                    ["claude", "-p", "--output-format", "text"],
+                    input=prompt, cwd=REPO_ROOT,
+                    capture_output=True, text=True, timeout=900,
+                )
+                if run.returncode == 0:
+                    raw = run.stdout
+                    break
+                if attempt == 1:
+                    time.sleep(60)
+            if raw is None:
+                raise subprocess.CalledProcessError(
+                    run.returncode, run.args,
+                    output=run.stdout, stderr=run.stderr or run.stdout,
+                )
             clean = subprocess.run(
                 [sys.executable, str(SCRIPTS / "split_output.py"), "json"],
                 input=raw, check=True, capture_output=True, text=True,
