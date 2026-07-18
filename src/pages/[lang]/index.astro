@@ -18,6 +18,7 @@ const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
   year: 'numeric',
   month: 'short',
   day: 'numeric',
+  timeZone: 'UTC',
 });
 ---
 
@@ -28,25 +29,27 @@ const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
   path={`/${lang}/`}
   altPath={`/${otherLang}/`}
 >
-  <section class="hero">
-    <h1>{SITE_TITLE}</h1>
+  <div class="hero" slot="hero">
+    {lang === 'zh' ? (
+      <h1>从工程视角，<br />看 <em>Responsible AI</em></h1>
+    ) : (
+      <h1><em>Responsible AI</em>,<br />from an engineering point of view</h1>
+    )}
     <p class="tagline">{t(lang, 'home.tagline')}</p>
-  </section>
+  </div>
 
   <section>
-    <h2>{t(lang, 'home.latest')}</h2>
+    <p class="section-label">{t(lang, 'home.latest')}</p>
     {posts.length === 0 && <p>{t(lang, 'list.empty')}</p>}
     <ul class="post-list">
-      {posts.map((post) => (
-        <li class="post-card">
+      {posts.map((post, i) => (
+        <li class={`post-card${i === 0 ? ' wide' : ''}`}>
+          <div class="post-meta">
+            {fmt.format(post.data.pubDate)}
+            {post.data.tags.length > 0 && ` · ${post.data.tags[0]}`}
+          </div>
           <h3><a href={postUrl(lang, post.data.slug)}>{post.data.title}</a></h3>
-          <div class="post-meta">{fmt.format(post.data.pubDate)}</div>
           <p>{post.data.description}</p>
-          {post.data.tags.length > 0 && (
-            <div class="tags">
-              {post.data.tags.map((tag) => <span class="tag">{tag}</span>)}
-            </div>
-          )}
         </li>
       ))}
     </ul>

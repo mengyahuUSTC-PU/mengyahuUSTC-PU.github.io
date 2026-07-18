@@ -44,18 +44,21 @@ const canonical = new URL(path, SITE_URL).href;
     <meta property="og:type" content="website" />
   </head>
   <body>
-    <header class="site-header">
-      <nav class="container nav">
-        <a class="brand" href={`/${lang}/`}>{SITE_TITLE}</a>
-        <div class="nav-links">
-          <a href={`/${lang}/`}>{t(lang, 'nav.writing')}</a>
-          <a href={`/${lang}/projects/`}>{t(lang, 'nav.projects')}</a>
-          <a href={`/${lang}/about/`}>{t(lang, 'nav.about')}</a>
-          <a class="lang-switch" href={altPath ?? `/${otherLang}/`} rel="alternate">
-            {lang === 'zh' ? 'EN' : '中文'}
-          </a>
-        </div>
-      </nav>
+    <header class="band">
+      <div class="container">
+        <nav class="nav">
+          <a class="brand" href={`/${lang}/`}>{SITE_TITLE}</a>
+          <div class="nav-links">
+            <a href={`/${lang}/`}>{t(lang, 'nav.writing')}</a>
+            <a href={`/${lang}/projects/`}>{t(lang, 'nav.projects')}</a>
+            <a href={`/${lang}/about/`}>{t(lang, 'nav.about')}</a>
+            <a class="lang-switch" href={altPath ?? `/${otherLang}/`} rel="alternate">
+              {lang === 'zh' ? 'EN' : '中文'}
+            </a>
+          </div>
+        </nav>
+        <slot name="hero" />
+      </div>
     </header>
     <main class="container">
       <slot />
@@ -63,7 +66,7 @@ const canonical = new URL(path, SITE_URL).href;
     <footer class="site-footer">
       <div class="container">
         <p>
-          © {new Date().getFullYear()} {SITE_TITLE} ·
+          © {new Date().getFullYear()} {SITE_TITLE}{' · '}
           <a href={`/${lang}/rss.xml`}>{t(lang, 'footer.rss')}</a>
         </p>
       </div>
