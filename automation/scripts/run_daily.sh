@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Daily pipeline: fetch sources -> topic selection -> briefing draft (zh + en).
+# Runs on the Azure VM from cron. Never publishes anything: output goes to
+# automation/data/ and automation/drafts/, which are gitignored.
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$REPO_ROOT"
+
+DATE=$(date -u +%F)
+SCRIPTS=automation/scripts
+PROMPTS=automation/prompts
+DATA=automation/data
+DRAFTS=automation/drafts
+PY=${PYTHON_BIN:-automation/.venv/bin/python}
+
+mkdir -p "$DATA" "$DRAFTS"
+
+echo "=== [$(date -u +%FT%TZ)] fetch ==="
+"$PY" "$SCRIPTS/fetch_sources.py"
+
+POOL="$DATA/pool-$DATE.json"
+[ -s "$POOL" ] || { echo "error: pool file missing"; exit 1; }
+
+echo "=== topic selection ==="
+cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/topic-selection.md" \
+  <(echo "## 当日条目池 JSON") "$POOL" \
+  | claude -p --output-format text \
+  | "$PY" "$SCRIPTS/split_output.py" json > "$DATA/selection-$DATE.json"
+
+"$PY" -c "import json,sys; d=json.load(open('$DATA/selection-$DATE.json')); \
+print(f\"briefing items: {len(d.get('briefing_items',[]))}, deep-dive candidates: {len(d.get('deep_dive_candidates',[]))}\")"
+
+echo "=== briefing draft ==="
+cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/briefing.md" \
+  <(echo "## 今日日期：$DATE") \
+  <(echo "## briefing_items JSON") \
+  <("$PY" -c "import json; print(json.dumps(json.load(open('$DATA/selection-$DATE.json'))['briefing_items'], ensure_ascii=False, indent=2))") \
+  | claude -p --output-format text \
+  | "$PY" "$SCRIPTS/split_output.py" bilingual "$DRAFTS/briefing-$DATE"
+
+echo "=== [$(date -u +%FT%TZ)] done ==="
