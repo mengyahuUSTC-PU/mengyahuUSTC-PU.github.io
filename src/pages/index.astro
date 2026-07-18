@@ -1,0 +1,26 @@
+---
+// Root: redirect to English home; hreflang alternates point crawlers to both languages.
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Mengya (Mia) Hu</title>
+    <meta http-equiv="refresh" content="0;url=/en/" />
+    <link rel="canonical" href="https://mengyahuustc-pu.github.io/en/" />
+    <link rel="alternate" hreflang="en" href="https://mengyahuustc-pu.github.io/en/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://mengyahuustc-pu.github.io/zh/" />
+    <link rel="alternate" hreflang="x-default" href="https://mengyahuustc-pu.github.io/en/" />
+    <script>
+      // Prefer the visitor's browser language on first load.
+      if (navigator.language && navigator.language.toLowerCase().startsWith('zh')) {
+        location.replace('/zh/');
+      } else {
+        location.replace('/en/');
+      }
+    </script>
+  </head>
+  <body>
+    <p><a href="/en/">English</a> · <a href="/zh/">中文</a></p>
+  </body>
+</html>

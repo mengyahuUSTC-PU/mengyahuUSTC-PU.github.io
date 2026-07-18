@@ -1,0 +1,54 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { SITE_TITLE, t, postUrl, type Lang } from '../../lib/i18n';
+
+export function getStaticPaths() {
+  return [{ params: { lang: 'zh' } }, { params: { lang: 'en' } }];
+}
+
+const lang = Astro.params.lang as Lang;
+const otherLang: Lang = lang === 'zh' ? 'en' : 'zh';
+
+const posts = (await getCollection('blog', (p) => p.data.lang === lang)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+---
+
+<Base
+  title={SITE_TITLE}
+  description={t(lang, 'home.tagline')}
+  lang={lang}
+  path={`/${lang}/`}
+  altPath={`/${otherLang}/`}
+>
+  <section class="hero">
+    <h1>{SITE_TITLE}</h1>
+    <p class="tagline">{t(lang, 'home.tagline')}</p>
+  </section>
+
+  <section>
+    <h2>{t(lang, 'home.latest')}</h2>
+    {posts.length === 0 && <p>{t(lang, 'list.empty')}</p>}
+    <ul class="post-list">
+      {posts.map((post) => (
+        <li class="post-card">
+          <h3><a href={postUrl(lang, post.data.slug)}>{post.data.title}</a></h3>
+          <div class="post-meta">{fmt.format(post.data.pubDate)}</div>
+          <p>{post.data.description}</p>
+          {post.data.tags.length > 0 && (
+            <div class="tags">
+              {post.data.tags.map((tag) => <span class="tag">{tag}</span>)}
+            </div>
+          )}
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>

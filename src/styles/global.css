@@ -1,0 +1,84 @@
+/* Design tokens — neutral skeleton; final visual style applied after mockup selection */
+:root {
+  --bg: #faf6ef;          /* cream */
+  --text: #1c1a17;        /* near-black */
+  --muted: #6b6459;
+  --accent: #c85a19;      /* burnt orange */
+  --card: #ffffff;
+  --border: #e8e1d5;
+  --radius: 14px;
+  --font-sans: 'Helvetica Neue', Arial, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17150f;
+    --text: #ece7dd;
+    --muted: #a39b8c;
+    --accent: #e87a3f;
+    --card: #201d15;
+    --border: #332e24;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 17px; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.site-header { padding: 1.5rem 0; }
+.nav { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.brand { font-weight: 700; color: var(--text); font-size: 1.05rem; }
+.nav-links { display: flex; gap: 1.25rem; align-items: center; }
+.nav-links a { color: var(--muted); }
+.nav-links a:hover { color: var(--accent); text-decoration: none; }
+.lang-switch { border: 1px solid var(--border); border-radius: 999px; padding: 0.1rem 0.7rem; }
+
+main { min-height: 60vh; padding: 2rem 1.25rem 4rem; }
+
+h1, h2, h3 { line-height: 1.3; letter-spacing: -0.01em; }
+h1 { font-size: 2rem; }
+
+.hero { padding: 3rem 0 2rem; }
+.hero .tagline { color: var(--muted); font-size: 1.1rem; max-width: 34rem; }
+
+.post-list { list-style: none; padding: 0; display: grid; gap: 1rem; }
+.post-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+}
+.post-card h3 { margin: 0 0 0.35rem; }
+.post-card h3 a { color: var(--text); }
+.post-card h3 a:hover { color: var(--accent); text-decoration: none; }
+.post-meta { color: var(--muted); font-size: 0.85rem; }
+.post-card p { margin: 0.5rem 0 0; color: var(--muted); }
+
+.article header { margin-bottom: 2rem; }
+.article .translation-link { font-size: 0.9rem; }
+.article-body img { max-width: 100%; }
+.article-body pre { overflow-x: auto; border-radius: 8px; padding: 1rem; }
+.article-body blockquote { border-left: 3px solid var(--accent); margin-left: 0; padding-left: 1rem; color: var(--muted); }
+
+.tags { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; }
+.tag { font-size: 0.78rem; color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 0.05rem 0.6rem; }
+
+.site-footer { border-top: 1px solid var(--border); padding: 1.5rem 0; color: var(--muted); font-size: 0.9rem; }

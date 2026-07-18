@@ -1,0 +1,46 @@
+---
+import Base from '../../layouts/Base.astro';
+import { t, type Lang } from '../../lib/i18n';
+
+export function getStaticPaths() {
+  return [{ params: { lang: 'zh' } }, { params: { lang: 'en' } }];
+}
+
+const lang = Astro.params.lang as Lang;
+const otherLang: Lang = lang === 'zh' ? 'en' : 'zh';
+---
+
+<Base
+  title={t(lang, 'about.title')}
+  description={
+    lang === 'zh'
+      ? '关于胡梦雅（Mengya (Mia) Hu）'
+      : 'About Mengya (Mia) Hu'
+  }
+  lang={lang}
+  path={`/${lang}/about/`}
+  altPath={`/${otherLang}/about/`}
+>
+  <h1>{t(lang, 'about.title')}</h1>
+  {lang === 'en' ? (
+    <div>
+      <p>
+        I'm Mengya (Mia) Hu. I work on Responsible AI — safety, evaluation, and
+        governance — and I write here from an engineering point of view.
+      </p>
+      <p>
+        Opinions on this site are my own and do not represent my employer.
+      </p>
+      <p><em>(Full bio coming soon.)</em></p>
+    </div>
+  ) : (
+    <div>
+      <p>
+        我是胡梦雅（Mengya (Mia) Hu）。我的工作方向是 Responsible
+        AI——安全、评测与治理，这里的文章从工程视角出发。
+      </p>
+      <p>本站所有观点仅代表个人，与雇主无关。</p>
+      <p><em>（完整介绍稍后补充。）</em></p>
+    </div>
+  )}
+</Base>
