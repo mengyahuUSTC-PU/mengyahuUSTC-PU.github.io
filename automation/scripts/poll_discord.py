@@ -63,6 +63,9 @@ def main():
         return
     messages.sort(key=lambda m: int(m["id"]))
     state["last_id"] = messages[-1]["id"]
+    # Persist the cursor BEFORE acting on messages: a concurrent/next run must
+    # never re-process the same replies (duplicate drafts + duplicate PRs).
+    STATE_FILE.write_text(json.dumps(state))
 
     date = latest_selection_date()
     for msg in messages:
