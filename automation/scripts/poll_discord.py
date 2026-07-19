@@ -207,6 +207,19 @@ def main():
             handle_distribution(dist_match.group(1))
             continue
 
+        # "改发 <slug> <feedback>": regenerate distribution pack per feedback.
+        redist_match = re.fullmatch(r"改发\s*([A-Za-z0-9\-]+)[\s，,:：]*(.+)", content, re.S)
+        if redist_match:
+            slug_, fb_ = redist_match.group(1), redist_match.group(2).strip()
+            send(f"✏️ 收到对 {slug_} 分发内容的意见，重新生成中…")
+            r = subprocess.run(
+                [sys.executable, str(SCRIPTS / "distribute.py"), slug_, fb_],
+                cwd=REPO_ROOT, capture_output=True, text=True, timeout=1200,
+            )
+            if r.returncode != 0:
+                send(f"⚠️ 分发内容重生成失败：\n```{(r.stderr or r.stdout)[-400:]}```")
+            continue
+
         # "改 <slug> <feedback>": revise the article per user feedback.
         revise_match = re.fullmatch(r"改\s*([A-Za-z0-9\-]+)[\s，,:：]*(.+)", content, re.S)
         if revise_match:

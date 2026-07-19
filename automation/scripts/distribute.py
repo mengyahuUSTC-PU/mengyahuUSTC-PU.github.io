@@ -51,6 +51,7 @@ def section(text: str, name: str) -> str:
 
 def main():
     slug = sys.argv[1]
+    feedback = sys.argv[2] if len(sys.argv) > 2 else ""
     load_env()
     en = REPO_ROOT / "src" / "content" / "blog" / "en" / f"{slug}.md"
     if not en.exists():
@@ -62,8 +63,9 @@ def main():
     )
 
     # --- EN social (thread + LinkedIn) ---
+    fb = f"\n\n## 用户对上一版的修改意见（必须遵守）\n\n{feedback}" if feedback else ""
     social_raw = claude_gen(
-        baseline + "\n\n" + (PROMPTS / "social-en.md").read_text()
+        baseline + "\n\n" + (PROMPTS / "social-en.md").read_text() + fb
         + f"\n\n## Thread 版 UTM 链接\n{utm(slug, 'en', 'twitter', 'thread')}"
         + f"\n\n## LinkedIn 版 UTM 链接\n{utm(slug, 'en', 'linkedin', 'post')}"
         + "\n\n## 文章全文\n\n" + en.read_text()
