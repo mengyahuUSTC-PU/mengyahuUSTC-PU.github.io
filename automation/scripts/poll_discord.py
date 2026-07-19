@@ -256,11 +256,25 @@ def main():
             continue
         content = msg["content"].strip()
 
-        # "发 <slug>": schedule the pending distribution pack via Typefully.
-        # Slugs are ASCII (letters/digits/hyphens) so no separating space needed.
-        dist_match = re.fullmatch(r"发\s*([A-Za-z0-9\-]+)\s*", content)
+        # "发 …": schedule a pending distribution pack via Typefully.
+        # Accepts "发", "发 <slug>", or loose phrasing like "发 x linkedin" —
+        # a token matching a pending pack slug wins, else the latest pending pack.
+        dist_match = re.match(r"发[\s，,]*([A-Za-z0-9\- ]*)$", content)
         if dist_match:
-            handle_distribution(dist_match.group(1))
+            pending = []
+            for f in sorted((DATA / "dist").glob("*.json"), key=lambda p: p.stat().st_mtime):
+                try:
+                    d = json.loads(f.read_text())
+                    if d.get("status") != "scheduled":
+                        pending.append(d["slug"])
+                except Exception:
+                    continue
+            tokens = dist_match.group(1).split()
+            slug_ = next((s for s in pending if s in tokens), None) or (pending[-1] if pending else None)
+            if slug_:
+                handle_distribution(slug_)
+            else:
+                send("ℹ️ 没有待排程的分发内容（都已排程或尚未生成）。")
             continue
 
         # "改简报 [date] <feedback>": revise the latest (or dated) briefing.
