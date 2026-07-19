@@ -184,13 +184,14 @@ def main():
         content = msg["content"].strip()
 
         # "发 <slug>": schedule the pending distribution pack via Typefully.
-        dist_match = re.fullmatch(r"发\s+(\S+)", content)
+        # Slugs are ASCII (letters/digits/hyphens) so no separating space needed.
+        dist_match = re.fullmatch(r"发\s*([A-Za-z0-9\-]+)\s*", content)
         if dist_match:
             handle_distribution(dist_match.group(1))
             continue
 
         # "改 <slug> <feedback>": revise the article per user feedback.
-        revise_match = re.fullmatch(r"改\s+(\S+)\s+(.+)", content, re.S)
+        revise_match = re.fullmatch(r"改\s*([A-Za-z0-9\-]+)[\s，,:：]*(.+)", content, re.S)
         if revise_match:
             handle_revision(revise_match.group(1), revise_match.group(2).strip())
             continue
