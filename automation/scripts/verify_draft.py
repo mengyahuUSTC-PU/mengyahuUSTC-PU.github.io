@@ -176,6 +176,14 @@ def main():
     sh("git", "fetch", "-q", "origin")
     # Merged PRs: the branch may be deleted; the content lives on master now.
     src_ref = "origin/master" if report_only else f"origin/{branch}"
+
+    # zh/en pairs: verify the EN version only (sources are English); the fix
+    # then propagates to zh via sync_counterpart. Standalone zh (deep dives
+    # before the EN exists) is verified directly.
+    en_slugs = {Path(f).stem for f in md_files if "/en/" in f}
+    skipped_zh = [f for f in md_files if "/zh/" in f and Path(f).stem in en_slugs]
+    md_files = [f for f in md_files if f not in skipped_zh]
+
     all_reports, fixed_files = [], []
     for rel in md_files:
         content = sh("git", "show", f"{src_ref}:{rel}")
@@ -204,6 +212,10 @@ def main():
                         "--title", f"Fact-check fixes for merged PR #{pr}",
                         "--body", f"三方核查对已合并的 #{pr} 的修正。Merge = 修正上线。\n\n"
                                   "🤖 Generated with [Claude Code](https://claude.com/claude-code)")
+    if skipped_zh:
+        all_reports.append(
+            "### 中文版\n\n未单独核查：以英文版核查为准（来源均为英文），"
+            "修正通过双语同步机制传导到中文版。")
     summary = ("\n\n---\n\n## 自动修正\n\n"
                + ((f"原 PR 已合并，修正走新 PR：{fix_pr_url}（{', '.join(f'`{f}`' for f in fixed_files)}）"
                    if report_only else
