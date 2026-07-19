@@ -106,6 +106,12 @@ def gemini_verify(content: str) -> str:
 
 FLAG_MARKS = ("🔗", "⚠️", "❌", "🚫")
 
+def _assert_on(branch: str):
+    cur = sh("git", "rev-parse", "--abbrev-ref", "HEAD")
+    if cur != branch:
+        raise RuntimeError(f"refusing to commit: on '{cur}', expected '{branch}'")
+
+
 
 def fix_article(branch: str, rel: str, reports: list[str], base: str | None = None) -> bool:
     """One writer-model pass applying verifier findings on a branch.
@@ -138,6 +144,7 @@ def fix_article(branch: str, rel: str, reports: list[str], base: str | None = No
             input=run.stdout, capture_output=True, text=True, check=True,
         ).stdout
         if clean.strip().startswith("---") and clean.strip() != article.strip():
+            _assert_on(branch)
             (REPO_ROOT / rel).write_text(clean)
             sh("git", "add", rel)
             sh("git", "commit", "-q", "-m",

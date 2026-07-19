@@ -67,6 +67,8 @@ def revise(pr_number: int, branch: str, rel: str, feedback: str) -> bool:
     if not clean.strip().startswith("---") or clean.strip() == article.strip():
         sh("git", "checkout", "-q", "master")
         return False
+    if sh("git", "rev-parse", "--abbrev-ref", "HEAD") != branch:
+        raise RuntimeError(f"refusing to commit: not on {branch}")
     (REPO_ROOT / rel).write_text(clean)
     sh("git", "add", rel)
     sh("git", "commit", "-q", "-m",

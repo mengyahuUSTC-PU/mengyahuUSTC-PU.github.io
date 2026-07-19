@@ -106,6 +106,9 @@ def handle_revision(slug: str, feedback: str):
     if not clean.strip().startswith("---"):
         send(f"⚠️ 改稿输出格式异常（{slug}），未提交。")
         return
+    if sh("git", "rev-parse", "--abbrev-ref", "HEAD") != branch:
+        send(f"⚠️ git 状态异常（不在 {branch} 上），改稿未提交，请重试。")
+        return
     (REPO_ROOT / rel).write_text(clean)
     sh("git", "add", rel)
     sh("git", "commit", "-q", "-m",
