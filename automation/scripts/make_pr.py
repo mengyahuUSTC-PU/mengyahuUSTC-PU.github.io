@@ -40,6 +40,16 @@ def parse(draft_path: Path):
     if cm:
         comment = cm.group(1).strip()
         body = body[: cm.start()].rstrip() + "\n"
+
+    # YAML guard: quote title/description values containing ": " — an unquoted
+    # colon breaks the site build.
+    def _quote(m):
+        key, val = m.group(1), m.group(2).strip()
+        if ": " in val and not val.startswith(('"', "'")):
+            val = '"' + val.replace('"', '\\"') + '"'
+        return f"{key}: {val}"
+
+    fm_text = re.sub(r"^(title|description): (.*)$", _quote, fm_text, flags=re.M)
     return fm, f"---\n{fm_text}\n---\n{body}", comment
 
 
