@@ -39,6 +39,43 @@ def api(path, token):
     return resp.json()
 
 
+def handle_distribution(slug: str):
+    """Schedule the pending thread + LinkedIn drafts for next UTC 15:00."""
+    from datetime import timedelta
+
+    from typefully_client import create_draft
+
+    dist_file = DATA / "dist" / f"{slug}.json"
+    if not dist_file.exists():
+        send(f"⚠️ 找不到 {slug} 的分发内容（automation/data/dist/{slug}.json）。")
+        return
+    pack = json.loads(dist_file.read_text())
+    if pack.get("status") == "scheduled":
+        send(f"ℹ️ {slug} 已经排程过了，跳过。")
+        return
+
+    now = datetime.now(timezone.utc)
+    slot = now.replace(hour=15, minute=0, second=0, microsecond=0)
+    if slot <= now:
+        slot += timedelta(days=1)
+    when = slot.isoformat()
+
+    try:
+        create_draft(pack["thread"], schedule_date=when)
+        create_draft(pack["linkedin"], schedule_date=when)
+    except Exception as exc:
+        send(f"⚠️ Typefully 排程失败（{slug}）：{str(exc)[:300]}")
+        return
+
+    pack["status"] = "scheduled"
+    pack["scheduled_for"] = when
+    dist_file.write_text(json.dumps(pack, ensure_ascii=False, indent=2))
+    send(
+        f"✅ {slug} 已排进 Typefully：thread + LinkedIn 将于 **{slot.strftime('%m-%d %H:%M')} UTC** 发出。\n"
+        f"改时间/取消可直接在 Typefully app 里操作。"
+    )
+
+
 def latest_selection_date():
     files = sorted(DATA.glob("selection-*.json"))
     if not files:
@@ -72,6 +109,13 @@ def main():
         if msg["author"].get("bot"):
             continue
         content = msg["content"].strip()
+
+        # "发 <slug>": schedule the pending distribution pack via Typefully.
+        dist_match = re.fullmatch(r"发\s+(\S+)", content)
+        if dist_match:
+            handle_distribution(dist_match.group(1))
+            continue
+
         # A selection reply is digits/spaces/commas only, e.g. "1" or "1 3".
         if not re.fullmatch(r"[\d\s,，]+", content):
             continue

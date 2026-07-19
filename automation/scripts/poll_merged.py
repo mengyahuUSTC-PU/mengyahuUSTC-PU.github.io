@@ -44,7 +44,19 @@ def main():
 
     for pr in prs:
         branch, number = pr["headRefName"], pr["number"]
-        if number in state["done"] or not branch.startswith("post/") or branch.endswith("-en"):
+        if number in state["done"] or not branch.startswith("post/"):
+            continue
+        # Merged EN post -> kick off distribution (thread/LinkedIn/XHS preview).
+        if branch.endswith("-en"):
+            slug = branch.removeprefix("post/").removesuffix("-en")
+            try:
+                subprocess.run(
+                    [sys.executable, str(SCRIPTS / "distribute.py"), slug],
+                    cwd=REPO_ROOT, check=True, capture_output=True, text=True, timeout=1200,
+                )
+                state["done"].append(number)
+            except subprocess.CalledProcessError as exc:
+                send(f"⚠️ 分发内容生成失败（{slug}）：\n```{(exc.stderr or str(exc))[-500:]}```")
             continue
         slug = branch.removeprefix("post/")
         zh = REPO_ROOT / "src" / "content" / "blog" / "zh" / f"{slug}.md"
