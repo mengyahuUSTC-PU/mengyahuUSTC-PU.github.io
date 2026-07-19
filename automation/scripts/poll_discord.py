@@ -39,6 +39,79 @@ def api(path, token):
     return resp.json()
 
 
+def sh(*cmd, timeout=300):
+    return subprocess.run(
+        cmd, cwd=REPO_ROOT, check=True, capture_output=True, text=True, timeout=timeout
+    ).stdout.strip()
+
+
+def handle_revision(slug: str, feedback: str):
+    """Revise an article per Discord feedback and push to its PR branch.
+
+    Open PR on post/<slug> -> revise on that branch (PR updates in place).
+    No open PR but article published on master -> new fix/<slug> branch + PR.
+    """
+    lang = "en" if slug.endswith("-en") else "zh"
+    base_slug = slug.removesuffix("-en")
+    branch = f"post/{slug}"
+    rel = f"src/content/blog/{lang}/{base_slug}.md"
+
+    sh("git", "fetch", "-q", "origin")
+    open_prs = json.loads(sh("gh", "pr", "list", "--state", "open",
+                             "--json", "headRefName"))
+    on_open_pr = any(p["headRefName"] == branch for p in open_prs)
+
+    if on_open_pr:
+        sh("git", "checkout", "-q", "-B", branch, f"origin/{branch}")
+    else:
+        sh("git", "checkout", "-q", "master")
+        sh("git", "pull", "-q", "origin", "master")
+        if not (REPO_ROOT / rel).exists():
+            send(f"⚠️ 找不到 {slug} 对应的文章（{rel}），也没有它的开放 PR。")
+            return
+        branch = f"fix/{slug}-{datetime.now(timezone.utc).strftime('%m%d%H%M')}"
+        sh("git", "checkout", "-q", "-B", branch, "origin/master")
+
+    article = (REPO_ROOT / rel).read_text()
+    send(f"✏️ 收到对 {slug} 的修改意见，改稿中…")
+    prompts = REPO_ROOT / "automation" / "prompts"
+    prompt = (
+        (prompts / "editorial-baseline.md").read_text()
+        + "\n\n" + (prompts / "revise.md").read_text()
+        + "\n\n## 用户修改意见\n\n" + feedback
+        + "\n\n## 文章当前版本\n\n" + article
+    )
+    run = subprocess.run(
+        ["claude", "-p", "--output-format", "text",
+         "--allowedTools", "WebFetch", "WebSearch"],
+        input=prompt, cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
+    )
+    if run.returncode != 0:
+        send(f"⚠️ 改稿失败（{slug}）：\n```{(run.stderr or run.stdout)[-400:]}```")
+        return
+    clean = subprocess.run(
+        [sys.executable, str(SCRIPTS / "split_output.py"), "json"],
+        input=run.stdout, capture_output=True, text=True, check=True,
+    ).stdout
+    if not clean.strip().startswith("---"):
+        send(f"⚠️ 改稿输出格式异常（{slug}），未提交。")
+        return
+    (REPO_ROOT / rel).write_text(clean)
+    sh("git", "add", rel)
+    sh("git", "commit", "-q", "-m",
+       f"Revise {base_slug} ({lang}) per Discord feedback\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>")
+    sh("git", "push", "-q", "-f", "origin", branch)
+
+    if on_open_pr:
+        send(f"✅ {slug} 已按意见改好，PR 原地更新，刷新即可复审。")
+    else:
+        pr_url = sh("gh", "pr", "create", "--base", "master", "--head", branch,
+                    "--title", f"Revise: {slug} (Discord feedback)",
+                    "--body", f"按 Discord 反馈修改：\n\n> {feedback}\n\nMerge = 修正上线。\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)")
+        send(f"✅ {slug} 已按意见改好（该文已上线，走修正 PR）：{pr_url}")
+    sh("git", "checkout", "-q", "master")
+
+
 def handle_distribution(slug: str):
     """Schedule the pending thread + LinkedIn drafts for next UTC 15:00."""
     from datetime import timedelta
@@ -114,6 +187,12 @@ def main():
         dist_match = re.fullmatch(r"发\s+(\S+)", content)
         if dist_match:
             handle_distribution(dist_match.group(1))
+            continue
+
+        # "改 <slug> <feedback>": revise the article per user feedback.
+        revise_match = re.fullmatch(r"改\s+(\S+)\s+(.+)", content, re.S)
+        if revise_match:
+            handle_revision(revise_match.group(1), revise_match.group(2).strip())
             continue
 
         # A selection reply is digits/spaces/commas only, e.g. "1" or "1 3".
