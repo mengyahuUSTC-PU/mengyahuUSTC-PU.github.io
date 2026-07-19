@@ -45,8 +45,10 @@ if [ -f .env ] && grep -q "^DISCORD_WEBHOOK_URL=" .env; then
   echo "=== briefing PR + Discord ==="
   PR_URL=$("$PY" "$SCRIPTS/make_pr.py" "$DRAFTS/briefing-$DATE.zh.md" "$DRAFTS/briefing-$DATE.en.md" || true)
   "$PY" "$SCRIPTS/discord_notify.py" "📰 **$DATE 快讯草稿**已开 PR：${PR_URL:-（PR 创建失败，见 VM 日志）}
-Merge = 发布上线。"
+Merge = 发布上线。三方核查随后跟进…"
   "$PY" "$SCRIPTS/discord_notify.py" --topics "$DATE"
+  PR_NUM=$(echo "$PR_URL" | grep -oE "[0-9]+$" || true)
+  [ -n "$PR_NUM" ] && "$PY" "$SCRIPTS/verify_draft.py" "$PR_NUM" || true
 fi
 
 echo "=== [$(date -u +%FT%TZ)] done ==="
