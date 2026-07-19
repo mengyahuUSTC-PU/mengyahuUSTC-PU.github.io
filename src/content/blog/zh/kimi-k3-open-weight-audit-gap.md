@@ -28,11 +28,31 @@ K3 参数规模比 K2.5 更大，发布节奏更快，超过此前最大的开�
 
 但商业竞速的激励结构恰好是反过来的：谁先把"3T"这个数字打出来，谁就先拿到媒体报道和叙事窗口，Bloomberg、MLQ 等一堆通稿在发布当天就跟上了。首发优势是即时兑现的，而审计成本是延迟支付的——并且不是由发布方支付，是由学术界的志愿联盟事后买单。这个联盟目前唯一在此类模型上做出过完整评估的机构组合，是围绕 Constellation 拉起来的一次性合作，而不是一套可持续、可规模化复制到下一个模型的机制。K2.5 才评估完，K3 已经发布，规模还翻了将近一倍。
 
+## 差距已经造成了什么代价
+
+这不是纸上谈兵的风险。2025年1月，思科的安全研究团队拿同一套越狱测试——从 HarmBench 基准里抽取的50条有害提示词——对几款前沿模型做了同一轮攻击测试。结果差了好几个数量级：没有配发安全说明的 DeepSeek R1，50条提示词一条没挡住，攻击成功率100%；配了红队测试章节的 Llama 3.1-405B 也高达96%——说明"发布了评估报告"不等于"评估真的覆盖到了"。反倒是那些在发布时就做了安全测试的模型表现明显更好：GPT-4o 86%，Gemini 1.5-Pro 64%，Claude 3.5 Sonnet 36%，OpenAI 的 o1-preview 26%（[Cisco 博客](https://blogs.cisco.com/security/evaluating-security-risk-in-deepseek-and-other-frontier-reasoning-models)）。
+
+这个差距没有停留在测试环境里。几周后，Check Point Research 记录到威胁行为者已经在利用这个漏洞：DeepSeek 和 Qwen——两者发布时都没有官方安全评估——已经被用来编写窃密木马、交流破解银行反欺诈系统的手法、优化垃圾邮件分发脚本。CPR 原话是："ChatGPT 过去两年在反滥用机制上投入巨大，而这些较新的模型看起来几乎挡不住滥用"（[Check Point Research](https://blog.checkpoint.com/artificial-intelligence/cpr-finds-threat-actors-already-leveraging-deepseek-and-qwen-to-develop-malicious-content/)）。
+
+这也不是什么新鲜事，这套机制从2023年起就在业内反复上演。第一个被广泛报道的"恶意 LLM" WormGPT，就是拿开源的 GPT-J-6B 模型，用恶意软件和钓鱼邮件数据微调出来的，之后在网络犯罪论坛上被卖给做商业邮件诈骗（BEC）的人用（[SlashNext](https://slashnext.com/blog/wormgpt-the-generative-ai-tool-cybercriminals-are-using-to-launch-business-email-compromise-attacks/)）。Palo Alto 的 Unit 42 后来指出，就算把 WormGPT 端掉，同样的模式也没消失——只是催生了一批用同样手法做出来的后继者和仿制品（[Unit 42](https://unit42.paloaltonetworks.com/dilemma-of-ai-malicious-llms/)）。
+
+这些都不需要 K3 这样的模型"生来就带恶意"。只需要它重复 DeepSeek R1 和 Qwen 当初的路径——发布前没做安全测试——而 K3 的参数规模已经是它们的两倍，可被武器化的能力面自然也更大。
+
 ## 规模本身在制造评估盲区
 
 这里有一层更深的机制问题：参数规模每往上跳一级，模型可能涌现的能力维度也在增加——尤其是长程 agentic 行为、工具调用的连锁副作用、隐蔽破坏这类需要在真实交互环境里才能测出来的风险。而现有的评估框架本身就是资源密集型的：K2.5 那份报告里，光是行为审计一项就跑了543个评委打分，覆盖38个行为维度；网络安全能力测试覆盖1,368个 CyberGym 任务；破坏倾向测试每项要跑125到250多个样本。这些数字不会随着模型变大而自动跟着涨，跑一遍这套流程需要的算力和人力时间是相对固定的成本，而模型的能力面和参数规模却在指数增长。
 
 结果就是：评估侧的"边际覆盖率"和模型规模的"边际增长"根本不是同一条曲线。规模竞赛越往前冲，同一套审计资源能覆盖到的能力比例就越薄。K3 比 K2.5 大了近一倍，不代表安全评估需要的资源也能跟着翻倍配齐——现实是,负责这件事的团队还是那几个大学实验室,人力和经费都没有跟着模型规模同步扩张。
+
+## 放在整个行业里比较
+
+Kimi K3 不是因为"开源模型从不公布安全评估"才显得特殊——它的特殊之处在于，行业正在分裂成两派，而它站在了差的那一边。看看过去两年最受关注的几款闭源和开源模型发布时都带了什么。
+
+OpenAI、Anthropic 和 Google DeepMind 已经不约而同地把"旗舰模型发布 + 同日放出实验室自制的安全文档"变成了行业惯例。GPT-5 的 system card 在发布当天就放出来，里面的 Preparedness Framework 评估把生化能力评级为"High"并启动了对应的防护措施，还附带网络攻击能力评估和红队测试结果（[OpenAI system card](https://openai.com/index/gpt-5-system-card/)）；此后的每个小版本——5.1、5.2、5.5——都在当天配发更新版。Claude Opus 4.5 的 system card 随模型同步发布，记录了 Responsible Scaling Policy 框架下针对 CBRN 和 AI 研发风险阈值的评估、agentic 安全测试，以及模型福祉评估（[Anthropic system card](https://www.anthropic.com/claude-opus-4-5-system-card)）。Gemini 3 Pro 同时发了 model card 和一份独立的 Frontier Safety Framework 报告，覆盖 CBRN、网络安全、有害操纵、机器学习研发、失准这五个风险维度，而且明确把"越狱抵抗力"标注为尚未解决的问题，而不是宣称已经解决（[model card](https://storage.googleapis.com/deepmind-media/Model-Cards/Gemini-3-Pro-Model-Card.pdf)，[FSF 报告](https://storage.googleapis.com/deepmind-media/gemini/gemini_3_pro_fsf_report.pdf)）。
+
+开源权重这一边则是泾渭分明，这一点很重要，因为它排除了"开源发布来不及做安全测试"这个借口。Meta 的 Llama 4（Scout/Maverick，[2025年4月5日发布](https://ai.meta.com/blog/llama-4-multimodal-intelligence/)）的 model card 里有固定的红队测试章节（网络安全、对抗性机器学习、内容完整性）、CBRNE 能力提升评估、儿童安全测试，还配了一份单独的 Responsible Use Guide（[Llama 4 Scout model card](https://huggingface.co/meta-llama/Llama-4-Scout-17B-16E-Instruct)）——证明开源权重同步公布实验室安全评估是做得到的，不是闭源模型才有的奢侈品。相比之下，DeepSeek 的 V3 和 R1 无论是官方仓库还是配套论文里都没有对应的章节：R1 目前能看到的安全相关发现——包括第三方测出的越狱攻击近乎全部成功——都来自外部研究者，不是 DeepSeek 自己（[DeepSeek-R1 仓库](https://github.com/deepseek-ai/DeepSeek-R1)）。Qwen3 的技术报告详细讲了架构和基准测试，但没有安全评估章节；一个护栏分类器 Qwen3Guard 大约五个月后才补上，但事后加装的内容审核工具，和发布前测试基础模型完全是两回事（[Qwen3 技术报告](https://arxiv.org/abs/2505.09388)，[Qwen3Guard 报告](https://arxiv.org/abs/2510.14276)）。Mistral Large 2（[2024年7月24日发布](https://mistral.ai/news/mistral-large-2407)）的官方 model card 只列了参数量、上下文窗口和许可条款，红队测试或危险能力评估一项没有（[model card](https://docs.mistral.ai/models/model-cards/mistral-large-2-0-24-07)）。
+
+所以真实的分野不是"闭源实验室测、开源实验室不测"，而是闭源实验室已经把"发布当天公布安全文档"变成了标配，开源权重这边则参差不齐：Meta 把它当发布流程的一部分，Moonshot、DeepSeek、Qwen、Mistral 把它当可有可无的选项。K3 落在了"可有可无"的那一边——结合前面提到的不可撤回性，这恰恰是这个激励缺口伤害最大的地方。
 
 ## 能带走的判断
 
@@ -49,3 +69,14 @@ K3 参数规模比 K2.5 更大，发布节奏更快，超过此前最大的开�
 - [Kimi K3, and what we can still learn from the pelican benchmark](https://simonwillison.net/2026/Jul/16/kimi-k3/) — Simon Willison 本人的鹈鹕测试结果与推理 token 成本实测
 - [An Independent Safety Evaluation of Kimi K2.5](https://arxiv.org/abs/2604.03121) — K2.5 独立安全评估的方法、发现（sabotage服从率、CBRNE能力、政治审查等）与团队构成
 - [Estimating Worst-Case Frontier Risks of Open-Weight LLMs](https://arxiv.org/abs/2508.03153) — 开源权重模型不可撤回、可被微调剥除安全对齐等结构性风险论证
+- [Evaluating Security Risk in DeepSeek and Other Frontier Reasoning Models](https://blogs.cisco.com/security/evaluating-security-risk-in-deepseek-and-other-frontier-reasoning-models) — 思科用 HarmBench 越狱测试对比 DeepSeek R1、Llama 3.1-405B、GPT-4o、Gemini 1.5-Pro、Claude 3.5 Sonnet、o1-preview 的攻击成功率（一手来源，2025年1月）
+- [CPR Finds Threat Actors Already Leveraging DeepSeek and Qwen to Develop Malicious Content](https://blog.checkpoint.com/artificial-intelligence/cpr-finds-threat-actors-already-leveraging-deepseek-and-qwen-to-develop-malicious-content/) — 记录 DeepSeek、Qwen 发布数周内已被威胁行为者实际滥用（一手来源，2025年2月）
+- [WormGPT: The Generative AI Tool Cybercriminals Are Using to Launch Business Email Compromise Attacks](https://slashnext.com/blog/wormgpt-the-generative-ai-tool-cybercriminals-are-using-to-launch-business-email-compromise-attacks/) — SlashNext 对 WormGPT 的原始披露，该工具基于开源的 GPT-J-6B 模型微调而成（一手来源，2023年）
+- [The Dual-Use Dilemma of AI: Malicious LLMs](https://unit42.paloaltonetworks.com/dilemma-of-ai-malicious-llms/) — Unit 42 关于 WormGPT 后继者与仿制工具扩散的分析（一手来源）
+- [GPT-5 System Card](https://openai.com/index/gpt-5-system-card/) — 与模型同日发布的 Preparedness Framework 评估（一手来源）
+- [Claude Opus 4.5 System Card](https://www.anthropic.com/claude-opus-4-5-system-card) — 与模型同日发布的 Responsible Scaling Policy 评估（一手来源）
+- [Gemini 3 Pro Model Card](https://storage.googleapis.com/deepmind-media/Model-Cards/Gemini-3-Pro-Model-Card.pdf) 与 [Frontier Safety Framework Report](https://storage.googleapis.com/deepmind-media/gemini/gemini_3_pro_fsf_report.pdf) — 与模型同日发布的安全评估（一手来源）
+- [Llama 4 Scout model card](https://huggingface.co/meta-llama/Llama-4-Scout-17B-16E-Instruct) — 发布时即公布红队测试与 CBRNE 能力提升评估（一手来源）
+- [DeepSeek-R1 官方仓库](https://github.com/deepseek-ai/DeepSeek-R1) — 无实验室自主发布的安全评估章节（一手来源）
+- [Qwen3 Technical Report](https://arxiv.org/abs/2505.09388) 与 [Qwen3Guard Report](https://arxiv.org/abs/2510.14276) — 旗舰技术报告无安全评估章节，护栏工具数月后单独发布（一手来源）
+- [Mistral Large 2 model card](https://docs.mistral.ai/models/model-cards/mistral-large-2-0-24-07) — 无红队测试或危险能力评估章节（一手来源）
