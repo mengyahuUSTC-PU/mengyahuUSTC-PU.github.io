@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""Independent fact-check pass over a PR's article(s).
+"""Independent fact-check + auto-fix pass over a PR's article(s).
 
 Usage: verify_draft.py <pr_number>
 
-Runs AFTER a PR is created: a fresh-context model (different from the
-writer) re-fetches every cited source and checks each factual claim, then
-posts the verdict table as a PR comment. Verification never blocks the PR —
-it adds information for the human reviewer.
+1. Three independent verifiers (Opus 4.8, Fable 5, Gemini cross-vendor)
+   check every claim: cited? source supports it? For uncited claims they
+   search the web for a suitable source and record it.
+2. If any verifier flags issues, the writer model revises the article on
+   the PR branch: adds the found citations, downgrades/removes anything
+   unverifiable or contradicted. One fix iteration, then human review.
+3. Full reports + an auto-fix summary are posted as a PR comment.
 """
 
 import json
@@ -17,26 +20,39 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = REPO_ROOT / "automation" / "scripts"
+PROMPTS = REPO_ROOT / "automation" / "prompts"
 
 sys.path.insert(0, str(SCRIPTS))
 from discord_notify import load_env, send  # noqa: E402
 
 VERIFY_PROMPT = """你是独立事实核查员，与文章作者无关。你会收到一篇待发布的博客文章。
 
-任务：
-1. 列出文中每一个**事实性断言**（数字、日期、事件、引语、「X 没有做 Y」类否定断言）
-2. 用 WebFetch 打开文中引用的来源逐条核对；断言没挂引用的，用 WebSearch 找权威来源核对
-3. 特别警惕：文中数字与来源不一致、来源根本不支持该断言、断言无任何来源可查
+任务，对文中每一个**事实性断言**（数字、日期、事件、引语、「X 没有做 Y」类否定断言）：
+1. 检查它有没有挂引用（内联链接或文末参考来源）
+2. 有引用的：用 WebFetch 打开来源，核对断言与原文是否一致
+3. **没有引用的：用 WebSearch/WebFetch 上网找一个合适的权威来源**（优先官方一手），把链接写进报告
+4. 找不到任何支持来源、或找到相反事实的：明确标出
 
 输出格式（严格遵守，不要其他内容）：
 
 ## 独立核查报告
 
-| 断言 | 判定 | 依据 |
+| 断言 | 判定 | 依据/建议引用 |
 |---|---|---|
-| <断言摘要> | ✅核实 / ⚠️来源不符 / ❌查无来源 | <一句话+链接> |
+| <断言摘要> | ✅有引用且核实 / 🔗缺引用已找到来源 / ⚠️来源不符 / ❌查无来源 / 🚫与事实矛盾 | <一句话+链接> |
 
-**结论**：<一句话——可放心发布 / 有 N 处需人工复核（列出）>
+**结论**：<一句话>
+"""
+
+FIX_PROMPT = """你是文章作者。独立核查员对你的文章提交了以下报告。请按报告修改文章：
+
+- 🔗缺引用已找到来源：把核查员找到的链接以内联引用补进对应断言处（先用 WebFetch 确认该来源确实支持断言）
+- ⚠️来源不符：以来源原文为准修正断言
+- ❌查无来源：按编辑方针降级（删除，或改写为明确标注的存疑表述）
+- 🚫与事实矛盾：修正或删除
+- ✅的条目一律不动；不要顺手改动未被报告点名的内容
+
+**最终回复只包含修改后的文章文件全文**（含 frontmatter），不要解说。
 """
 
 
@@ -46,8 +62,17 @@ def sh(*cmd, timeout=300):
     ).stdout.strip()
 
 
+def claude_verify(content: str, model: str) -> str | None:
+    run = subprocess.run(
+        ["claude", "-p", "--output-format", "text", "--model", model,
+         "--allowedTools", "WebFetch", "WebSearch"],
+        input=VERIFY_PROMPT + "\n\n## 待核查文章\n\n" + content,
+        cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
+    )
+    return run.stdout.strip() if run.returncode == 0 else None
+
+
 def gemini_verify(content: str) -> str:
-    """Cross-vendor check via Gemini free tier (google_search + url_context)."""
     import os
     import time as _time
 
@@ -79,47 +104,88 @@ def gemini_verify(content: str) -> str:
         return "⚠️ Gemini 响应格式异常。"
 
 
+FLAG_MARKS = ("🔗", "⚠️", "❌", "🚫")
+
+
+def fix_article(branch: str, rel: str, reports: list[str]) -> bool:
+    """One writer-model pass applying verifier findings on the PR branch."""
+    sh("git", "fetch", "-q", "origin")
+    sh("git", "checkout", "-q", "-B", branch, f"origin/{branch}")
+    article = (REPO_ROOT / rel).read_text()
+    prompt = (
+        (PROMPTS / "editorial-baseline.md").read_text()
+        + "\n\n" + (PROMPTS / "editorial-lessons.md").read_text()
+        + "\n\n" + FIX_PROMPT
+        + "\n\n## 核查员报告\n\n" + "\n\n---\n\n".join(reports)
+        + "\n\n## 文章当前版本\n\n" + article
+    )
+    run = subprocess.run(
+        ["claude", "-p", "--output-format", "text",
+         "--model", "fable", "--fallback-model", "opus",
+         "--allowedTools", "WebFetch", "WebSearch"],
+        input=prompt, cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
+    )
+    ok = False
+    if run.returncode == 0:
+        clean = subprocess.run(
+            [sys.executable, str(SCRIPTS / "split_output.py"), "json"],
+            input=run.stdout, capture_output=True, text=True, check=True,
+        ).stdout
+        if clean.strip().startswith("---") and clean.strip() != article.strip():
+            (REPO_ROOT / rel).write_text(clean)
+            sh("git", "add", rel)
+            sh("git", "commit", "-q", "-m",
+               "Apply fact-check findings: add citations, fix/downgrade flagged claims\n\n"
+               "Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>")
+            sh("git", "push", "-q", "origin", branch)
+            ok = True
+    sh("git", "checkout", "-q", "master")
+    return ok
+
+
 def main():
     pr = sys.argv[1]
     load_env()
-    files = json.loads(sh("gh", "pr", "view", pr, "--json", "files"))["files"]
-    md_files = [f["path"] for f in files
+    info = json.loads(sh("gh", "pr", "view", pr, "--json", "files,headRefName"))
+    branch = info["headRefName"]
+    md_files = [f["path"] for f in info["files"]
                 if re.match(r"src/content/blog/(zh|en)/.+\.md$", f["path"])]
     if not md_files:
         print("no article files in PR")
         return
 
-    branch = json.loads(sh("gh", "pr", "view", pr, "--json", "headRefName"))["headRefName"]
     sh("git", "fetch", "-q", "origin")
-
-    VERIFIERS = [("opus", "Opus 4.8"), ("fable", "Fable 5")]
-    reports = []
+    all_reports, fixed_files = [], []
     for rel in md_files:
         content = sh("git", "show", f"origin/{branch}:{rel}")
-        for model, label in VERIFIERS:
-            run = subprocess.run(
-                ["claude", "-p", "--output-format", "text",
-                 "--model", model,
-                 "--allowedTools", "WebFetch", "WebSearch"],
-                input=VERIFY_PROMPT + "\n\n## 待核查文章\n\n" + content,
-                cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
-            )
-            if run.returncode != 0:
-                reports.append(f"### `{rel}` · 核查员 {label}\n\n⚠️ 核查器运行失败：{(run.stderr or run.stdout)[-200:]}")
-            else:
-                reports.append(f"### `{rel}` · 核查员 {label}\n\n{run.stdout.strip()}")
-        reports.append(f"### `{rel}` · 核查员 Gemini（跨厂商）\n\n{gemini_verify(content)}")
+        file_reports = []
+        for model, label in [("opus", "Opus 4.8"), ("fable", "Fable 5")]:
+            out = claude_verify(content, model)
+            file_reports.append(
+                f"### `{rel}` · 核查员 {label}\n\n{out or '⚠️ 核查器运行失败'}")
+        file_reports.append(f"### `{rel}` · 核查员 Gemini（跨厂商）\n\n{gemini_verify(content)}")
+        all_reports.extend(file_reports)
 
+        if any(any(m in r for m in FLAG_MARKS) for r in file_reports):
+            if fix_article(branch, rel, file_reports):
+                fixed_files.append(rel)
+
+    summary = ("\n\n---\n\n## 自动修正\n\n"
+               + (f"已按报告修正并推送新 commit：{', '.join(f'`{f}`' for f in fixed_files)}。"
+                  "✅ 项未动；请复审修正处。" if fixed_files
+                  else "无需修正或修正未产生变化。"))
     body = (
-        "\n\n".join(reports)
-        + "\n\n*三方核查：Opus 4.8、Fable 5（各自独立上下文）+ Gemini（跨厂商），逐条重访来源。*"
+        "\n\n".join(all_reports) + summary
+        + "\n\n*三方核查：Opus 4.8、Fable 5（各自独立上下文）+ Gemini（跨厂商）；"
+          "缺引用的断言由核查员找源、写作模型补引，无法核实的自动降级。*"
         + "\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)"
     )
     sh("gh", "pr", "comment", pr, "--body", body)
-    flagged = body.count("⚠️") + body.count("❌")
-    icon = "🟢" if flagged == 0 else "🟡"
-    send(f"{icon} PR #{pr} 独立核查完成：{'全部断言核实通过' if flagged == 0 else f'{flagged} 处需人工复核'}，详见 PR 评论。")
-    print(f"verified PR #{pr}: {flagged} flags")
+    flags = sum(body.count(m) for m in FLAG_MARKS)
+    icon = "🟢" if flags == 0 else "🟡"
+    fixed_note = f"，其中 {len(fixed_files)} 个文件已自动修正" if fixed_files else ""
+    send(f"{icon} PR #{pr} 三方核查完成：{'全部断言核实通过' if flags == 0 else f'{flags} 处被标记{fixed_note}'}，详见 PR 评论。")
+    print(f"verified PR #{pr}: {flags} flags, fixed: {fixed_files}")
 
 
 if __name__ == "__main__":
