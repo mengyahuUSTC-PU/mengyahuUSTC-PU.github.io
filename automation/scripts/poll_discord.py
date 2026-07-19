@@ -183,6 +183,45 @@ def handle_distribution(slug: str):
     )
 
 
+HELP_TEXT = ("🤔 没听懂。可用指令：\n"
+             "`1 3` 选题 · `改文章 [slug] 意见` · `改简报 意见` · "
+             "`改L 意见`（LinkedIn）· `改X 意见`（thread）· `发 [slug]` 排程")
+
+
+def latest_briefing_slug():
+    posts = sorted((REPO_ROOT / "src" / "content" / "blog" / "zh").glob("briefing-*.md"))
+    return posts[-1].stem if posts else None
+
+
+def latest_article_slug():
+    posts = [p for p in (REPO_ROOT / "src" / "content" / "blog" / "zh").glob("*.md")
+             if not p.stem.startswith("briefing-") and p.stem != "hello-world"]
+    if not posts:
+        return None
+    return max(posts, key=lambda p: p.stat().st_mtime).stem
+
+
+def handle_dist_edit(part: str, feedback: str):
+    """Revise only one part (thread/linkedin) of the newest pending dist pack."""
+    packs = sorted((DATA / "dist").glob("*.json"), key=lambda p: p.stat().st_mtime)
+    if not packs:
+        send("⚠️ 没有待发布的分发内容。")
+        return
+    pack = json.loads(packs[-1].read_text())
+    slug = pack["slug"]
+    label = "LinkedIn 帖" if part == "linkedin" else "X thread"
+    fb = (f"只修改 {label}，另一部分必须原样保留。上一版内容如下：\n\n"
+          f"===THREAD===\n{pack['thread']}\n===LINKEDIN===\n{pack['linkedin']}\n\n"
+          f"用户意见：{feedback}")
+    send(f"✏️ 收到，只改 {slug} 的 {label}…")
+    r = subprocess.run(
+        [sys.executable, str(SCRIPTS / "distribute.py"), slug, fb],
+        cwd=REPO_ROOT, capture_output=True, text=True, timeout=1200,
+    )
+    if r.returncode != 0:
+        send(f"⚠️ {label} 修改失败：\n```{(r.stderr or r.stdout)[-400:]}```")
+
+
 def latest_selection_date():
     files = sorted(DATA.glob("selection-*.json"))
     if not files:
@@ -224,6 +263,38 @@ def main():
             handle_distribution(dist_match.group(1))
             continue
 
+        # "改简报 [date] <feedback>": revise the latest (or dated) briefing.
+        m = re.fullmatch(r"改简报\s*(\d{4}-\d{2}-\d{2})?[\s，,:：]*(.+)", content, re.S)
+        if m:
+            bdate = m.group(1) or latest_briefing_slug()
+            if bdate:
+                slug_ = bdate if bdate.startswith("briefing-") else f"briefing-{bdate}"
+                handle_revision(slug_, m.group(2).strip())
+            else:
+                send("⚠️ 找不到任何简报，无法修改。")
+            continue
+
+        # "改文章 [slug] <feedback>": revise the latest (or named) deep-dive article.
+        m = re.fullmatch(r"改文章\s*([A-Za-z0-9\-]*)[\s，,:：]*(.+)", content, re.S)
+        if m:
+            slug_ = m.group(1) or latest_article_slug()
+            if slug_:
+                handle_revision(slug_, m.group(2).strip())
+            else:
+                send("⚠️ 找不到目标文章，请带上 slug：`改文章 <slug> 意见`")
+            continue
+
+        # "改L <feedback>" / "改X <feedback>": revise one part of the latest dist pack.
+        m = re.fullmatch(r"改\s*[LlＬ]\s*[\s，,:：]*(.+)", content, re.S) or \
+            re.fullmatch(r"改领英[\s，,:：]*(.+)", content, re.S)
+        if m:
+            handle_dist_edit("linkedin", m.group(1).strip())
+            continue
+        m = re.fullmatch(r"改\s*[XxＸ推]\s*[\s，,:：]*(.+)", content, re.S)
+        if m:
+            handle_dist_edit("thread", m.group(1).strip())
+            continue
+
         # "改发 <slug> <feedback>": regenerate distribution pack per feedback.
         redist_match = re.fullmatch(r"改发\s*([A-Za-z0-9\-]+)[\s，,:：]*(.+)", content, re.S)
         if redist_match:
@@ -250,8 +321,13 @@ def main():
                 handle_selection(ranks, date)
             continue
 
-        # Anything else: LLM router figures out the intent in natural language.
-        route_free_text(content, date)
+        # Anything else: LLM router as fallback; never fail silently.
+        try:
+            acted = route_free_text(content, date)
+        except Exception:
+            acted = False
+        if not acted and len(content) > 5:
+            send(HELP_TEXT)
 
 
 def handle_selection(ranks, date):
@@ -320,7 +396,7 @@ def route_free_text(content, date):
         input=router_prompt, cwd=REPO_ROOT, capture_output=True, text=True, timeout=120,
     )
     if run.returncode != 0:
-        return
+        return False
     try:
         clean = subprocess.run(
             [sys.executable, str(SCRIPTS / "split_output.py"), "json"],
@@ -328,10 +404,12 @@ def route_free_text(content, date):
         ).stdout
         intent = json.loads(clean)
     except Exception:
-        return
+        return False
     action = intent.get("action")
     slug = (intent.get("slug") or "").strip()
     feedback = (intent.get("feedback") or content).strip()
+    if action == "none":
+        return True  # deliberate chatter, stay silent
     if action == "revise_distribution" and slug:
         send(f"✏️ 收到对 {slug} 分发内容的意见，重新生成中…")
         r = subprocess.run(
@@ -346,6 +424,9 @@ def route_free_text(content, date):
         handle_distribution(slug)
     elif action == "select_topics" and intent.get("ranks") and date:
         handle_selection(sorted(set(int(r) for r in intent["ranks"])), date)
+    else:
+        return False
+    return True
 
 
 def _finalize(state):
