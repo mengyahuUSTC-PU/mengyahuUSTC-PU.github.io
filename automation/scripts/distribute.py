@@ -37,7 +37,8 @@ def utm(slug: str, lang: str, source: str, medium: str) -> str:
 
 def claude_gen(prompt: str) -> str:
     run = subprocess.run(
-        ["claude", "-p", "--output-format", "text"],
+        ["claude", "-p", "--output-format", "text",
+         "--model", "fable", "--fallback-model", "opus"],
         input=prompt, cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
     )
     if run.returncode != 0:

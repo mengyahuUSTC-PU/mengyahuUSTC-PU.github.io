@@ -25,7 +25,7 @@ POOL="$DATA/pool-$DATE.json"
 echo "=== topic selection ==="
 cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/topic-selection.md" \
   <(echo "## 当日条目池 JSON") "$POOL" \
-  | claude -p --output-format text \
+  | claude -p --output-format text --model sonnet \
   | "$PY" "$SCRIPTS/split_output.py" json > "$DATA/selection-$DATE.json"
 
 "$PY" -c "import json,sys; d=json.load(open('$DATA/selection-$DATE.json')); \
@@ -36,7 +36,7 @@ cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/b
   <(echo "## 今日日期：$DATE") \
   <(echo "## briefing_items JSON") \
   <("$PY" -c "import json; print(json.dumps(json.load(open('$DATA/selection-$DATE.json'))['briefing_items'], ensure_ascii=False, indent=2))") \
-  | claude -p --output-format text \
+  | claude -p --output-format text --model fable --fallback-model opus \
   | "$PY" "$SCRIPTS/split_output.py" bilingual "$DRAFTS/briefing-$DATE"
 
 # Review loop (phase 3): briefing goes out as a PR, topic list goes to Discord.

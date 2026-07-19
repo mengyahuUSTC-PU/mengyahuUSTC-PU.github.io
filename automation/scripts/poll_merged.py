@@ -78,7 +78,7 @@ def main():
             for attempt in (1, 2):
                 run = subprocess.run(
                     ["claude", "-p", "--output-format", "text",
-                     "--model", "opus", "--fallback-model", "sonnet",
+                     "--model", "fable", "--fallback-model", "opus",
                      "--allowedTools", "WebFetch", "WebSearch"],
                     input=prompt, cwd=REPO_ROOT,
                     capture_output=True, text=True, timeout=900,

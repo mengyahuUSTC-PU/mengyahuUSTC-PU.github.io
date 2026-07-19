@@ -59,24 +59,26 @@ def main():
     branch = json.loads(sh("gh", "pr", "view", pr, "--json", "headRefName"))["headRefName"]
     sh("git", "fetch", "-q", "origin")
 
+    VERIFIERS = [("opus", "Opus 4.8"), ("fable", "Fable 5")]
     reports = []
     for rel in md_files:
         content = sh("git", "show", f"origin/{branch}:{rel}")
-        run = subprocess.run(
-            ["claude", "-p", "--output-format", "text",
-             "--model", "sonnet",
-             "--allowedTools", "WebFetch", "WebSearch"],
-            input=VERIFY_PROMPT + "\n\n## 待核查文章\n\n" + content,
-            cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
-        )
-        if run.returncode != 0:
-            reports.append(f"### `{rel}`\n\n⚠️ 核查器运行失败：{(run.stderr or run.stdout)[-200:]}")
-        else:
-            reports.append(f"### `{rel}`\n\n{run.stdout.strip()}")
+        for model, label in VERIFIERS:
+            run = subprocess.run(
+                ["claude", "-p", "--output-format", "text",
+                 "--model", model,
+                 "--allowedTools", "WebFetch", "WebSearch"],
+                input=VERIFY_PROMPT + "\n\n## 待核查文章\n\n" + content,
+                cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
+            )
+            if run.returncode != 0:
+                reports.append(f"### `{rel}` · 核查员 {label}\n\n⚠️ 核查器运行失败：{(run.stderr or run.stdout)[-200:]}")
+            else:
+                reports.append(f"### `{rel}` · 核查员 {label}\n\n{run.stdout.strip()}")
 
     body = (
         "\n\n".join(reports)
-        + "\n\n*核查器：Sonnet 5 独立上下文（与写作模型 Opus 4.8 分离），逐条重访来源。*"
+        + "\n\n*双核查：Opus 4.8 与 Fable 5 各自独立上下文（与写作会话分离），逐条重访来源。*"
         + "\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)"
     )
     sh("gh", "pr", "comment", pr, "--body", body)
