@@ -131,11 +131,12 @@ def handle_distribution(slug: str):
     slot = now.replace(hour=15, minute=0, second=0, microsecond=0)
     if slot <= now:
         slot += timedelta(days=1)
-    when = slot.isoformat()
+    when = slot.strftime("%Y-%m-%dT%H:%M:%SZ")
 
+    tweets = [t.strip() for t in pack["thread"].split("\n\n") if t.strip()]
     try:
-        create_draft(pack["thread"], schedule_date=when)
-        create_draft(pack["linkedin"], schedule_date=when)
+        create_draft(thread=tweets, linkedin=pack["linkedin"],
+                     publish_at=when, title=slug)
     except Exception as exc:
         send(f"⚠️ Typefully 排程失败（{slug}）：{str(exc)[:300]}")
         return
