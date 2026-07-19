@@ -46,6 +46,39 @@ def sh(*cmd, timeout=300):
     ).stdout.strip()
 
 
+def gemini_verify(content: str) -> str:
+    """Cross-vendor check via Gemini free tier (google_search + url_context)."""
+    import os
+    import time as _time
+
+    import requests
+
+    key = os.environ.get("GEMINI_API_KEY")
+    if not key:
+        return "⚠️ GEMINI_API_KEY 未配置，跳过跨厂商核查。"
+    url = ("https://generativelanguage.googleapis.com/v1beta/"
+           "models/gemini-flash-latest:generateContent")
+    payload = {
+        "contents": [{"parts": [{"text": VERIFY_PROMPT + "\n\n## 待核查文章\n\n" + content}]}],
+        "tools": [{"google_search": {}}, {"url_context": {}}],
+    }
+    for attempt in (1, 2):
+        resp = requests.post(url, headers={"x-goog-api-key": key},
+                             json=payload, timeout=300)
+        if resp.status_code == 429 and attempt == 1:
+            _time.sleep(65)
+            continue
+        break
+    if not resp.ok:
+        return f"⚠️ Gemini 核查失败（HTTP {resp.status_code}）。"
+    try:
+        parts = resp.json()["candidates"][0]["content"]["parts"]
+        return "\n".join(p.get("text", "") for p in parts if p.get("text")).strip() \
+            or "⚠️ Gemini 返回为空。"
+    except (KeyError, IndexError):
+        return "⚠️ Gemini 响应格式异常。"
+
+
 def main():
     pr = sys.argv[1]
     load_env()
@@ -75,10 +108,11 @@ def main():
                 reports.append(f"### `{rel}` · 核查员 {label}\n\n⚠️ 核查器运行失败：{(run.stderr or run.stdout)[-200:]}")
             else:
                 reports.append(f"### `{rel}` · 核查员 {label}\n\n{run.stdout.strip()}")
+        reports.append(f"### `{rel}` · 核查员 Gemini（跨厂商）\n\n{gemini_verify(content)}")
 
     body = (
         "\n\n".join(reports)
-        + "\n\n*双核查：Opus 4.8 与 Fable 5 各自独立上下文（与写作会话分离），逐条重访来源。*"
+        + "\n\n*三方核查：Opus 4.8、Fable 5（各自独立上下文）+ Gemini（跨厂商），逐条重访来源。*"
         + "\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)"
     )
     sh("gh", "pr", "comment", pr, "--body", body)
