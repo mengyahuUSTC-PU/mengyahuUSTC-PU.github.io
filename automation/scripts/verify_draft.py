@@ -87,11 +87,11 @@ def gemini_verify(content: str) -> str:
         "contents": [{"parts": [{"text": VERIFY_PROMPT + "\n\n## 待核查文章\n\n" + content}]}],
         "tools": [{"google_search": {}}, {"url_context": {}}],
     }
-    for attempt in (1, 2):
+    for attempt in range(3):
         resp = requests.post(url, headers={"x-goog-api-key": key},
                              json=payload, timeout=300)
-        if resp.status_code == 429 and attempt == 1:
-            _time.sleep(65)
+        if resp.status_code == 429 and attempt < 2:
+            _time.sleep(70)
             continue
         break
     if not resp.ok:
@@ -107,14 +107,16 @@ def gemini_verify(content: str) -> str:
 FLAG_MARKS = ("🔗", "⚠️", "❌", "🚫")
 
 
-def fix_article(branch: str, rel: str, reports: list[str]) -> bool:
-    """One writer-model pass applying verifier findings on the PR branch."""
+def fix_article(branch: str, rel: str, reports: list[str], base: str | None = None) -> bool:
+    """One writer-model pass applying verifier findings on a branch.
+    base: start point for a NEW branch (e.g. origin/master for merged PRs);
+    None means the branch already exists at origin."""
     # Read prompts from master BEFORE switching branches: older PR branches
     # may predate these files.
     baseline = (PROMPTS / "editorial-baseline.md").read_text()
     lessons = (PROMPTS / "editorial-lessons.md").read_text()
     sh("git", "fetch", "-q", "origin")
-    sh("git", "checkout", "-q", "-B", branch, f"origin/{branch}")
+    sh("git", "checkout", "-q", "-B", branch, base or f"origin/{branch}")
     article = (REPO_ROOT / rel).read_text()
     prompt = (
         baseline
@@ -173,15 +175,28 @@ def main():
         file_reports.append(f"### `{rel}` · 核查员 Gemini（跨厂商）\n\n{gemini_verify(content)}")
         all_reports.extend(file_reports)
 
-        if not report_only and any(any(m in r for m in FLAG_MARKS) for r in file_reports):
-            if fix_article(branch, rel, file_reports):
+        if any(any(m in r for m in FLAG_MARKS) for r in file_reports):
+            if report_only:
+                # PR already merged: fixes go to a dedicated fix branch/PR.
+                fix_branch = f"fix/pr{pr}-factcheck"
+                base = "origin/master" if not fixed_files else None
+                if fix_article(fix_branch, rel, file_reports, base=base):
+                    fixed_files.append(rel)
+            elif fix_article(branch, rel, file_reports):
                 fixed_files.append(rel)
 
+    fix_pr_url = ""
+    if report_only and fixed_files:
+        fix_pr_url = sh("gh", "pr", "create", "--base", "master",
+                        "--head", f"fix/pr{pr}-factcheck",
+                        "--title", f"Fact-check fixes for merged PR #{pr}",
+                        "--body", f"三方核查对已合并的 #{pr} 的修正。Merge = 修正上线。\n\n"
+                                  "🤖 Generated with [Claude Code](https://claude.com/claude-code)")
     summary = ("\n\n---\n\n## 自动修正\n\n"
-               + (f"已按报告修正并推送新 commit：{', '.join(f'`{f}`' for f in fixed_files)}。"
-                  "✅ 项未动；请复审修正处。" if fixed_files
-                  else ("PR 已合并，仅出报告不自动改（如需修正请用 Discord 改稿指令）。"
-                        if report_only else "无需修正或修正未产生变化。")))
+               + ((f"原 PR 已合并，修正走新 PR：{fix_pr_url}（{', '.join(f'`{f}`' for f in fixed_files)}）"
+                   if report_only else
+                   f"已按报告修正并推送新 commit：{', '.join(f'`{f}`' for f in fixed_files)}。✅ 项未动；请复审修正处。")
+                  if fixed_files else "无需修正或修正未产生变化。"))
     body = (
         "\n\n".join(all_reports) + summary
         + "\n\n*三方核查：Opus 4.8、Fable 5（各自独立上下文）+ Gemini（跨厂商）；"
