@@ -109,12 +109,16 @@ FLAG_MARKS = ("🔗", "⚠️", "❌", "🚫")
 
 def fix_article(branch: str, rel: str, reports: list[str]) -> bool:
     """One writer-model pass applying verifier findings on the PR branch."""
+    # Read prompts from master BEFORE switching branches: older PR branches
+    # may predate these files.
+    baseline = (PROMPTS / "editorial-baseline.md").read_text()
+    lessons = (PROMPTS / "editorial-lessons.md").read_text()
     sh("git", "fetch", "-q", "origin")
     sh("git", "checkout", "-q", "-B", branch, f"origin/{branch}")
     article = (REPO_ROOT / rel).read_text()
     prompt = (
-        (PROMPTS / "editorial-baseline.md").read_text()
-        + "\n\n" + (PROMPTS / "editorial-lessons.md").read_text()
+        baseline
+        + "\n\n" + lessons
         + "\n\n" + FIX_PROMPT
         + "\n\n## 核查员报告\n\n" + "\n\n---\n\n".join(reports)
         + "\n\n## 文章当前版本\n\n" + article
@@ -146,8 +150,9 @@ def fix_article(branch: str, rel: str, reports: list[str]) -> bool:
 def main():
     pr = sys.argv[1]
     load_env()
-    info = json.loads(sh("gh", "pr", "view", pr, "--json", "files,headRefName"))
+    info = json.loads(sh("gh", "pr", "view", pr, "--json", "files,headRefName,state"))
     branch = info["headRefName"]
+    report_only = info.get("state") != "OPEN"  # merged/closed: report, don't auto-fix
     md_files = [f["path"] for f in info["files"]
                 if re.match(r"src/content/blog/(zh|en)/.+\.md$", f["path"])]
     if not md_files:
@@ -166,14 +171,15 @@ def main():
         file_reports.append(f"### `{rel}` · 核查员 Gemini（跨厂商）\n\n{gemini_verify(content)}")
         all_reports.extend(file_reports)
 
-        if any(any(m in r for m in FLAG_MARKS) for r in file_reports):
+        if not report_only and any(any(m in r for m in FLAG_MARKS) for r in file_reports):
             if fix_article(branch, rel, file_reports):
                 fixed_files.append(rel)
 
     summary = ("\n\n---\n\n## 自动修正\n\n"
                + (f"已按报告修正并推送新 commit：{', '.join(f'`{f}`' for f in fixed_files)}。"
                   "✅ 项未动；请复审修正处。" if fixed_files
-                  else "无需修正或修正未产生变化。"))
+                  else ("PR 已合并，仅出报告不自动改（如需修正请用 Discord 改稿指令）。"
+                        if report_only else "无需修正或修正未产生变化。")))
     body = (
         "\n\n".join(all_reports) + summary
         + "\n\n*三方核查：Opus 4.8、Fable 5（各自独立上下文）+ Gemini（跨厂商）；"

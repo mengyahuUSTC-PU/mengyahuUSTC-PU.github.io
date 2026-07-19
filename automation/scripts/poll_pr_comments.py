@@ -37,13 +37,16 @@ def article_path(pr_number: int) -> str | None:
 
 
 def revise(pr_number: int, branch: str, rel: str, feedback: str) -> bool:
+    baseline = (PROMPTS / "editorial-baseline.md").read_text()
+    lessons = (PROMPTS / "editorial-lessons.md").read_text()
+    revise_p = (PROMPTS / "revise.md").read_text()
     sh("git", "fetch", "-q", "origin")
     sh("git", "checkout", "-q", "-B", branch, f"origin/{branch}")
     article = (REPO_ROOT / rel).read_text()
     prompt = (
-        (PROMPTS / "editorial-baseline.md").read_text()
-        + "\n\n" + (PROMPTS / "editorial-lessons.md").read_text()
-        + "\n\n" + (PROMPTS / "revise.md").read_text()
+        baseline
+        + "\n\n" + lessons
+        + "\n\n" + revise_p
         + "\n\n注意：提问视为行动请求（问「有没有没做完的」= 把它做完）。"
           "仅当意见完全没有可执行含义（如单纯认可「LGTM」）时才原样返回文件全文。"
         + "\n\n## 用户修改意见\n\n" + feedback

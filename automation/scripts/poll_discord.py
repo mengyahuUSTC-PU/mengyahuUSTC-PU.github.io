@@ -28,6 +28,15 @@ SCRIPTS = REPO_ROOT / "automation" / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 from discord_notify import load_env, send  # noqa: E402
 
+# Prompts are read once at import (from the master checkout) so that branch
+# switches inside handlers can't hit branches that predate these files.
+_P = REPO_ROOT / "automation" / "prompts"
+_PROMPTS_CACHE = {
+    "baseline": (_P / "editorial-baseline.md").read_text(),
+    "lessons": (_P / "editorial-lessons.md").read_text(),
+    "revise": (_P / "revise.md").read_text(),
+}
+
 
 def api(path, token):
     resp = requests.get(
@@ -74,11 +83,10 @@ def handle_revision(slug: str, feedback: str):
 
     article = (REPO_ROOT / rel).read_text()
     send(f"✏️ 收到对 {slug} 的修改意见，改稿中…")
-    prompts = REPO_ROOT / "automation" / "prompts"
     prompt = (
-        (prompts / "editorial-baseline.md").read_text()
-        + "\n\n" + (prompts / "editorial-lessons.md").read_text()
-        + "\n\n" + (prompts / "revise.md").read_text()
+        _PROMPTS_CACHE["baseline"]
+        + "\n\n" + _PROMPTS_CACHE["lessons"]
+        + "\n\n" + _PROMPTS_CACHE["revise"]
         + "\n\n## 用户修改意见\n\n" + feedback
         + "\n\n## 文章当前版本\n\n" + article
     )
