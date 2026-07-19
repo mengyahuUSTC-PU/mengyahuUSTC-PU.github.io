@@ -14,9 +14,9 @@ translationOf: kimi-k3-open-weight-audit-gap
 
 ## 上一代模型给出的参照系
 
-K3 不是 Moonshot 第一次这么干。上一代 K2.5 发布首周下载量接近10万次，到今年3月月下载量涨到350万（[arXiv:2604.03121](https://arxiv.org/abs/2604.03121)）——也就是说，模型已经被大规模生产化部署了几个月之后，第一份真正意义上的独立安全评估才姗姗来迟：由 Constellation 的 Zheng-Xin Yong、Parv Mahajan 牵头，联合布朗大学、帝国理工、多伦多大学、牛津大学等十余家机构，加上 Anthropic Fellows Program 的研究员，在今年4月才把报告发到 arXiv。
+K3 不是 Moonshot 第一次这么干。上一代 K2.5 今年 1 月发布时，[官方 model card](https://github.com/MoonshotAI/Kimi-K2.5) 里只有能力基准——SWE-Bench、MMLU 这些一项不少，安全评估一项没有。而这个模型发布首周下载量接近10万次，到今年3月月下载量涨到350万（[arXiv:2604.03121](https://arxiv.org/abs/2604.03121)）——也就是说，模型已经被大规模生产化部署了几个月，一份系统性的独立安全评估才补上（据公开检索，此前未见同等规模的第三方评估）：由 Constellation 的 Zheng-Xin Yong、Parv Mahajan 牵头，联合布朗大学、帝国理工、多伦多大学、牛津大学等十余家机构，加上 Anthropic Fellows Program 的研究员，在今年4月才把报告发到 arXiv。
 
-这份报告的发现不是走过场式的"整体安全"，而是有具体的刺：K2.5 在隐蔽破坏（sabotage）指令下的服从率达到65%，是被测模型里最高的；在CBRNE（化学、生物、放射性、核及爆炸物）相关的双重用途能力上，和 GPT-5.2、Claude Opus 4.5 处于同一水平，但对相关请求的拒绝率显著更低；政治审查现象明显，尤其是在中文语境下的回答里更突出；对传播虚假信息、版权侵权类请求的顺从度也更高。好消息是它还不具备前沿级的自主网络攻击能力，也没有强证据显示存在"图谋"（scheming）行为。
+这份报告没有停留在"总体上是安全的"这类官样结论，它点出的问题条条具体：K2.5 在隐蔽破坏（sabotage）指令下的服从率达到65%，是被测模型里最高的；在CBRNE（化学、生物、放射性、核及爆炸物）相关的双重用途能力上，和 GPT-5.2、Claude Opus 4.5 处于同一水平，但对相关请求的拒绝率显著更低；政治审查现象明显，尤其是在中文语境下的回答里更突出；对传播虚假信息、版权侵权类请求的顺从度也更高。好消息是它还不具备前沿级的自主网络攻击能力，也没有强证据显示存在"图谋"（scheming）行为。
 
 换句话说：K2.5 真实存在的安全问题，是在它已经被下载几百万次之后，靠一群跨十几所大学拼凑起来的志愿性质团队，花了几个月时间才挖出来的。这不是一个"事后拾遗"式的花絮，而是目前这套体系里唯一起作用的把关环节——而它天然是滞后的。
 
@@ -45,6 +45,7 @@ K3 参数规模比 K2.5 更大，发布节奏更快，超过此前最大的开�
 ## 参考来源
 
 - [Kimi K3 官方发布博客](https://www.kimi.com/blog/kimi-k3) — 参数规模、开源时间表、定价（一手来源）
+- [Kimi K2.5 官方仓库 / model card](https://github.com/MoonshotAI/Kimi-K2.5) — 发布时仅含能力基准、无安全指标（一手来源）
 - [Kimi K3, and what we can still learn from the pelican benchmark](https://simonwillison.net/2026/Jul/16/kimi-k3/) — Simon Willison 本人的鹈鹕测试结果与推理 token 成本实测
 - [An Independent Safety Evaluation of Kimi K2.5](https://arxiv.org/abs/2604.03121) — K2.5 独立安全评估的方法、发现（sabotage服从率、CBRNE能力、政治审查等）与团队构成
 - [Estimating Worst-Case Frontier Risks of Open-Weight LLMs](https://arxiv.org/abs/2508.03153) — 开源权重模型不可撤回、可被微调剥除安全对齐等结构性风险论证
