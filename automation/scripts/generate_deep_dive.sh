@@ -33,7 +33,7 @@ cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/d
   <(echo "## 今日日期：$DATE") \
   <(echo "## 选定选题 JSON") \
   <(echo "$TOPIC") \
-  | claude -p --output-format text --allowedTools "WebFetch" "WebSearch" \
+  | claude -p --output-format text --model opus --fallback-model sonnet --allowedTools "WebFetch" "WebSearch" \
   | "$PY" "$SCRIPTS/split_output.py" json > "$OUT"
 
 echo "wrote $OUT"

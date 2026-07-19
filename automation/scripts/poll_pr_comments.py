@@ -51,6 +51,7 @@ def revise(pr_number: int, branch: str, rel: str, feedback: str) -> bool:
     )
     run = subprocess.run(
         ["claude", "-p", "--output-format", "text",
+         "--model", "opus", "--fallback-model", "sonnet",
          "--allowedTools", "WebFetch", "WebSearch"],
         input=prompt, cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
     )

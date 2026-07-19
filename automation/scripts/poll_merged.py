@@ -9,6 +9,7 @@ State (processed PR numbers) lives in automation/data/state/merged.json.
 """
 
 import json
+import re
 import subprocess
 import sys
 import time
@@ -77,6 +78,7 @@ def main():
             for attempt in (1, 2):
                 run = subprocess.run(
                     ["claude", "-p", "--output-format", "text",
+                     "--model", "opus", "--fallback-model", "sonnet",
                      "--allowedTools", "WebFetch", "WebSearch"],
                     input=prompt, cwd=REPO_ROOT,
                     capture_output=True, text=True, timeout=900,
@@ -101,7 +103,13 @@ def main():
                 [sys.executable, str(SCRIPTS / "make_pr.py"), str(draft)],
                 cwd=REPO_ROOT, check=True, capture_output=True, text=True, timeout=300,
             ).stdout.strip()
-            send(f"📬 英文版 PR 已开：{pr_url}")
+            send(f"📬 英文版 PR 已开：{pr_url}\n独立核查随后跟进…")
+            m = re.search(r"/pull/(\d+)", pr_url)
+            if m:
+                subprocess.run(
+                    [sys.executable, str(SCRIPTS / "verify_draft.py"), m.group(1)],
+                    cwd=REPO_ROOT, capture_output=True, text=True, timeout=1200,
+                )
             state["done"].append(number)
         except subprocess.CalledProcessError as exc:
             send(f"⚠️ 英文版生成失败（{slug}）：\n```{(exc.stderr or str(exc))[-500:]}```")
