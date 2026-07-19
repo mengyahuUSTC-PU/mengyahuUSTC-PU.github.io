@@ -42,8 +42,10 @@ def revise(pr_number: int, branch: str, rel: str, feedback: str) -> bool:
     article = (REPO_ROOT / rel).read_text()
     prompt = (
         (PROMPTS / "editorial-baseline.md").read_text()
+        + "\n\n" + (PROMPTS / "editorial-lessons.md").read_text()
         + "\n\n" + (PROMPTS / "revise.md").read_text()
-        + "\n\n注意：若意见并无实质修改要求（如单纯认可、提问），原样返回文件全文。"
+        + "\n\n注意：提问视为行动请求（问「有没有没做完的」= 把它做完）。"
+          "仅当意见完全没有可执行含义（如单纯认可「LGTM」）时才原样返回文件全文。"
         + "\n\n## 用户修改意见\n\n" + feedback
         + "\n\n## 文章当前版本\n\n" + article
     )
@@ -104,6 +106,12 @@ def main():
                 send(f"⚠️ PR #{number} 评论改稿失败：\n```{str(exc)[-400:]}```")
                 continue
             if changed:
+                try:
+                    from editorial_memory import update_lessons
+                    from datetime import datetime, timezone
+                    update_lessons(c["body"], datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+                except Exception:
+                    pass
                 sh("gh", "pr", "comment", str(number), "--body",
                    "已按上面的评论修改，见最新 commit。\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)")
                 send(f"✅ PR #{number} 已按评论更新，刷新即可复审。")

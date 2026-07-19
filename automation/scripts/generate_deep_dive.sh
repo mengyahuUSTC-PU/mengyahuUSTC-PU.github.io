@@ -29,7 +29,7 @@ echo "=== deep dive (rank $RANK) ==="
 echo "$TOPIC"
 
 OUT="$DRAFTS/deep-dive-$DATE-rank$RANK.zh.md"
-cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/deep-dive.md" \
+cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/deep-dive.md" \
   <(echo "## 今日日期：$DATE") \
   <(echo "## 选定选题 JSON") \
   <(echo "$TOPIC") \

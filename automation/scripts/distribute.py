@@ -58,7 +58,10 @@ def main():
     if not en.exists():
         sys.exit(f"error: {en} not found")
 
-    baseline = (PROMPTS / "editorial-baseline.md").read_text()
+    baseline = (
+        (PROMPTS / "editorial-baseline.md").read_text()
+        + "\n\n" + (PROMPTS / "editorial-lessons.md").read_text()
+    )
 
     # --- EN social (thread + LinkedIn) ---
     social_raw = claude_gen(

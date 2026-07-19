@@ -68,6 +68,7 @@ def main():
         send(f"🌐 检测到中文版已合并（{slug}），开始生成英文版…")
         prompt = (
             (PROMPTS / "editorial-baseline.md").read_text()
+            + "\n\n" + (PROMPTS / "editorial-lessons.md").read_text()
             + "\n\n" + (PROMPTS / "en-version.md").read_text()
             + "\n\n## 已发布的中文版全文\n\n" + zh.read_text()
         )

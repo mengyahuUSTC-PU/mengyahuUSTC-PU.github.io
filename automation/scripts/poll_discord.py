@@ -77,6 +77,7 @@ def handle_revision(slug: str, feedback: str):
     prompts = REPO_ROOT / "automation" / "prompts"
     prompt = (
         (prompts / "editorial-baseline.md").read_text()
+        + "\n\n" + (prompts / "editorial-lessons.md").read_text()
         + "\n\n" + (prompts / "revise.md").read_text()
         + "\n\n## 用户修改意见\n\n" + feedback
         + "\n\n## 文章当前版本\n\n" + article
@@ -110,6 +111,11 @@ def handle_revision(slug: str, feedback: str):
                     "--body", f"按 Discord 反馈修改：\n\n> {feedback}\n\nMerge = 修正上线。\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)")
         send(f"✅ {slug} 已按意见改好（该文已上线，走修正 PR）：{pr_url}")
     sh("git", "checkout", "-q", "master")
+    try:
+        from editorial_memory import update_lessons
+        update_lessons(feedback, datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+    except Exception:
+        pass
 
 
 def handle_distribution(slug: str):

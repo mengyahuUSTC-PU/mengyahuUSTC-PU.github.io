@@ -70,6 +70,9 @@ def main():
     sh("git", "commit", "-q", "-m", f"Add post: {slug}\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>")
     sh("git", "push", "-q", "-f", "origin", branch)
 
+    unfinished = [d.name for (fm, content, _), d in zip(parsed, drafts)
+                  if "TODO" in content or "FIXME" in content]
+
     body_parts = [
         "## 摘要",
         parsed[0][0].get("description", "(无)"),
@@ -79,6 +82,9 @@ def main():
         "- [ ] 事实核查点已逐条核对（见下）",
         "- [ ] 语言风格符合编辑方针",
     ]
+    if unfinished:
+        body_parts += ["", "## ⚠️ 警告：稿内有未完成的 TODO/FIXME",
+                       "以下文件含未完成标记，Merge 前必须处理：" + ", ".join(unfinished)]
     if comments:
         body_parts += ["", "## 事实核查点 / 备选标题", *comments]
     body_parts += ["", "**Merge = 发布上线。** 需要修改请在 PR 里留言。", "", "🤖 Generated with [Claude Code](https://claude.com/claude-code)"]

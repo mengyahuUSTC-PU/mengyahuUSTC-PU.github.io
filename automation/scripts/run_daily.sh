@@ -23,7 +23,7 @@ POOL="$DATA/pool-$DATE.json"
 [ -s "$POOL" ] || { echo "error: pool file missing"; exit 1; }
 
 echo "=== topic selection ==="
-cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/topic-selection.md" \
+cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/topic-selection.md" \
   <(echo "## 当日条目池 JSON") "$POOL" \
   | claude -p --output-format text \
   | "$PY" "$SCRIPTS/split_output.py" json > "$DATA/selection-$DATE.json"
@@ -32,7 +32,7 @@ cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/topic-selection.md" \
 print(f\"briefing items: {len(d.get('briefing_items',[]))}, deep-dive candidates: {len(d.get('deep_dive_candidates',[]))}\")"
 
 echo "=== briefing draft ==="
-cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/briefing.md" \
+cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/briefing.md" \
   <(echo "## 今日日期：$DATE") \
   <(echo "## briefing_items JSON") \
   <("$PY" -c "import json; print(json.dumps(json.load(open('$DATA/selection-$DATE.json'))['briefing_items'], ensure_ascii=False, indent=2))") \
