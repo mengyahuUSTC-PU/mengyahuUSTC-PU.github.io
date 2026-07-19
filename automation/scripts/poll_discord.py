@@ -227,11 +227,17 @@ def main():
             continue
 
         # A selection reply is digits/spaces/commas only, e.g. "1" or "1 3".
-        if not re.fullmatch(r"[\d\s,，]+", content):
+        if re.fullmatch(r"[\d\s,，]+", content):
+            ranks = sorted({int(n) for n in re.findall(r"\d+", content)})
+            if ranks and date:
+                handle_selection(ranks, date)
             continue
-        ranks = sorted({int(n) for n in re.findall(r"\d+", content)})
-        if not ranks or not date:
-            continue
+
+        # Anything else: LLM router figures out the intent in natural language.
+        route_free_text(content, date)
+
+
+def handle_selection(ranks, date):
         send(f"✍️ 收到选题 {ranks}，开始写稿（每篇约 3-5 分钟）…")
         for rank in ranks:
             try:
@@ -254,6 +260,78 @@ def main():
             except subprocess.CalledProcessError as exc:
                 send(f"⚠️ 选题 {rank} 写稿失败：\n```{(exc.stderr or str(exc))[-500:]}```")
 
+
+def route_free_text(content, date):
+    """Classify a free-form message and dispatch. Silent on unrelated chatter."""
+    open_prs = json.loads(sh("gh", "pr", "list", "--state", "open",
+                             "--json", "number,headRefName,title"))
+    packs = []
+    for f in (DATA / "dist").glob("*.json"):
+        try:
+            d = json.loads(f.read_text())
+            packs.append({"slug": d["slug"], "status": d.get("status", "pending")})
+        except Exception:
+            continue
+    cands = []
+    if date:
+        try:
+            cands = json.loads((DATA / f"selection-{date}.json").read_text()).get(
+                "deep_dive_candidates", [])
+        except Exception:
+            pass
+    ctx = {
+        "open_prs": open_prs,
+        "distribution_packs": packs,
+        "deep_dive_candidates": [{"rank": c.get("rank"), "title": c.get("title")} for c in cands],
+    }
+    router_prompt = (
+        "你是内容管线的指令路由器。用户在 Discord 发了一条消息，判断意图并输出严格 JSON（不要其他文字）：\n"
+        '{"action": "revise_article" | "revise_distribution" | "schedule" | "select_topics" | "none",\n'
+        ' "slug": "<相关文章 slug，或空>", "lang_suffix": "-en 或空（改英文版文章时用）",\n'
+        ' "ranks": [<select_topics 时的编号>], "feedback": "<用户的修改意见原文>"}\n\n'
+        "判断依据：\n"
+        "- 提到 thread/推文/LinkedIn 帖/预览/分发内容 的修改意见 → revise_distribution\n"
+        "- 对博客文章本身的修改意见 → revise_article（明确说英文版时 lang_suffix=-en）\n"
+        "- 表达「可以发了/排程吧/确认发布」→ schedule\n"
+        "- 挑选题（提到编号或候选标题）→ select_topics\n"
+        "- 闲聊、提问、与上述无关 → none\n"
+        "- slug 从上下文推断：只有一个候选对象时直接用它\n\n"
+        f"## 当前上下文\n{json.dumps(ctx, ensure_ascii=False)}\n\n## 用户消息\n{content}"
+    )
+    run = subprocess.run(
+        ["claude", "-p", "--output-format", "text", "--model", "sonnet"],
+        input=router_prompt, cwd=REPO_ROOT, capture_output=True, text=True, timeout=120,
+    )
+    if run.returncode != 0:
+        return
+    try:
+        clean = subprocess.run(
+            [sys.executable, str(SCRIPTS / "split_output.py"), "json"],
+            input=run.stdout, capture_output=True, text=True, check=True,
+        ).stdout
+        intent = json.loads(clean)
+    except Exception:
+        return
+    action = intent.get("action")
+    slug = (intent.get("slug") or "").strip()
+    feedback = (intent.get("feedback") or content).strip()
+    if action == "revise_distribution" and slug:
+        send(f"✏️ 收到对 {slug} 分发内容的意见，重新生成中…")
+        r = subprocess.run(
+            [sys.executable, str(SCRIPTS / "distribute.py"), slug, feedback],
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=1200,
+        )
+        if r.returncode != 0:
+            send(f"⚠️ 分发内容重生成失败：\n```{(r.stderr or r.stdout)[-400:]}```")
+    elif action == "revise_article" and slug:
+        handle_revision(slug + (intent.get("lang_suffix") or ""), feedback)
+    elif action == "schedule" and slug:
+        handle_distribution(slug)
+    elif action == "select_topics" and intent.get("ranks") and date:
+        handle_selection(sorted(set(int(r) for r in intent["ranks"])), date)
+
+
+def _finalize(state):
     STATE_FILE.write_text(json.dumps(state))
     print(f"[{datetime.now(timezone.utc).isoformat()}] processed up to {state['last_id']}")
 
