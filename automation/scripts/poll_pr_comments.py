@@ -1,0 +1,118 @@
+#!/usr/bin/env python3
+"""Poll open bot-created PRs (post/*, fix/*) for new user comments and treat
+each as revision feedback: revise the article on that PR's branch and push.
+
+First run baselines existing comments (no action). State:
+automation/data/state/pr_comments.json  {"seen": [comment ids]}
+"""
+
+import json
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DATA = REPO_ROOT / "automation" / "data"
+STATE_FILE = DATA / "state" / "pr_comments.json"
+SCRIPTS = REPO_ROOT / "automation" / "scripts"
+PROMPTS = REPO_ROOT / "automation" / "prompts"
+
+sys.path.insert(0, str(SCRIPTS))
+from discord_notify import load_env, send  # noqa: E402
+
+
+def sh(*cmd, timeout=300):
+    return subprocess.run(
+        cmd, cwd=REPO_ROOT, check=True, capture_output=True, text=True, timeout=timeout
+    ).stdout.strip()
+
+
+def article_path(pr_number: int) -> str | None:
+    files = json.loads(sh("gh", "pr", "view", str(pr_number), "--json", "files"))["files"]
+    for f in files:
+        if re.match(r"src/content/blog/(zh|en)/.+\.md$", f["path"]):
+            return f["path"]
+    return None
+
+
+def revise(pr_number: int, branch: str, rel: str, feedback: str) -> bool:
+    sh("git", "fetch", "-q", "origin")
+    sh("git", "checkout", "-q", "-B", branch, f"origin/{branch}")
+    article = (REPO_ROOT / rel).read_text()
+    prompt = (
+        (PROMPTS / "editorial-baseline.md").read_text()
+        + "\n\n" + (PROMPTS / "revise.md").read_text()
+        + "\n\n注意：若意见并无实质修改要求（如单纯认可、提问），原样返回文件全文。"
+        + "\n\n## 用户修改意见\n\n" + feedback
+        + "\n\n## 文章当前版本\n\n" + article
+    )
+    run = subprocess.run(
+        ["claude", "-p", "--output-format", "text",
+         "--allowedTools", "WebFetch", "WebSearch"],
+        input=prompt, cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
+    )
+    if run.returncode != 0:
+        raise RuntimeError((run.stderr or run.stdout)[-400:])
+    clean = subprocess.run(
+        [sys.executable, str(SCRIPTS / "split_output.py"), "json"],
+        input=run.stdout, capture_output=True, text=True, check=True,
+    ).stdout
+    if not clean.strip().startswith("---") or clean.strip() == article.strip():
+        sh("git", "checkout", "-q", "master")
+        return False
+    (REPO_ROOT / rel).write_text(clean)
+    sh("git", "add", rel)
+    sh("git", "commit", "-q", "-m",
+       f"Revise per PR #{pr_number} comment\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>")
+    sh("git", "push", "-q", "origin", branch)
+    sh("git", "checkout", "-q", "master")
+    return True
+
+
+def main():
+    load_env()
+    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    first_run = not STATE_FILE.exists()
+    state = json.loads(STATE_FILE.read_text()) if not first_run else {"seen": []}
+    seen = set(state["seen"])
+
+    prs = json.loads(sh("gh", "pr", "list", "--state", "open",
+                        "--json", "number,headRefName"))
+    for pr in prs:
+        branch = pr["headRefName"]
+        if not (branch.startswith("post/") or branch.startswith("fix/")):
+            continue
+        number = pr["number"]
+        comments = json.loads(sh(
+            "gh", "api", f"repos/{{owner}}/{{repo}}/issues/{number}/comments",
+            "--jq", "[.[] | {id, body, login: .user.login}]"
+        ) or "[]")
+        for c in comments:
+            if c["id"] in seen:
+                continue
+            seen.add(c["id"])
+            if first_run or "Generated with [Claude Code]" in c["body"]:
+                continue
+            rel = article_path(number)
+            if not rel:
+                continue
+            send(f"✏️ 收到 PR #{number} 里的评论，按它改稿中…")
+            try:
+                changed = revise(number, branch, rel, c["body"])
+            except Exception as exc:
+                send(f"⚠️ PR #{number} 评论改稿失败：\n```{str(exc)[-400:]}```")
+                continue
+            if changed:
+                sh("gh", "pr", "comment", str(number), "--body",
+                   "已按上面的评论修改，见最新 commit。\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)")
+                send(f"✅ PR #{number} 已按评论更新，刷新即可复审。")
+            else:
+                send(f"ℹ️ PR #{number} 的评论未包含实质修改要求，文章未改动。")
+
+    state["seen"] = sorted(seen)
+    STATE_FILE.write_text(json.dumps(state))
+
+
+if __name__ == "__main__":
+    main()
