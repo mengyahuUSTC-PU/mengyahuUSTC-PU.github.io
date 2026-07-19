@@ -47,9 +47,9 @@ def create_draft(
     """
     platforms = {}
     if thread:
-        platforms["x"] = {"posts": [{"text": t} for t in thread]}
+        platforms["x"] = {"enabled": True, "posts": [{"text": t} for t in thread]}
     if linkedin:
-        platforms["linkedin"] = {"posts": [{"text": linkedin}]}
+        platforms["linkedin"] = {"enabled": True, "posts": [{"text": linkedin}]}
     if not platforms:
         raise ValueError("nothing to post")
     payload = {"platforms": platforms}
