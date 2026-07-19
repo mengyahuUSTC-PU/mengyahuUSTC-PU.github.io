@@ -160,9 +160,11 @@ def main():
         return
 
     sh("git", "fetch", "-q", "origin")
+    # Merged PRs: the branch may be deleted; the content lives on master now.
+    src_ref = "origin/master" if report_only else f"origin/{branch}"
     all_reports, fixed_files = [], []
     for rel in md_files:
-        content = sh("git", "show", f"origin/{branch}:{rel}")
+        content = sh("git", "show", f"{src_ref}:{rel}")
         file_reports = []
         for model, label in [("opus", "Opus 4.8"), ("fable", "Fable 5")]:
             out = claude_verify(content, model)
