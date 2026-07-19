@@ -75,7 +75,8 @@ def main():
             raw = None
             for attempt in (1, 2):
                 run = subprocess.run(
-                    ["claude", "-p", "--output-format", "text"],
+                    ["claude", "-p", "--output-format", "text",
+                     "--allowedTools", "WebFetch", "WebSearch"],
                     input=prompt, cwd=REPO_ROOT,
                     capture_output=True, text=True, timeout=900,
                 )
