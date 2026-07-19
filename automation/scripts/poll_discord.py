@@ -163,9 +163,8 @@ def handle_distribution(slug: str):
     x_when = next_slot(16)   # 12pm ET — X midday window
     li_when = next_slot(20)  # 4pm ET — LinkedIn best slot
 
-    tweets = [t.strip() for t in pack["thread"].split("\n\n") if t.strip()]
     try:
-        create_draft(thread=tweets, publish_at=x_when, title=f"{slug} (X)")
+        create_draft(thread=[pack["thread"].strip()], publish_at=x_when, title=f"{slug} (X)")
         create_draft(linkedin=pack["linkedin"], publish_at=li_when,
                      title=f"{slug} (LinkedIn)")
     except Exception as exc:

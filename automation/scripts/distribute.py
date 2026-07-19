@@ -66,11 +66,11 @@ def main():
     fb = f"\n\n## 用户对上一版的修改意见（必须遵守）\n\n{feedback}" if feedback else ""
     social_raw = claude_gen(
         baseline + "\n\n" + (PROMPTS / "social-en.md").read_text() + fb
-        + f"\n\n## Thread 版 UTM 链接\n{utm(slug, 'en', 'twitter', 'thread')}"
+        + f"\n\n## X 帖 UTM 链接\n{utm(slug, 'en', 'twitter', 'post')}"
         + f"\n\n## LinkedIn 版 UTM 链接\n{utm(slug, 'en', 'linkedin', 'post')}"
         + "\n\n## 文章全文\n\n" + en.read_text()
     )
-    thread = section(social_raw, "THREAD")
+    thread = section(social_raw, "X") or section(social_raw, "THREAD")
     linkedin = section(social_raw, "LINKEDIN")
     if not thread or not linkedin:
         sys.exit("error: social generation missing THREAD/LINKEDIN sections")
@@ -82,9 +82,7 @@ def main():
     )
 
     # --- Discord preview ---
-    tweets = [t.strip() for t in thread.split("\n\n") if t.strip()]
-    thread_preview = "\n\n".join(f"**{i}.** {t}" for i, t in enumerate(tweets, 1))
-    send(f"🐦 **Twitter thread 预览**（{slug}）\n\n{thread_preview}")
+    send(f"🐦 **X 帖预览（单条）**（{slug}）\n\n{thread}")
     send(f"💼 **LinkedIn 帖预览**（{slug}）\n\n{linkedin}")
     send(
         f"⏸ 以上是 **{slug}** 的分发队列（未排程）。\n"
