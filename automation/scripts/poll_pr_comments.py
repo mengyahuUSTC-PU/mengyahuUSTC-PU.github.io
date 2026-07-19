@@ -74,6 +74,12 @@ def revise(pr_number: int, branch: str, rel: str, feedback: str) -> bool:
     sh("git", "commit", "-q", "-m",
        f"Revise per PR #{pr_number} comment\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>")
     sh("git", "push", "-q", "origin", branch)
+    try:
+        from sync_pair import sync_counterpart
+        if sync_counterpart(branch, rel):
+            send("🔁 另一语言版本已同步同样的修改。")
+    except Exception as exc:
+        send(f"⚠️ 双语同步失败（需人工检查另一版）：{str(exc)[:200]}")
     sh("git", "checkout", "-q", "master")
     return True
 

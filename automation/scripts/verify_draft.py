@@ -151,6 +151,11 @@ def fix_article(branch: str, rel: str, reports: list[str], base: str | None = No
                "Apply fact-check findings: add citations, fix/downgrade flagged claims\n\n"
                "Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>")
             sh("git", "push", "-q", "origin", branch)
+            try:
+                from sync_pair import sync_counterpart
+                sync_counterpart(branch, rel)
+            except Exception:
+                pass
             ok = True
     sh("git", "checkout", "-q", "master")
     return ok
