@@ -13,13 +13,17 @@ from pathlib import Path
 
 
 def strip_fences(text: str) -> str:
-    """If the payload is wrapped in a fenced block (```json / ```markdown / …),
-    return the largest fenced block; otherwise return the text unchanged.
-    Model chatter before/after the fence is dropped along with the fence."""
+    """Extract the payload from model output: prefer the largest fenced block;
+    otherwise, if chatter precedes a frontmatter document, cut from the first
+    `---` line. Chatter before/after is dropped."""
     text = text.strip()
     blocks = re.findall(r"```[a-zA-Z]*\n(.*?)```", text, re.S)
     if blocks:
         return max(blocks, key=len).strip()
+    if not text.startswith("---"):
+        m = re.search(r"^---\s*$", text, re.M)
+        if m and re.search(r"^(title|slug|lang):", text[m.start():m.start() + 400], re.M):
+            return text[m.start():].strip()
     return text
 
 
