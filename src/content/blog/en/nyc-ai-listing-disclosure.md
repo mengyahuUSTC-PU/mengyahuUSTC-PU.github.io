@@ -1,7 +1,7 @@
 ---
 title: "The Fix for AI-Doctored Listing Photos Isn't an AI Detector"
 description: "New York City wants AI-edited rental listings disclosed. Set against California's AB 723 and the EU AI Act, the enforceable mechanism isn't detecting AI — it's making the advertiser keep the original photo."
-pubDate: 2026-07-20
+pubDate: 2026-07-19
 tags: [AI治理, 内容披露, 政策]
 lang: en
 slug: nyc-ai-listing-disclosure
