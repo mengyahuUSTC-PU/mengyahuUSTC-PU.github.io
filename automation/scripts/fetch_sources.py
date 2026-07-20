@@ -123,7 +123,9 @@ def entry_datetime(e):
 
 def fetch_rss():
     items, failed = [], []
-    for name, url in RSS_FEEDS:
+    for entry in RSS_FEEDS:
+        name, url = entry[0], entry[1]
+        keyword_gate = len(entry) > 2 and entry[2] == "filter"
         try:
             resp = requests.get(url, headers=UA, timeout=25)
             feed = feedparser.parse(resp.content)
@@ -135,6 +137,10 @@ def fetch_rss():
         for e in feed.entries[:15]:
             dt = entry_datetime(e)
             if dt and dt < CUTOFF:
+                continue
+            if keyword_gate and not matches(
+                f"{e.get('title', '')} {e.get('summary', '')}", HN_KEYWORDS
+            ):
                 continue
             items.append(
                 {

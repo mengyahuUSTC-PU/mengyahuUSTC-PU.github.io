@@ -64,7 +64,7 @@ RSS_FEEDS = [
     ("EU AI Act Newsletter", "https://artificialintelligenceact.eu/feed/"),
     # Big tech + industry (added 2026-07-19: broaden beyond safety-lab circle)
     ("Google AI Blog", "https://blog.google/technology/ai/rss/"),
-    ("NVIDIA Blog", "https://blogs.nvidia.com/feed/"),
+    ("NVIDIA Blog", "https://blogs.nvidia.com/feed/", "filter"),
     ("TechCrunch AI", "https://techcrunch.com/category/artificial-intelligence/feed/"),
     # Individual thought leaders' blogs (added 2026-07-19; X timelines not
     # fetchable without paid API — HN/curators cover their major posts)
@@ -74,6 +74,11 @@ RSS_FEEDS = [
     ("Transformer Circuits (Olah et al.)", "https://transformer-circuits.pub/feed.xml"),
     ("Interconnects (Nathan Lambert)", "https://www.interconnects.ai/feed"),
     ("One Useful Thing (Ethan Mollick)", "https://www.oneusefulthing.org/feed"),
+    # Government primary sources (added 2026-07-19, reverse-engineered from
+    # yage.ai's digest sourcing). FR feed is pre-scoped to AI; NIST is broad,
+    # so it carries the "filter" flag (keyword-gated in fetch_rss).
+    ("Federal Register (AI)", "https://www.federalregister.gov/api/v1/documents.rss?conditions%5Bterm%5D=artificial%20intelligence"),
+    ("NIST News", "https://www.nist.gov/news-events/news/rss.xml", "filter"),
 ]
 
 # Sources with no working feed (verified 2026-07): scrape the index page and
