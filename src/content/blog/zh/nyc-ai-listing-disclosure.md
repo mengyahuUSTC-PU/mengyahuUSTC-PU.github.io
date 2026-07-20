@@ -26,11 +26,25 @@ AB 723 的聪明之处正在于绕开了检测：它要求披露声明旁边必�
 
 执法的另一个抓手是平台。DCWP 已经在和 StreetEasy、Zillow 协调（[The Next Web](https://thenextweb.com/news/mamdani-ai-apartment-listings-streeteasy)），这比挨家挨户查房东现实得多：平台可以在上传管线里加一个强制声明字段，把标签固化在图片展示层，而不是只写在说明文字里——图片一旦被转发、被聚合到别的页面，光靠文字说明未必跟得住。有意思的是，Zillow 自己去年 9 月就[上线了 AI 虚拟布置功能](https://www.prnewswire.com/news-releases/zillow-brings-ai-powered-virtual-staging-to-showcase-listings-302550554.html)：买家在 Showcase 房源上可以让 AI 给空房间换七种装修风格。乍看是「裁判下场踢球」，但看它的产品设计——图上有专门图标，滑块可以随时切回原图——这其实就是「披露 + 原图可查」的交互样板。区别只在一个是买家自己开的滤镜，一个是卖家偷偷开的滤镜；监管要管的是后者。
 
+## 水印呢？生成的图有标，AI 改的图才刚开始有
+
+做 responsible AI 的人看到这里，多半会想到另一条路：水印和溯源（provenance）。纯 AI 生成的图，这套基础设施已经初具规模——Google 的 SynthID 把不可见水印直接嵌进像素，解码就能确认图是不是自家模型生成的；中国 2025 年 9 月起施行的[《人工智能生成合成内容标识办法》](https://www.cac.gov.cn/2025-03/14/c_1743654684782215.htm)走得更细，第五条要求隐式标识里写进服务提供者名称或编码、内容编号，解出来不光知道「是 AI」，还知道「谁家的 AI、哪一单生成的」。但房源照骗的主场不是「生成」，是「编辑」：照片是真拍的，只是窗外的砖墙被 AI 抹掉了。编辑也有水印吗？
+
+法规层面，义务其实已经写进去了。欧盟 AI Act 第 50 条的机器可读标记义务，原文写的是「detectable as artificially generated **or manipulated**」——「修改」和「生成」并列，AI 改图落在义务范围内。中国的标识办法把对象定义为「利用人工智能技术生成、合成的」内容，条文没有单独点名「编辑」这个动作，但 AI 改图的产出归入「合成」是自然读法。
+
+厂商实践刚起步。Google 从 2025 年 2 月起给 Magic Editor 里 Reimagine 功能改过的照片嵌 SynthID 水印（[官方公告](https://blog.google/feed/synthid-reimagine-magic-editor/)）——水印从「生成」延伸到了「编辑」。但公告自己就写明了限制：编辑太小——比如改掉背景里一朵小花的颜色——可能小到 SynthID 既标不上也检不出。这几乎是难题一的像素版重演：「多小的改动算改动」，这条线从法条一路划到了水印层。
+
+同在厂商这一侧，微软押的是另一条路线：不往像素里藏信号，而是给文件挂签名。前面反复出现的 C2PA，微软就是发起方之一——2021 年它和 BBC 拉上 Adobe、Arm、Intel、Truepic 成立了这个联盟（[微软官方博客](https://blogs.microsoft.com/on-the-issues/2021/02/22/deepfakes-disinformation-c2pa-origin-cai/)），更早的铺垫是微软研究院的 AMP 溯源框架，以及和 BBC、《纽约时报》等媒体合作的 Project Origin。落到产品上，Bing Image Creator 的生成图自动附上符合 C2PA 规范的内容凭证，写明创建时间和 AI 来源（[Bing 官方博客](https://blogs.bing.com/search/september-2023/Bing-Preview-Release-Notes-New-Experiences-Powered-by-Bing-Image-Creator)）；Azure OpenAI 的图像模型给每张产出挂加密签名的 manifest，签名链能追溯到微软，放到 contentcredentials.org 上就能验（[Microsoft Learn 文档](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/content-credentials)）。对本文关心的「编辑」，签名路线的表达力其实更强：C2PA 凭证的设计目标就是记录内容的来源和修改历史，manifest 能一路追加「谁在什么时候改了什么」，比一个「是不是 AI」的水印位装得下多得多的信息。短板也正是难题二里那个：凭证写在文件元数据里，Tim Bray 实测中被平台剥掉的就是这一层，剥掉之后验证只会得到「查无凭证」，不会报警。所以在我看来，像素水印和签名凭证不是二选一，而是各补各的短——一个赖在图里不走、但装不下几句话；一个能写全履历、但在分发链条里容易弄丢。
+
+研究界有个思路干脆把方向调了个头。CVPR 2024 的 EditGuard（[arXiv:2312.08883](https://arxiv.org/abs/2312.08883)）不指望 AI 编辑器主动配合打标，而是事先给原图嵌一层水印，图被改过之后，靠解码出的水印残缺就能定位篡改区域，论文报告的定位精度超过 95%。这和 AB 723 的「留原图」在机制上是同一件事：都是让「改动前的状态」留下可核对的凭据——一个把原图挂在链接里，一个把原图的指纹藏进像素里。
+
+但要把水印当成明天就能用的执法抓手，还差两步。第一步是覆盖：水印义务压在工具方头上，SynthID 只覆盖 Google 自家管线，内容凭证也只跟着接入 C2PA 的工具走；房东用哪家工具改图，监管方说了不算，不配合打标的工具（比如本地跑的开源模型）出来的图就是干净的。第二步是验证：元数据类的标记（C2PA、标识办法要求写进文件元数据的隐式标识）在分发链条里会被剥掉——Tim Bray 的实测前面说过；像素级水印转存转发倒剥不掉，可解码要靠厂商自己的检测入口，执法闭环绕不开厂商配合。所以我的判断不变：水印是值得铺的长期基础设施，欧盟的标记义务八月起会推着厂商往这个方向走，但 DCWP 的规则等不起这个周期——今天就能闭环的，仍然是「留原图 + 对照」。
+
 ## 不只是房源：电商已经先跑了一轮
 
 同样的剧情，中国的电商市场已经演过一遍，而且演得更完整。《法治日报》今年 1 月的[调查](https://www.thepaper.cn/newsDetail_forward_32380169)记录了一串典型投诉：宣传图里绒毛蓬松、眼睛透亮的「软萌兔子挂件」，实物毛发粗糙、眼睛歪斜；预售四个月的暹罗猫毛绒挂件到货后毛发起球、颜色不均，商家干脆承认「宣传图是 AI 生成的」。[央视网记者](https://m.thepaper.cn/newsDetail_forward_32382618)自己下单了一只「敦煌飞天猫」玩具，收到的实物脸和身体像被压扁过，商家的解释是「图片好看是我们摄影师拍照技术好」。上游还有一条现成的供给链：有博主专门向商家兜售 AI 制图工具，299 元包月就能批量生成上百张「实拍级」商品图。[上观新闻今年 5 月的实测](https://www.xhby.net/content/s6a1a3892e4b07fc6ee8bb2d3.html)从各电商平台随机取了 20 张商品图，被鉴定工具判定存在 AI 生成痕迹的超过半数。
 
-值得注意的是，电商这边给出的两条治理路线，恰好对应前面两个难题。淘宝去年 3 月出的 [AI 假图治理规则](https://www3.xinhuanet.com/tech/20250327/cc956c250a264379a7d13552a63c6543/c.html)（据报道是电商平台里第一个），把违规的边界切在**结果**而不是**手段**上：管的是材质款式与实物不符、效果显著失真、违反物理规律的人体这类「货不对板」，不纠结你用没用 AI——这和加州「常规调整豁免、只管改动元素」是同一个思路，而且平台把拦截直接做进了上传管线，据报道上线识别模型后已拦下近 10 万张假图。另一条线是 2025 年 9 月起施行的[《人工智能生成合成内容标识办法》](https://www.cac.gov.cn/2025-03/14/c_1743654684782215.htm)：显式标识加隐式标识，义务压在生成方和传播平台头上——主线是在生成那一刻就把标记打进去，方向上和欧盟第 50 条的机器可读标记一致（办法也要求传播平台对缺少标识的内容核验生成痕迹，但那是补位，不是承重墙）。《法治日报》采访的学者还点出了执法的另一半：AI 图未标识又货不对板，若构成欺诈，消费者可依消费者权益保护法主张退一赔三。
+值得注意的是，电商这边给出的两条治理路线，恰好对应前面两个难题。淘宝去年 3 月出的 [AI 假图治理规则](https://www3.xinhuanet.com/tech/20250327/cc956c250a264379a7d13552a63c6543/c.html)（据报道是电商平台里第一个），把违规的边界切在**结果**而不是**手段**上：管的是材质款式与实物不符、效果显著失真、违反物理规律的人体这类「货不对板」，不纠结你用没用 AI——这和加州「常规调整豁免、只管改动元素」是同一个思路，而且平台把拦截直接做进了上传管线，据报道上线识别模型后已拦下近 10 万张假图。另一条线是前面提到的《标识办法》：显式标识加隐式标识，义务压在生成方和传播平台头上——主线是在生成那一刻就把标记打进去，方向上和欧盟第 50 条的机器可读标记一致（办法也要求传播平台对缺少标识的内容核验生成痕迹，但那是补位，不是承重墙）。《法治日报》采访的学者还点出了执法的另一半：AI 图未标识又货不对板，若构成欺诈，消费者可依消费者权益保护法主张退一赔三。
 
 这套剧情也不只在中国上演。TikTok Shop 新的 [AI 内容规则](https://seller-us.tiktok.com/university/essay?knowledge_id=491489038501663&lang=en)7 月 13 日刚生效——比纽约的报告还早三天。切法和淘宝几乎一个模子：禁止用 AI 改变商品的尺寸、颜色、功能等外观特征，禁止伪造夸大的使用效果；完全由 AI 生成或经显著编辑的内容必须打标，调色、裁剪、降噪这类常规编辑豁免；处罚阶梯式，从警告、限流到严重造假永久封禁。触发条件切在结果上、常规编辑留口子、执法压给平台——前面拆出来的几块拼图，它一块不少。美国联邦层面的动作落在另一个位置：FTC 的[虚假评论与证言规则](https://www.ftc.gov/news-events/news/press-releases/2024/08/federal-trade-commission-announces-final-rule-banning-fake-reviews-testimonials)（规则文本见 [Federal Register](https://www.federalregister.gov/documents/2024/08/22/2024-18519/trade-regulation-rule-on-the-use-of-consumer-reviews-and-testimonials)）2024 年 10 月生效，AI 生成的假评论明确在禁止之列，违者可处民事罚款——管的是评论区不是商品图，但逻辑同款：盯着「冒充真实消费者」这个欺骗结果，不问你用什么工具造的假。欧盟那边，商品图误导本身早有 2005 年的[《不公平商业行为指令》](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32005L0029)兜底，和纽约手里的《一般商业法》第 349 条是一个道理；针对数字环境的新一轮消费者立法 [Digital Fairness Act](https://www.europarl.europa.eu/legislative-train/theme-protecting-our-democracy-upholding-our-values/file-digital-fairness-act) 还在提案筹备阶段，矛头指向暗模式和误导性网红营销。
 
@@ -50,7 +64,7 @@ AB 723 的聪明之处正在于绕开了检测：它要求披露声明旁边必�
 - [Mayor Mamdani Says Landlords Can't Secretly Use AI Images（PetaPixel）](https://petapixel.com/2026/07/16/mayor-mamdani-says-landlords-cant-secretly-use-ai-images-to-advertise-properties/) — 选题来源，公告日期与背景
 - [AB-723 Real estate: digitally altered images: disclosure（加州立法机构法案原文）](https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202520260AB723) — 修图定义、常规编辑豁免、原图链接/二维码要求、适用于持牌经纪人及其代理、仅覆盖售房广告、2025 年 10 月 10 日签署
 - [California's Altered Image Law (CA AB 723) FAQs（CRMLS）](https://kb.crmls.org/knowledgebase/californias-altered-image-law-ca-ab-723-faqs/) — 2026 年 1 月 1 日生效
-- [EU AI Act Article 50 全文](https://artificialintelligenceact.eu/article/50/) — 提供方机器可读标记与部署方披露义务、辅助编辑豁免、2026 年 8 月 2 日起适用
+- [EU AI Act Article 50 全文](https://artificialintelligenceact.eu/article/50/) — 提供方机器可读标记与部署方披露义务（标记义务原文覆盖 generated or manipulated，生成与修改都在内）、辅助编辑豁免、2026 年 8 月 2 日起适用
 - [New York General Business Law § 349（纽约州参议院法条原文）](https://www.nysenate.gov/legislation/laws/GBS/349) — 禁止商业活动中的欺骗性行为
 - [Himmelstein, McConnell, Gribben, Donoghue & Joseph, LLP v. Matthew Bender & Co.（纽约州终审法院判决，2021）](https://www.nycourts.gov/reporter/3dseries/2021/2021_03485.htm) — § 349 诉求三要件：面向消费者的行为、实质性误导、造成损害
 - [Fairness in Apartment Rental Expenses (FARE) Act FAQ（纽约市 DCWP）](https://www.nyc.gov/site/dca/about/FAQ-Broker-Fees.page) — 纽约租赁市场中房东直租（无经纪人参与）情形的官方说明
@@ -58,12 +72,17 @@ AB 723 的聪明之处正在于绕开了检测：它要求披露声明旁边必�
 - [网购"AI照骗"，实物与商品图不符，商家竟称是"摄影技术好"？（央视网）](https://m.thepaper.cn/newsDetail_forward_32382618) — 记者下单实测「敦煌飞天猫」，商家「摄影师拍照技术好」回应，2026 年 1 月 14 日
 - [实测：20张商品图，约半数"AI生成"！（上观新闻，新华报业转载）](https://www.xhby.net/content/s6a1a3892e4b07fc6ee8bb2d3.html) — 20 张商品图实测、国家反诈中心 App「AI 内容鉴定」功能、北京市消协与 8 家电商平台签订《促进AI技术规范应用承诺书》，2026 年 5 月 30 日
 - [淘宝新规拒绝AI"照骗"，已拦截10万AI假图（新华网报道）](https://www3.xinhuanet.com/tech/20250327/cc956c250a264379a7d13552a63c6543/c.html) — 2025 年 3 月 27 日发布的平台治理规则：以「显著失真、货不对板」界定违规，上线识别模型源头拦截；淘宝官方公告原文未检索到公开页面，事实以新华网报道为据
-- [《人工智能生成合成内容标识办法》（国家网信办官方发布页）](https://www.cac.gov.cn/2025-03/14/c_1743654684782215.htm) — 显式/隐式双标识、生成方与传播平台义务（含平台对缺标识内容的痕迹核验）、2025 年 9 月 1 日施行
+- [《人工智能生成合成内容标识办法》（国家网信办官方发布页）](https://www.cac.gov.cn/2025-03/14/c_1743654684782215.htm) — 显式/隐式双标识（隐式标识写入文件元数据，含服务提供者名称或编码、内容编号）、生成方与传播平台义务（含平台对缺标识内容的痕迹核验）、2025 年 9 月 1 日施行
 - [AI-Generated Content Restrictions and Requirements（TikTok Shop 官方卖家政策）](https://seller-us.tiktok.com/university/essay?knowledge_id=491489038501663&lang=en) — 2026 年 7 月 13 日生效：禁止 AI 改变商品外观、伪造使用效果，完全生成/显著编辑内容须打标，常规编辑豁免，阶梯式处罚
 - [Federal Trade Commission Announces Final Rule Banning Fake Reviews and Testimonials（FTC 官方公告）](https://www.ftc.gov/news-events/news/press-releases/2024/08/federal-trade-commission-announces-final-rule-banning-fake-reviews-testimonials) — AI 生成假评论纳入禁止范围、可处民事罚款，2024 年 10 月 21 日生效；规则全文见 [Federal Register](https://www.federalregister.gov/documents/2024/08/22/2024-18519/trade-regulation-rule-on-the-use-of-consumer-reviews-and-testimonials)
 - [Directive 2005/29/EC on unfair commercial practices（EUR-Lex 官方文本）](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32005L0029) — 欧盟禁止误导性商业行为的现行框架
 - [Digital Fairness Act（欧洲议会立法追踪页）](https://www.europarl.europa.eu/legislative-train/theme-protecting-our-democracy-upholding-our-values/file-digital-fairness-act) — 提案筹备阶段，针对暗模式、误导性网红营销等数字环境消费者保护议题
 - [GenDet: Towards Good Generalizations for AI-Generated Image Detection（arXiv:2312.08880）](https://arxiv.org/abs/2312.08880) — 「难以检测未见过生成器的产物」为该领域公认前提（该文以此为问题设定）
+- [EditGuard: Versatile Image Watermarking for Tamper Localization and Copyright Protection（arXiv:2312.08883，CVPR 2024）](https://arxiv.org/abs/2312.08883) — 预先给原图嵌水印、事后解码定位篡改区域，论文报告定位精度超过 95%
 - [C2PA Investigations（Tim Bray 实测）](https://www.tbray.org/ongoing/When/202x/2025/09/18/C2PA-Investigations) — 社交平台与发布软件普遍剥离图片元数据
+- [Google Photos brings SynthID to Reimagine in Magic Editor（Google 官方博客）](https://blog.google/feed/synthid-reimagine-magic-editor/) — 2025 年 2 月起对 Reimagine 编辑的图片嵌入 SynthID 水印；官方注明过小的编辑可能无法标记和检测
+- [Microsoft 与 BBC 等六方发起 C2PA（Microsoft On the Issues 官方博客，Eric Horvitz，2021 年 2 月 22 日）](https://blogs.microsoft.com/on-the-issues/2021/02/22/deepfakes-disinformation-c2pa-origin-cai/) — C2PA 由 Microsoft、BBC、Adobe、Arm、Intel、Truepic 共同成立；微软研究院 AMP 溯源框架与 Project Origin（BBC、CBC、《纽约时报》、Microsoft）背景
+- [Bing Preview Release Notes: New Experiences Powered by Bing Image Creator（Bing 官方博客）](https://blogs.bing.com/search/september-2023/Bing-Preview-Release-Notes-New-Experiences-Powered-by-Bing-Image-Creator) — Bing Image Creator 生成图附符合 C2PA 规范的内容凭证，含创建时间与 AI 来源
+- [Content Credentials in Azure OpenAI（Microsoft Learn 官方文档）](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/content-credentials) — DALL-E 与 GPT-image-1 系列生成图自动附加密签名的 C2PA manifest（签名可追溯到 Azure OpenAI），可在 contentcredentials.org 验证；C2PA 凭证定位为「披露内容来源与历史」的防篡改机制
 - [Burst photography for high dynamic range and low-light imaging on mobile cameras（Google Research）](https://research.google/pubs/burst-photography-for-high-dynamic-range-and-low-light-imaging-on-mobile-cameras/) — 手机计算摄影（HDR+）管线
 - [Zillow brings AI-powered Virtual Staging to Showcase listings（Zillow 官方新闻稿）](https://www.prnewswire.com/news-releases/zillow-brings-ai-powered-virtual-staging-to-showcase-listings-302550554.html) — 2025 年 9 月 10 日发布，七种风格、虚拟布置图标、原图滑块对比
