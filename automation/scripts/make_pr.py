@@ -82,6 +82,8 @@ def main():
 
     unfinished = [d.name for (fm, content, _), d in zip(parsed, drafts)
                   if "TODO" in content or "FIXME" in content]
+    bad_tags = [d.name for (fm, content, _), d in zip(parsed, drafts)
+                if any(ord(c) > 127 for c in fm.get("tags", ""))]
 
     body_parts = [
         "## 摘要",
@@ -95,6 +97,9 @@ def main():
     if unfinished:
         body_parts += ["", "## ⚠️ 警告：稿内有未完成的 TODO/FIXME",
                        "以下文件含未完成标记，Merge 前必须处理：" + ", ".join(unfinished)]
+    if bad_tags:
+        body_parts += ["", "## ⚠️ 警告：tags 含非英文字符",
+                       "tags 必须英文小写 kebab-case（会泄漏到英文界面）：" + ", ".join(bad_tags)]
     if comments:
         body_parts += ["", "## 事实核查点 / 备选标题", *comments]
     body_parts += ["", "**Merge = 发布上线。** 需要修改请在 PR 里留言。", "", "🤖 Generated with [Claude Code](https://claude.com/claude-code)"]
