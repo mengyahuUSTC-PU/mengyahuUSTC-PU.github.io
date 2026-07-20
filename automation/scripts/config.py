@@ -62,6 +62,12 @@ RSS_FEEDS = [
     ("Krebs on Security", "https://krebsonsecurity.com/feed/"),
     ("Google Project Zero", "https://googleprojectzero.blogspot.com/feeds/posts/default"),
     ("EU AI Act Newsletter", "https://artificialintelligenceact.eu/feed/"),
+    # Big tech + industry (added 2026-07-19: broaden beyond safety-lab circle)
+    ("Google AI Blog", "https://blog.google/technology/ai/rss/"),
+    ("NVIDIA Blog", "https://blogs.nvidia.com/feed/"),
+    ("TechCrunch AI", "https://techcrunch.com/category/artificial-intelligence/feed/"),
+    # China coverage (qbitai aggregates DeepSeek/Moonshot/Qwen/ByteDance news)
+    ("量子位", "https://www.qbitai.com/feed"),
 ]
 
 # Sources with no working feed (verified 2026-07): scrape the index page and
@@ -71,6 +77,10 @@ SCRAPE_SOURCES = [
     ("Anthropic News", "https://www.anthropic.com/news", r'href="(/news/[^"#?]+)"', "https://www.anthropic.com"),
     ("Meta AI Blog", "https://ai.meta.com/blog/", r'href="(/blog/[^"#?]+)"', "https://ai.meta.com"),
     ("Stanford HAI", "https://hai.stanford.edu/news", r'href="(/news/[^"#?]+)"', "https://hai.stanford.edu"),
+    # Chinese labs + star startups without feeds (added 2026-07-19)
+    ("Moonshot/Kimi Blog", "https://www.kimi.com/blog", r'href="(/blog/[^"#?]+)"', "https://www.kimi.com"),
+    ("DeepSeek News", "https://api-docs.deepseek.com/news/", r'href="(/news/[^"#?]+)"', "https://api-docs.deepseek.com"),
+    ("Thinking Machines", "https://thinkingmachines.ai/news", r'href="(/news/[^"#?][^"#?]*)"', "https://thinkingmachines.ai"),
 ]
 
 # How many days back an item may be dated and still enter the pool.
