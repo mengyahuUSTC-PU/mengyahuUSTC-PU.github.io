@@ -66,8 +66,6 @@ RSS_FEEDS = [
     ("Google AI Blog", "https://blog.google/technology/ai/rss/"),
     ("NVIDIA Blog", "https://blogs.nvidia.com/feed/"),
     ("TechCrunch AI", "https://techcrunch.com/category/artificial-intelligence/feed/"),
-    # China coverage (qbitai aggregates DeepSeek/Moonshot/Qwen/ByteDance news)
-    ("量子位", "https://www.qbitai.com/feed"),
 ]
 
 # Sources with no working feed (verified 2026-07): scrape the index page and
