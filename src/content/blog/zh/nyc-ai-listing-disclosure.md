@@ -2,7 +2,7 @@
 title: "管住 AI 修图，靠的不是 AI 检测器"
 description: "纽约拟强制房产广告披露 AI 修图。对比加州 AB 723 和欧盟 AI Act 后我的判断是：可执行的机制不是检测 AI，而是让广告方留住原图。"
 pubDate: 2026-07-19
-tags: [AI治理, 内容披露, 政策]
+tags: [ai-governance, disclosure, policy]
 lang: zh
 slug: nyc-ai-listing-disclosure
 translationOf: nyc-ai-listing-disclosure
