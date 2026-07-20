@@ -136,7 +136,7 @@ def handle_revision(slug: str, feedback: str):
         pass
 
 
-def handle_distribution(slug: str):
+def handle_distribution(slug: str, when: str = "now"):
     """Schedule the pending thread + LinkedIn drafts for next UTC 15:00."""
     from datetime import timedelta
 
@@ -151,21 +151,37 @@ def handle_distribution(slug: str):
         send(f"ℹ️ {slug} 已经排程过了，跳过。")
         return
 
-    # User decision (2026-07-19): publish immediately on approval — freshness
-    # over optimal-hour scheduling.
+    # Default: publish immediately on approval (user decision 2026-07-19,
+    # freshness first). "定时发" instead targets the next weekday peak slots.
+    from datetime import timedelta
+
+    if when == "peak":
+        def next_peak(hour_utc: int) -> str:
+            slot = datetime.now(timezone.utc).replace(
+                hour=hour_utc, minute=0, second=0, microsecond=0)
+            while slot <= datetime.now(timezone.utc) or slot.weekday() >= 5:
+                slot += timedelta(days=1)
+            return slot.strftime("%Y-%m-%dT%H:%M:%SZ")
+        x_when, li_when = next_peak(16), next_peak(20)
+    else:
+        x_when = li_when = "now"
+
     try:
-        create_draft(thread=[pack["thread"].strip()], publish_at="now", title=f"{slug} (X)")
-        create_draft(linkedin=pack["linkedin"], publish_at="now",
+        create_draft(thread=[pack["thread"].strip()], publish_at=x_when, title=f"{slug} (X)")
+        create_draft(linkedin=pack["linkedin"], publish_at=li_when,
                      title=f"{slug} (LinkedIn)")
     except Exception as exc:
         send(f"⚠️ Typefully 发布失败（{slug}）：{str(exc)[:300]}")
         return
 
     pack["status"] = "scheduled"
-    pack["scheduled_for"] = {"x": "now", "linkedin": "now",
+    pack["scheduled_for"] = {"x": x_when, "linkedin": li_when,
                              "at": datetime.now(timezone.utc).isoformat()}
     dist_file.write_text(json.dumps(pack, ensure_ascii=False, indent=2))
-    send(f"🚀 {slug} 的 X 帖 + LinkedIn 帖已提交立即发布（Typefully 处理中，1-2 分钟内上线）。")
+    if when == "peak":
+        send(f"⏰ {slug} 已排进高峰时段：X → {x_when[:16]} UTC（美东中午）· LinkedIn → {li_when[:16]} UTC（美东下午4点），均避开周末。")
+    else:
+        send(f"🚀 {slug} 的 X 帖 + LinkedIn 帖已提交立即发布（Typefully 处理中，1-2 分钟内上线）。")
 
 
 HELP_TEXT = ("🤔 没听懂。可用指令：\n"
@@ -240,6 +256,25 @@ def main():
         if msg["author"].get("bot"):
             continue
         content = msg["content"].strip()
+
+        # "定时发 …": queue for next weekday peak slots instead of publishing now.
+        peak_match = re.match(r"定时发[\s，,]*([A-Za-z0-9\- ]*)$", content)
+        if peak_match:
+            pending = []
+            for f in sorted((DATA / "dist").glob("*.json"), key=lambda p: p.stat().st_mtime):
+                try:
+                    d = json.loads(f.read_text())
+                    if d.get("status") != "scheduled":
+                        pending.append(d["slug"])
+                except Exception:
+                    continue
+            tokens = peak_match.group(1).split()
+            slug_ = next((s for s in pending if s in tokens), None) or (pending[-1] if pending else None)
+            if slug_:
+                handle_distribution(slug_, when="peak")
+            else:
+                send("ℹ️ 没有待排程的分发内容。")
+            continue
 
         # "发 …": schedule a pending distribution pack via Typefully.
         # Accepts "发", "发 <slug>", or loose phrasing like "发 x linkedin" —
