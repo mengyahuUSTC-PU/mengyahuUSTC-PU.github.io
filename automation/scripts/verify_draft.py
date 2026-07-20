@@ -78,17 +78,22 @@ def gpt_verify(content: str) -> str:
 
     if not shutil.which("codex"):
         return "⚠️ codex CLI 未安装，跳过 GPT 核查。"
-    run = subprocess.run(
-        ["codex", "exec", "--sandbox", "read-only", "--skip-git-repo-check",
-         VERIFY_PROMPT + "\n\n## 待核查文章\n\n" + content],
-        cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
-    )
-    if run.returncode != 0:
-        err = (run.stderr or run.stdout)[-200:]
-        if "login" in err.lower() or "auth" in err.lower():
-            return "⚠️ codex 未登录（需要用户完成 ChatGPT 授权），跳过 GPT 核查。"
-        return f"⚠️ GPT 核查失败：{err}"
-    return run.stdout.strip() or "⚠️ GPT 返回为空。"
+    import tempfile
+
+    with tempfile.NamedTemporaryFile(mode="r", suffix=".md") as out:
+        run = subprocess.run(
+            ["codex", "exec", "--sandbox", "read-only", "--skip-git-repo-check",
+             "--output-last-message", out.name,
+             VERIFY_PROMPT + "\n\n## 待核查文章\n\n" + content],
+            cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
+        )
+        if run.returncode != 0:
+            err = (run.stderr or run.stdout)[-200:]
+            if "login" in err.lower() or "auth" in err.lower():
+                return "⚠️ codex 未登录（需要用户完成 ChatGPT 授权），跳过 GPT 核查。"
+            return f"⚠️ GPT 核查失败：{err}"
+        result = out.read().strip()
+    return result or "⚠️ GPT 返回为空。"
 
 
 FLAG_MARKS = ("🔗", "⚠️", "❌", "🚫")
