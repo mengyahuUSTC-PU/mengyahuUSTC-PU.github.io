@@ -66,6 +66,14 @@ RSS_FEEDS = [
     ("Google AI Blog", "https://blog.google/technology/ai/rss/"),
     ("NVIDIA Blog", "https://blogs.nvidia.com/feed/"),
     ("TechCrunch AI", "https://techcrunch.com/category/artificial-intelligence/feed/"),
+    # Individual thought leaders' blogs (added 2026-07-19; X timelines not
+    # fetchable without paid API — HN/curators cover their major posts)
+    ("Andrej Karpathy", "https://karpathy.bearblog.dev/feed/"),
+    ("Lilian Weng", "https://lilianweng.github.io/index.xml"),
+    ("Neel Nanda", "https://www.neelnanda.io/blog?format=rss"),
+    ("Transformer Circuits (Olah et al.)", "https://transformer-circuits.pub/feed.xml"),
+    ("Interconnects (Nathan Lambert)", "https://www.interconnects.ai/feed"),
+    ("One Useful Thing (Ethan Mollick)", "https://www.oneusefulthing.org/feed"),
 ]
 
 # Sources with no working feed (verified 2026-07): scrape the index page and
