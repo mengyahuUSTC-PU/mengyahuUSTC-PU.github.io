@@ -34,9 +34,11 @@ AB 723 的聪明之处正在于绕开了检测：它要求披露声明旁边必�
 
 厂商实践刚起步。Google 从 2025 年 2 月起给 Magic Editor 里 Reimagine 功能改过的照片嵌 SynthID 水印（[官方公告](https://blog.google/feed/synthid-reimagine-magic-editor/)）——水印从「生成」延伸到了「编辑」。但公告自己就写明了限制：编辑太小——比如改掉背景里一朵小花的颜色——可能小到 SynthID 既标不上也检不出。这几乎是难题一的像素版重演：「多小的改动算改动」，这条线从法条一路划到了水印层。
 
+同在厂商这一侧，微软押的是另一条路线：不往像素里藏信号，而是给文件挂签名。前面反复出现的 C2PA，微软就是发起方之一——2021 年它和 BBC 拉上 Adobe、Arm、Intel、Truepic 成立了这个联盟（[微软官方博客](https://blogs.microsoft.com/on-the-issues/2021/02/22/deepfakes-disinformation-c2pa-origin-cai/)），更早的铺垫是微软研究院的 AMP 溯源框架，以及和 BBC、《纽约时报》等媒体合作的 Project Origin。落到产品上，Bing Image Creator 的生成图自动附上符合 C2PA 规范的内容凭证，写明创建时间和 AI 来源（[Bing 官方博客](https://blogs.bing.com/search/september-2023/Bing-Preview-Release-Notes-New-Experiences-Powered-by-Bing-Image-Creator)）；Azure OpenAI 的图像模型给每张产出挂加密签名的 manifest，签名链能追溯到微软，放到 contentcredentials.org 上就能验（[Microsoft Learn 文档](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/content-credentials)）。对本文关心的「编辑」，签名路线的表达力其实更强：C2PA 凭证的设计目标就是记录内容的来源和修改历史，manifest 能一路追加「谁在什么时候改了什么」，比一个「是不是 AI」的水印位装得下多得多的信息。短板也正是难题二里那个：凭证写在文件元数据里，Tim Bray 实测中被平台剥掉的就是这一层，剥掉之后验证只会得到「查无凭证」，不会报警。所以在我看来，像素水印和签名凭证不是二选一，而是各补各的短——一个赖在图里不走、但装不下几句话；一个能写全履历、但在分发链条里容易弄丢。
+
 研究界有个思路干脆把方向调了个头。CVPR 2024 的 EditGuard（[arXiv:2312.08883](https://arxiv.org/abs/2312.08883)）不指望 AI 编辑器主动配合打标，而是事先给原图嵌一层水印，图被改过之后，靠解码出的水印残缺就能定位篡改区域，论文报告的定位精度超过 95%。这和 AB 723 的「留原图」在机制上是同一件事：都是让「改动前的状态」留下可核对的凭据——一个把原图挂在链接里，一个把原图的指纹藏进像素里。
 
-但要把水印当成明天就能用的执法抓手，还差两步。第一步是覆盖：水印义务压在工具方头上，SynthID 只覆盖 Google 自家管线；房东用哪家工具改图，监管方说了不算，不配合打标的工具（比如本地跑的开源模型）出来的图就是干净的。第二步是验证：元数据类的标记（C2PA、标识办法要求写进文件元数据的隐式标识）在分发链条里会被剥掉——Tim Bray 的实测前面说过；像素级水印转存转发倒剥不掉，可解码要靠厂商自己的检测入口，执法闭环绕不开厂商配合。所以我的判断不变：水印是值得铺的长期基础设施，欧盟的标记义务八月起会推着厂商往这个方向走，但 DCWP 的规则等不起这个周期——今天就能闭环的，仍然是「留原图 + 对照」。
+但要把水印当成明天就能用的执法抓手，还差两步。第一步是覆盖：水印义务压在工具方头上，SynthID 只覆盖 Google 自家管线，内容凭证也只跟着接入 C2PA 的工具走；房东用哪家工具改图，监管方说了不算，不配合打标的工具（比如本地跑的开源模型）出来的图就是干净的。第二步是验证：元数据类的标记（C2PA、标识办法要求写进文件元数据的隐式标识）在分发链条里会被剥掉——Tim Bray 的实测前面说过；像素级水印转存转发倒剥不掉，可解码要靠厂商自己的检测入口，执法闭环绕不开厂商配合。所以我的判断不变：水印是值得铺的长期基础设施，欧盟的标记义务八月起会推着厂商往这个方向走，但 DCWP 的规则等不起这个周期——今天就能闭环的，仍然是「留原图 + 对照」。
 
 ## 不只是房源：电商已经先跑了一轮
 
@@ -79,5 +81,8 @@ AB 723 的聪明之处正在于绕开了检测：它要求披露声明旁边必�
 - [EditGuard: Versatile Image Watermarking for Tamper Localization and Copyright Protection（arXiv:2312.08883，CVPR 2024）](https://arxiv.org/abs/2312.08883) — 预先给原图嵌水印、事后解码定位篡改区域，论文报告定位精度超过 95%
 - [C2PA Investigations（Tim Bray 实测）](https://www.tbray.org/ongoing/When/202x/2025/09/18/C2PA-Investigations) — 社交平台与发布软件普遍剥离图片元数据
 - [Google Photos brings SynthID to Reimagine in Magic Editor（Google 官方博客）](https://blog.google/feed/synthid-reimagine-magic-editor/) — 2025 年 2 月起对 Reimagine 编辑的图片嵌入 SynthID 水印；官方注明过小的编辑可能无法标记和检测
+- [Microsoft 与 BBC 等六方发起 C2PA（Microsoft On the Issues 官方博客，Eric Horvitz，2021 年 2 月 22 日）](https://blogs.microsoft.com/on-the-issues/2021/02/22/deepfakes-disinformation-c2pa-origin-cai/) — C2PA 由 Microsoft、BBC、Adobe、Arm、Intel、Truepic 共同成立；微软研究院 AMP 溯源框架与 Project Origin（BBC、CBC、《纽约时报》、Microsoft）背景
+- [Bing Preview Release Notes: New Experiences Powered by Bing Image Creator（Bing 官方博客）](https://blogs.bing.com/search/september-2023/Bing-Preview-Release-Notes-New-Experiences-Powered-by-Bing-Image-Creator) — Bing Image Creator 生成图附符合 C2PA 规范的内容凭证，含创建时间与 AI 来源
+- [Content Credentials in Azure OpenAI（Microsoft Learn 官方文档）](https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/content-credentials) — DALL-E 与 GPT-image-1 系列生成图自动附加密签名的 C2PA manifest（签名可追溯到 Azure OpenAI），可在 contentcredentials.org 验证；C2PA 凭证定位为「披露内容来源与历史」的防篡改机制
 - [Burst photography for high dynamic range and low-light imaging on mobile cameras（Google Research）](https://research.google/pubs/burst-photography-for-high-dynamic-range-and-low-light-imaging-on-mobile-cameras/) — 手机计算摄影（HDR+）管线
 - [Zillow brings AI-powered Virtual Staging to Showcase listings（Zillow 官方新闻稿）](https://www.prnewswire.com/news-releases/zillow-brings-ai-powered-virtual-staging-to-showcase-listings-302550554.html) — 2025 年 9 月 10 日发布，七种风格、虚拟布置图标、原图滑块对比
