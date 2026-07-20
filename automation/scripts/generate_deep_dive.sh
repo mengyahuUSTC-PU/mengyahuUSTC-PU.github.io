@@ -7,7 +7,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
 
-DATE=${1:-$(date -u +%F)}
+DATE=${1:-$(TZ=America/Los_Angeles date +%F)}
 RANK=${2:-1}
 SCRIPTS=automation/scripts
 PROMPTS=automation/prompts

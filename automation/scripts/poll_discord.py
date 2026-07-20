@@ -151,35 +151,21 @@ def handle_distribution(slug: str):
         send(f"ℹ️ {slug} 已经排程过了，跳过。")
         return
 
-    # Slots per 2026 engagement studies (Buffer 4.8M LinkedIn posts, Sprout 2B
-    # engagements): X peaks midday ET, LinkedIn peaks 3-8pm ET (4pm best).
-    def next_slot(hour_utc: int) -> str:
-        now = datetime.now(timezone.utc)
-        slot = now.replace(hour=hour_utc, minute=0, second=0, microsecond=0)
-        if slot <= now:
-            slot += timedelta(days=1)
-        return slot.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    x_when = next_slot(16)   # 12pm ET — X midday window
-    li_when = next_slot(20)  # 4pm ET — LinkedIn best slot
-
+    # User decision (2026-07-19): publish immediately on approval — freshness
+    # over optimal-hour scheduling.
     try:
-        create_draft(thread=[pack["thread"].strip()], publish_at=x_when, title=f"{slug} (X)")
-        create_draft(linkedin=pack["linkedin"], publish_at=li_when,
+        create_draft(thread=[pack["thread"].strip()], publish_at="now", title=f"{slug} (X)")
+        create_draft(linkedin=pack["linkedin"], publish_at="now",
                      title=f"{slug} (LinkedIn)")
     except Exception as exc:
-        send(f"⚠️ Typefully 排程失败（{slug}）：{str(exc)[:300]}")
+        send(f"⚠️ Typefully 发布失败（{slug}）：{str(exc)[:300]}")
         return
 
     pack["status"] = "scheduled"
-    pack["scheduled_for"] = {"x": x_when, "linkedin": li_when}
+    pack["scheduled_for"] = {"x": "now", "linkedin": "now",
+                             "at": datetime.now(timezone.utc).isoformat()}
     dist_file.write_text(json.dumps(pack, ensure_ascii=False, indent=2))
-    send(
-        f"✅ {slug} 已排进 Typefully：\n"
-        f"🐦 thread → {x_when[:16]} UTC（美东中午）\n"
-        f"💼 LinkedIn → {li_when[:16]} UTC（美东下午4点）\n"
-        f"改时间/取消可直接在 Typefully app 里操作。"
-    )
+    send(f"🚀 {slug} 的 X 帖 + LinkedIn 帖已提交立即发布（Typefully 处理中，1-2 分钟内上线）。")
 
 
 HELP_TEXT = ("🤔 没听懂。可用指令：\n"

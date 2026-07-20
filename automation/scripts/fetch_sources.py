@@ -32,6 +32,8 @@ from config import (
 )
 
 DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+from zoneinfo import ZoneInfo
+PT_DATE = datetime.now(ZoneInfo("America/Los_Angeles")).strftime("%Y-%m-%d")
 # Full browser UA: Substack and others 403 on obvious bot agents.
 UA = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -176,7 +178,7 @@ def historical_urls():
     """URLs seen in earlier pool files — used to drop repeats from undated scrapes."""
     seen = set()
     for f in sorted(DATA_DIR.glob("pool-*.json"))[-14:]:
-        if f.name == f"pool-{NOW.strftime('%Y-%m-%d')}.json":
+        if f.name == f"pool-{PT_DATE}.json":
             continue
         try:
             for item in json.loads(f.read_text()).get("items", []):
@@ -210,7 +212,7 @@ def main():
         unique.append(item)
     pool["items"] = unique
 
-    out = DATA_DIR / f"pool-{NOW.strftime('%Y-%m-%d')}.json"
+    out = DATA_DIR / f"pool-{PT_DATE}.json"
     out.write_text(json.dumps(pool, ensure_ascii=False, indent=2))
     print(
         f"{out.name}: {len(pool['items'])} items, "
