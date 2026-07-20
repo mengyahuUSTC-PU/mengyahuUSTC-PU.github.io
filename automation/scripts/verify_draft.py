@@ -3,7 +3,7 @@
 
 Usage: verify_draft.py <pr_number>
 
-1. Three independent verifiers (Opus 4.8, Fable 5, Gemini cross-vendor)
+1. Three independent verifiers (Opus 4.8, Fable 5, GPT via Codex CLI)
    check every claim: cited? source supports it? For uncited claims they
    search the web for a suitable source and record it.
 2. If any verifier flags issues, the writer model revises the article on
@@ -72,36 +72,27 @@ def claude_verify(content: str, model: str) -> str | None:
     return run.stdout.strip() if run.returncode == 0 else None
 
 
-def gemini_verify(content: str) -> str:
-    import os
-    import time as _time
+def gpt_verify(content: str) -> str:
+    """Cross-vendor check via OpenAI Codex CLI (ChatGPT Plus subscription)."""
+    import shutil
 
-    import requests
+    if not shutil.which("codex"):
+        return "⚠️ codex CLI 未安装，跳过 GPT 核查。"
+    run = subprocess.run(
+        ["codex", "exec", "--sandbox", "read-only", "--skip-git-repo-check",
+         VERIFY_PROMPT + "
 
-    key = os.environ.get("GEMINI_API_KEY")
-    if not key:
-        return "⚠️ GEMINI_API_KEY 未配置，跳过跨厂商核查。"
-    url = ("https://generativelanguage.googleapis.com/v1beta/"
-           "models/gemini-flash-latest:generateContent")
-    payload = {
-        "contents": [{"parts": [{"text": VERIFY_PROMPT + "\n\n## 待核查文章\n\n" + content}]}],
-        "tools": [{"google_search": {}}, {"url_context": {}}],
-    }
-    for attempt in range(3):
-        resp = requests.post(url, headers={"x-goog-api-key": key},
-                             json=payload, timeout=300)
-        if resp.status_code == 429 and attempt < 2:
-            _time.sleep(70)
-            continue
-        break
-    if not resp.ok:
-        return f"⚠️ Gemini 核查失败（HTTP {resp.status_code}）。"
-    try:
-        parts = resp.json()["candidates"][0]["content"]["parts"]
-        return "\n".join(p.get("text", "") for p in parts if p.get("text")).strip() \
-            or "⚠️ Gemini 返回为空。"
-    except (KeyError, IndexError):
-        return "⚠️ Gemini 响应格式异常。"
+## 待核查文章
+
+" + content],
+        cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
+    )
+    if run.returncode != 0:
+        err = (run.stderr or run.stdout)[-200:]
+        if "login" in err.lower() or "auth" in err.lower():
+            return "⚠️ codex 未登录（需要用户完成 ChatGPT 授权），跳过 GPT 核查。"
+        return f"⚠️ GPT 核查失败：{err}"
+    return run.stdout.strip() or "⚠️ GPT 返回为空。"
 
 
 FLAG_MARKS = ("🔗", "⚠️", "❌", "🚫")
@@ -192,7 +183,7 @@ def main():
             out = claude_verify(content, model)
             file_reports.append(
                 f"### `{rel}` · 核查员 {label}\n\n{out or '⚠️ 核查器运行失败'}")
-        file_reports.append(f"### `{rel}` · 核查员 Gemini（跨厂商）\n\n{gemini_verify(content)}")
+        file_reports.append(f"### `{rel}` · 核查员 GPT（跨厂商）\n\n{gpt_verify(content)}")
         all_reports.extend(file_reports)
 
         if any(any(m in r for m in FLAG_MARKS) for r in file_reports):
@@ -223,7 +214,7 @@ def main():
                   if fixed_files else "无需修正或修正未产生变化。"))
     body = (
         "\n\n".join(all_reports) + summary
-        + "\n\n*三方核查：Opus 4.8、Fable 5（各自独立上下文）+ Gemini（跨厂商）；"
+        + "\n\n*三方核查：Opus 4.8、Fable 5（各自独立上下文）+ GPT（跨厂商，经 Codex CLI）；"
           "缺引用的断言由核查员找源、写作模型补引，无法核实的自动降级。*"
         + "\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)"
     )
