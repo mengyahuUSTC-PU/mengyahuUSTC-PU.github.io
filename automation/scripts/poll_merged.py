@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-"""Detect merged Chinese post PRs and auto-generate the English-version PR.
+"""Post-merge orchestrator. Runs from cron and reacts to merged PRs:
 
-Runs from cron. For every merged PR on a post/* branch where the repo now has
-src/content/blog/zh/<slug>.md but no en/<slug>.md, generates the English
-version with claude -p and opens a second PR on branch post/<slug>-en.
+- post/<slug> (zh deep dive) merged  -> three-model fact-check (user iterates
+  BEFORE merging; audit happens after). Issues -> fix PR to Discord; clean ->
+  generate the English version immediately.
+- fix/* merged whose files include a zh article without an EN counterpart
+  -> generate the English version (audit round finished).
+- post/<slug>-en merged -> distribution content generation.
+- post/briefing-* merged -> nothing (briefings are audited pre-review).
 
 State (processed PR numbers) lives in automation/data/state/merged.json.
 """
@@ -31,6 +35,72 @@ def sh(*cmd, timeout=600):
     ).stdout
 
 
+def zh_path(slug):
+    return REPO_ROOT / "src" / "content" / "blog" / "zh" / f"{slug}.md"
+
+
+def en_path(slug):
+    return REPO_ROOT / "src" / "content" / "blog" / "en" / f"{slug}.md"
+
+
+def generate_en(slug: str) -> bool:
+    """EN native rewrite from the (audited) zh version; opens the EN PR."""
+    send(f"🌐 中文版已定稿（{slug}），开始生成英文版…")
+    prompt = (
+        (PROMPTS / "editorial-baseline.md").read_text()
+        + "\n\n" + (PROMPTS / "editorial-lessons.md").read_text()
+        + "\n\n" + (PROMPTS / "en-version.md").read_text()
+        + "\n\n## 已发布的中文版全文\n\n" + zh_path(slug).read_text()
+    )
+    raw = None
+    for attempt in (1, 2):
+        run = subprocess.run(
+            ["claude", "-p", "--output-format", "text",
+             "--model", "fable", "--fallback-model", "opus",
+             "--allowedTools", "WebFetch", "WebSearch"],
+            input=prompt, cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
+        )
+        if run.returncode == 0:
+            raw = run.stdout
+            break
+        if attempt == 1:
+            time.sleep(60)
+    if raw is None:
+        send(f"⚠️ 英文版生成失败（{slug}）：\n```{(run.stderr or run.stdout)[-400:]}```")
+        return False
+    clean = subprocess.run(
+        [sys.executable, str(SCRIPTS / "split_output.py"), "json"],
+        input=raw, check=True, capture_output=True, text=True,
+    ).stdout
+    draft = REPO_ROOT / "automation" / "drafts" / f"{slug}.en.md"
+    draft.write_text(clean)
+    try:
+        pr_url = subprocess.run(
+            [sys.executable, str(SCRIPTS / "make_pr.py"), str(draft)],
+            cwd=REPO_ROOT, check=True, capture_output=True, text=True, timeout=300,
+        ).stdout.strip()
+    except subprocess.CalledProcessError as exc:
+        send(f"⚠️ 英文版 PR 创建失败（{slug}）：\n```{(exc.stderr or str(exc))[-400:]}```")
+        return False
+    send(f"📬 英文版 PR 已开：{pr_url}\n（基于审计后的中文终稿原生重写）Merge 后自动生成分发内容。")
+    return True
+
+
+def run_audit(pr_number: int) -> str:
+    """Run the three-model fact-check on a merged PR.
+    Returns "fix_pr" | "clean" | "error"."""
+    run = subprocess.run(
+        [sys.executable, str(SCRIPTS / "verify_draft.py"), str(pr_number)],
+        cwd=REPO_ROOT, capture_output=True, text=True, timeout=2400,
+    )
+    if run.returncode != 0:
+        send(f"⚠️ 三方核查运行失败（PR #{pr_number}）：\n```{(run.stderr or run.stdout)[-400:]}```")
+        return "error"
+    open_fix = sh("gh", "pr", "list", "--state", "open",
+                  "--head", f"fix/pr{pr_number}-factcheck", "--json", "number").strip()
+    return "fix_pr" if json.loads(open_fix or "[]") else "clean"
+
+
 def main():
     load_env()
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -38,17 +108,18 @@ def main():
 
     prs = json.loads(
         sh("gh", "pr", "list", "--state", "merged", "--limit", "20",
-           "--json", "number,headRefName,title")
+           "--json", "number,headRefName,title,files")
     )
     sh("git", "checkout", "-q", "master")
     sh("git", "pull", "-q", "origin", "master")
 
     for pr in prs:
         branch, number = pr["headRefName"], pr["number"]
-        if number in state["done"] or not branch.startswith("post/"):
+        if number in state["done"]:
             continue
-        # Merged EN post -> kick off distribution (thread/LinkedIn/XHS preview).
-        if branch.endswith("-en"):
+
+        # EN post merged -> distribution pack.
+        if branch.startswith("post/") and branch.endswith("-en"):
             slug = branch.removeprefix("post/").removesuffix("-en")
             try:
                 subprocess.run(
@@ -59,60 +130,39 @@ def main():
             except subprocess.CalledProcessError as exc:
                 send(f"⚠️ 分发内容生成失败（{slug}）：\n```{(exc.stderr or str(exc))[-500:]}```")
             continue
-        slug = branch.removeprefix("post/")
-        zh = REPO_ROOT / "src" / "content" / "blog" / "zh" / f"{slug}.md"
-        en = REPO_ROOT / "src" / "content" / "blog" / "en" / f"{slug}.md"
-        if not zh.exists() or en.exists():
+
+        # Briefings are audited before review; nothing to do post-merge.
+        if branch.startswith("post/briefing-"):
             state["done"].append(number)
             continue
 
-        send(f"🌐 检测到中文版已合并（{slug}），开始生成英文版…")
-        prompt = (
-            (PROMPTS / "editorial-baseline.md").read_text()
-            + "\n\n" + (PROMPTS / "editorial-lessons.md").read_text()
-            + "\n\n" + (PROMPTS / "en-version.md").read_text()
-            + "\n\n## 已发布的中文版全文\n\n" + zh.read_text()
-        )
-        try:
-            raw = None
-            for attempt in (1, 2):
-                run = subprocess.run(
-                    ["claude", "-p", "--output-format", "text",
-                     "--model", "fable", "--fallback-model", "opus",
-                     "--allowedTools", "WebFetch", "WebSearch"],
-                    input=prompt, cwd=REPO_ROOT,
-                    capture_output=True, text=True, timeout=900,
-                )
-                if run.returncode == 0:
-                    raw = run.stdout
-                    break
-                if attempt == 1:
-                    time.sleep(60)
-            if raw is None:
-                raise subprocess.CalledProcessError(
-                    run.returncode, run.args,
-                    output=run.stdout, stderr=run.stderr or run.stdout,
-                )
-            clean = subprocess.run(
-                [sys.executable, str(SCRIPTS / "split_output.py"), "json"],
-                input=raw, check=True, capture_output=True, text=True,
-            ).stdout
-            draft = REPO_ROOT / "automation" / "drafts" / f"{slug}.en.md"
-            draft.write_text(clean)
-            pr_url = subprocess.run(
-                [sys.executable, str(SCRIPTS / "make_pr.py"), str(draft)],
-                cwd=REPO_ROOT, check=True, capture_output=True, text=True, timeout=300,
-            ).stdout.strip()
-            send(f"📬 英文版 PR 已开：{pr_url}\n独立核查随后跟进…")
-            m = re.search(r"/pull/(\d+)", pr_url)
-            if m:
-                subprocess.run(
-                    [sys.executable, str(SCRIPTS / "verify_draft.py"), m.group(1)],
-                    cwd=REPO_ROOT, capture_output=True, text=True, timeout=1200,
-                )
+        # zh deep dive merged -> post-merge audit (user has finished iterating).
+        if branch.startswith("post/"):
+            slug = branch.removeprefix("post/")
+            if not zh_path(slug).exists() or en_path(slug).exists():
+                state["done"].append(number)
+                continue
+            send(f"🔍 {slug} 已合并，启动三方核查（Opus + Fable + GPT）…")
+            outcome = run_audit(number)
+            if outcome == "fix_pr":
+                send("核查发现问题，修正 PR 已开（见上方链接）。**Merge 修正后我再生成英文版。**")
+                state["done"].append(number)
+            elif outcome == "clean":
+                generate_en(slug)
+                state["done"].append(number)
+            # on "error": leave un-done so the next cron retries
+            continue
+
+        # Audit fix PR merged -> the zh text is final; generate EN if missing.
+        if branch.startswith("fix/"):
+            for f in pr.get("files", []):
+                m = re.match(r"src/content/blog/zh/(.+)\.md$", f["path"])
+                if m and not en_path(m.group(1)).exists():
+                    generate_en(m.group(1))
             state["done"].append(number)
-        except subprocess.CalledProcessError as exc:
-            send(f"⚠️ 英文版生成失败（{slug}）：\n```{(exc.stderr or str(exc))[-500:]}```")
+            continue
+
+        state["done"].append(number)
 
     STATE_FILE.write_text(json.dumps(state))
 

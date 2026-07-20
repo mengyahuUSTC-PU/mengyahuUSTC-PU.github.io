@@ -377,13 +377,7 @@ def handle_selection(ranks, date):
                     [sys.executable, str(SCRIPTS / "make_pr.py"), str(draft)],
                     cwd=REPO_ROOT, check=True, capture_output=True, text=True, timeout=300,
                 ).stdout.strip()
-                send(f"📬 选题 {rank} 草稿已开 PR：{pr}\n手机上 Merge = 发布；要改就在 PR 留言。独立核查随后跟进…")
-                m = re.search(r"/pull/(\d+)", pr)
-                if m:
-                    subprocess.run(
-                        [sys.executable, str(SCRIPTS / "verify_draft.py"), m.group(1)],
-                        cwd=REPO_ROOT, capture_output=True, text=True, timeout=1200,
-                    )
+                send(f"📬 选题 {rank} 草稿已开 PR：{pr}\n随便迭代（PR 留言或「改」指令），满意后 Merge——**Merge 才触发三方核查**，核查通过后自动出英文版。")
             except subprocess.CalledProcessError as exc:
                 send(f"⚠️ 选题 {rank} 写稿失败：\n```{(exc.stderr or str(exc))[-500:]}```")
 
