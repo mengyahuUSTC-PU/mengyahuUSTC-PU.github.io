@@ -99,13 +99,21 @@ def main():
         body_parts += ["", "## 事实核查点 / 备选标题", *comments]
     body_parts += ["", "**Merge = 发布上线。** 需要修改请在 PR 里留言。", "", "🤖 Generated with [Claude Code](https://claude.com/claude-code)"]
 
-    pr_url = sh(
-        "gh", "pr", "create",
-        "--title", titles[0],
-        "--body", "\n".join(body_parts),
-        "--base", "master",
-        "--head", branch,
-    )
+    try:
+        pr_url = sh(
+            "gh", "pr", "create",
+            "--title", titles[0],
+            "--body", "\n".join(body_parts),
+            "--base", "master",
+            "--head", branch,
+        )
+    except subprocess.CalledProcessError:
+        # An open PR for this branch already exists (e.g. regeneration after
+        # the zh source was revised) — the push above already updated it.
+        pr_url = sh("gh", "pr", "list", "--head", branch, "--state", "open",
+                    "--json", "url", "--jq", ".[0].url")
+        if not pr_url:
+            raise
     sh("git", "checkout", "-q", "master")
     print(pr_url)
 
