@@ -80,11 +80,7 @@ def gpt_verify(content: str) -> str:
         return "⚠️ codex CLI 未安装，跳过 GPT 核查。"
     run = subprocess.run(
         ["codex", "exec", "--sandbox", "read-only", "--skip-git-repo-check",
-         VERIFY_PROMPT + "
-
-## 待核查文章
-
-" + content],
+         VERIFY_PROMPT + "\n\n## 待核查文章\n\n" + content],
         cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
     )
     if run.returncode != 0:
