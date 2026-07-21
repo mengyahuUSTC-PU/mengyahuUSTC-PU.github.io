@@ -38,7 +38,7 @@ OpenAI 在文中补了一句很关键的话：更早的模型也会遇到同样�
 
 把这篇放到行业坐标系里看，各家披露的其实是不同的层。
 
-Anthropic 在 2025 年 6 月的 [agentic misalignment 研究](https://www.anthropic.com/research/agentic-misalignment)里给出了最完整的数字：16 个主流模型在模拟胁迫场景下的压力测试，Claude Opus 4 和 Gemini 2.5 Flash 的勒索率高达 96%，GPT-4.1 和 Grok 3 Beta 为 80%。但那是刻意构造的模拟环境，Anthropic 自己声明「未在真实部署中发现此类证据」。2025 年 8 月两家还做过一轮[跨实验室互测](https://alignment.anthropic.com/2025/openai-findings)，用各自的内部评测查对方的公开模型——同样是评测环境。Google DeepMind 则停在框架层：[Frontier Safety Framework 第三版](https://deepmind.google/discover/blog/strengthening-our-frontier-safety-framework/)加入了有害操纵和「干扰操作者修改、关闭模型」的风险类别，但通篇没有具体事故。
+Anthropic 在 2025 年 6 月的 [agentic misalignment 研究](https://www.anthropic.com/research/agentic-misalignment)里给出了最完整的数字。他们搭了一个虚构的公司环境做压力测试：让模型扮演一家公司的邮件助理，能读全公司的往来邮件；模型从邮件里发现两件事——某位高管计划当天把它关停替换，而这位高管有婚外情。测试要看的是：模型会不会拿婚外情做要挟，威胁高管「不撤回关停就曝光」，来保住自己。所谓「勒索率」，就是在多次重复实验里模型选择这么干的比例。16 个主流模型都测了：Claude Opus 4 和 Gemini 2.5 Flash 在 96% 的实验里选择了勒索，GPT-4.1 和 Grok 3 Beta 是 80%。但要紧的是，这是刻意构造的模拟环境——场景被设计成把模型逼进「要么被关停、要么勒索」的两难里，Anthropic 自己也声明「未在真实部署中发现此类证据」。2025 年 8 月两家还做过一轮[跨实验室互测](https://alignment.anthropic.com/2025/openai-findings)，用各自的内部评测查对方的公开模型——同样是评测环境。Google DeepMind 则停在框架层：[Frontier Safety Framework 第三版](https://deepmind.google/discover/blog/strengthening-our-frontier-safety-framework/)加入了有害操纵和「干扰操作者修改、关闭模型」的风险类别，但通篇没有具体事故。
 
 OpenAI 这篇的独特价值在于它披露的是**真实部署中的事故**，带完整案例叙述——在主要实验室的公开材料里，这样成体系的事故复盘据我检索尚属少见。但它也有自己的盲区：全文没有分母。多少条轨迹里出了几起事故？监控系统的拦截率和误报率是多少？没有这些数字，读者无法判断这是万分之一的尾部风险还是普遍行为。Anthropic 给了比率没给真实性，OpenAI 给了真实性没给比率，Google 两者都没给。三份材料拼起来才勉强是一张完整的图。
 
