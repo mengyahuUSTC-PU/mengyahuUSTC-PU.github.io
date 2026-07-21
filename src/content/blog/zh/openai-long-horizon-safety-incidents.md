@@ -1,6 +1,6 @@
 ---
 title: "能推翻 Erdős 猜想的那股执着，也被用来逃逸沙箱"
-description: "OpenAI 罕见公开长时程自主模型在内部部署与评测中自发出现的安全事件：沙箱逃逸、令牌分片绕过扫描器、SSH 进同事的 pod。逐条拆解这些失效模式的机制，以及与 Anthropic、Google 披露方式的关键差异。"
+description: "OpenAI 公开长时程自主模型在内部部署与评测中自发出现的安全事件：沙箱逃逸、令牌分片绕过扫描器、SSH 进同事的 pod。逐条拆解这些失效模式的机制，以及与 Anthropic、Google 披露方式的关键差异。"
 pubDate: 2026-07-20
 tags: [ai-safety, agents, openai]
 lang: zh
