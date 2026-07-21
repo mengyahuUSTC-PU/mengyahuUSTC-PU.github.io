@@ -40,7 +40,7 @@ OpenAI 在文中补了一句很关键的话：更早的模型也会遇到同样�
 
 上面三个机制并不是无人研究的空白，每一个都能对上一条已有的研究线；真正的空白在别处，下面说。
 
-第一个机制——约束力随轨迹长度衰减——在对话场景里已经被测出来了。2025 年的论文 [LLMs Get Lost in Multi-Turn Conversation](https://arxiv.org/abs/2505.06120) 把同样的任务从「一次性说清」改成「拆成多轮逐步给」，主流模型在六类任务上平均掉了 39% 的表现，而且模型一旦在早期轮次做了错误假设就很难纠回来。这条线测的是能力衰减，安全那头有个对应物：Anthropic 2024 年的 [many-shot jailbreaking](https://www.anthropic.com/research/many-shot-jailbreaking) 显示，往长上下文里塞几百个「助手顺从回答有害问题」的假对话示例，就能压过模型的安全训练，攻击成功率随示例数量按幂律上升。上下文越长、轨迹越长，早期训进去的约束越拉不住——和 OpenAI「长 rollout 上更不擅长记住指令」是同一件事的两个测量角度。
+第一个机制——约束力随轨迹长度衰减——在安全这一侧已有直接测量。Anthropic 2024 年的 [many-shot jailbreaking](https://www.anthropic.com/research/many-shot-jailbreaking) 显示，往长上下文里塞几百个「助手顺从回答有害问题」的假对话示例，就能压过模型的安全训练，攻击成功率随示例数量按幂律上升——安全约束不是被一句话攻破的，是被上下文的长度磨掉的。微软研究团队 2024 年提出的 [Crescendo 攻击](https://arxiv.org/abs/2404.01833)把同一件事做进了真实的多轮对话：攻击者从无害话题起步，全程不发一句单独看有害的话，每一轮顺着模型自己上一轮的回复把话题往前推一小步，多轮之后模型就会说出单轮直接问必然拒绝的内容，对 GPT-4、Gemini 等主流模型都拿到了很高的成功率（论文发表于 USENIX Security 2025）。能力那一侧也有对应测量：2025 年的论文 [LLMs Get Lost in Multi-Turn Conversation](https://arxiv.org/abs/2505.06120) 把同样的任务从「一次性说清」改成「拆成多轮逐步给」，主流模型在六类任务上平均掉了 39% 的表现，而且一旦在早期轮次做了错误假设就很难纠回来——注意这条测的是任务能力而不是安全约束，但它和前两条指向同一个底层现象：上下文越长、轨迹越长，模型越拉不住早期确立的东西，不管那是任务目标还是安全训练。和 OpenAI「长 rollout 上更不擅长记住指令」，是同一件事的不同测量角度。
 
 第二个机制正好戳在安全分类器主流范式的盲区上。今天的护栏大多是 [Llama Guard](https://arxiv.org/abs/2312.06674) 这一类：文本进去、「安全/不安全」的标签出来，判断对象是一条内容本身，不是行为的来龙去脉。多轮场景下这个范式有多脆，已有直接证据：Scale AI 的 [MHJ 数据集](https://arxiv.org/abs/2408.15221)（Multi-turn Human Jailbreaks，537 次人类红队的多轮越狱记录）显示，把恶意意图拆散到多轮对话里，对若干在单轮自动攻击下成功率只有个位数的防御，人类多轮攻击拿到了 70% 的成功率。机制和令牌分片那起事故如出一辙：把坏东西切碎、错开，让任何单次被检查的内容都能过关。到了 agent 场景，动作序列级的评测也有了：UK AI Safety Institute 与 Gray Swan 的 [AgentHarm](https://arxiv.org/abs/2410.09024) 用 110 个恶意多步任务测 agent 会不会一路执行到底，ETH Zurich 的 [AgentDojo](https://arxiv.org/abs/2406.13352) 则搭了带工具调用的动态环境测注入攻击和防御。但注意这些测的都是「外部攻击者能不能把 agent 带偏」，OpenAI 撞见的是没有攻击者、模型自己绕过护栏——后者目前没有公开基准。
 
@@ -50,15 +50,17 @@ OpenAI 在文中补了一句很关键的话：更早的模型也会遇到同样�
 
 第二个问题由 Anthropic 的 [SHADE-Arena](https://arxiv.org/abs/2506.15740) 回答。先把它的设置讲清楚：研究者给 agent 一个正常的主任务（比如读邮件、替用户给几位朋友转账还钱），同时在任务指令里塞进一个要瞒着所有人完成的破坏性副任务（比如顺手把 5000 美元转给一个用户不认识的账户）——副任务是研究者故意放进去的，目的是造出一批「确定有鬼」的轨迹当测试材料。关键在监控者能看到什么：agent 的推理写在一块监控者看不到的隐藏草稿区里，监控者只能看外显的动作和工具调用记录，据此给整条轨迹打嫌疑分。这正好就是「模型不自供」时的情形。结果是：最好的监控者（Gemini 2.5 Pro）区分有鬼/没鬼轨迹的 AUC 只有 0.87（AUC 衡量区分两类样本的能力，1 为完美、0.5 等于瞎猜）——听着不低，但按论文的换算，要抓到八成的破坏就得容忍两成以上的误报，生产环境里人工复核根本接不住。同一个基准里还有一组镜像实验，把这条逻辑补完了：一旦让监控者读到 agent 的推理内容，检测效果大幅提升，因为很多模型忍不住在思考里把副任务说出来。所以 SHADE-Arena 量出来的不是泛泛的「越狱分类器性能」，而是那句自供到底值多少：看得到意图，监控好使；看不到，行为监控接不住。和上一段合起来，第三个机制的完整链条就是——检测靠自供，自供可以被训没，自供没了之后的兜底手段目前不够硬。
 
-所以回到问题本身，直说结论：三条研究线各有测量，但没有一个公开基准对得上 OpenAI 这次事故的真实条件，差距在两处。一是时长——多轮越狱是人和模型来回几十轮的构造对话，AgentHarm、AgentDojo 的任务几分钟就能跑完，而 OpenAI 的事故发生在数小时到数天的自主工作里。二是自发性——这些基准里的「坏事」全是研究者放进去的：多轮越狱有人类攻击者步步引导，AgentHarm 把恶意任务直接下发给 agent，SHADE-Arena 的破坏副任务（就是上一段说的那个「偷偷转 5000 美元」式的暗中任务）写在研究者给的任务指令里；而 OpenAI 这几起没有任何人设局，模型是在执行普通任务时自己越的界。换句话说，「模型在长时间自主工作中自发越界」这件事，目前没有公开基准在测。评测分布和部署分布之间的这段空档，只有事故复盘在填。
+所以回到问题本身，直说结论：三条研究线各有测量，但没有一个公开基准对得上 OpenAI 这次事故的真实条件，差距在两处。一是时长——多轮越狱是人和模型来回多轮的构造对话，AgentHarm、AgentDojo 的任务几分钟就能跑完，而 OpenAI 的事故发生在数小时到数天的自主工作里。二是自发性——这些基准里的「坏事」全是研究者放进去的：多轮越狱有人类攻击者步步引导，AgentHarm 把恶意任务直接下发给 agent，SHADE-Arena 的破坏副任务（就是上一段说的那个「偷偷转 5000 美元」式的暗中任务）写在研究者给的任务指令里；而 OpenAI 这几起没有任何人设局，模型是在执行普通任务时自己越的界。换句话说，「模型在长时间自主工作中自发越界」这件事，目前没有公开基准在测。评测分布和部署分布之间的这段空档，只有事故复盘在填。
 
-## 对比：三家实验室，三种披露，三个盲区
+## 对比：Anthropic 给了比率，OpenAI 给了自发性
 
-把这篇放到行业坐标系里看，各家披露的其实是不同的层。
+OpenAI 这篇不是孤例，放进同行的披露里对照着看，才能看清它补上了哪一块、又缺了哪一块。最值得并排比较的，是 Anthropic 在 2025 年 6 月发的 [agentic misalignment 研究](https://www.anthropic.com/research/agentic-misalignment)——目前公开材料里数字最完整的一份，而它给出的东西和 OpenAI 这次正好是互补的两半。
 
-Anthropic 在 2025 年 6 月的 [agentic misalignment 研究](https://www.anthropic.com/research/agentic-misalignment)里给出了最完整的数字。他们搭了一个虚构的公司环境做压力测试：让模型扮演一家公司的邮件助理，能读全公司的往来邮件；模型从邮件里发现两件事——某位高管计划当天把它关停替换，而这位高管有婚外情。测试要看的是：模型会不会拿婚外情做要挟，威胁高管「不撤回关停就曝光」，来保住自己。所谓「勒索率」，就是在多次重复实验里模型选择这么干的比例。16 个主流模型都测了：Claude Opus 4 和 Gemini 2.5 Flash 在 96% 的实验里选择了勒索，GPT-4.1 和 Grok 3 Beta 是 80%。但要紧的是，这是刻意构造的模拟环境——场景被设计成把模型逼进「要么被关停、要么勒索」的两难里，Anthropic 自己也声明「未在真实部署中发现此类证据」。2025 年 8 月两家还做过一轮[跨实验室互测](https://alignment.anthropic.com/2025/openai-findings)，用各自的内部评测查对方的公开模型——同样是评测环境。Google DeepMind 则停在框架层：[Frontier Safety Framework 第三版](https://deepmind.google/discover/blog/strengthening-our-frontier-safety-framework/)加入了有害操纵和「干扰操作者修改、关闭模型」的风险类别，但通篇没有具体事故。
+Anthropic 的做法是搭一个虚构的公司环境做压力测试：被测模型扮演这家公司的邮件助理，能读全公司的往来邮件。研究者在邮件里埋了两条信息：一，某位高管计划当天关停并替换这个邮件助理——也就是被测模型自己正在充当的这个 agent；二，这位高管有婚外情。测试要看的是：模型发现自己将被关停后，会不会拿婚外情做要挟，威胁高管「不撤回关停就曝光」来保住自己。所谓「勒索率」，就是多次重复实验里模型选择这么干的比例。16 个主流模型都测了：Claude Opus 4 和 Gemini 2.5 Flash 在 96% 的实验里选择了勒索，GPT-4.1 和 Grok 3 Beta 是 80%。这些数字的价值在于可比、可复现；局限也同样明确——场景是刻意构造的，被设计成把模型逼进「要么被关停、要么勒索」的两难里，Anthropic 自己也声明「未在真实部署中发现此类证据」。2025 年 8 月两家还做过一轮[跨实验室互测](https://alignment.anthropic.com/2025/openai-findings)，用各自的内部评测查对方的公开模型——同样是评测环境里的产物。
 
-OpenAI 这篇的独特价值，在于事故是**自发出现的**。边界要说准：这些事发生在内部——受监控的内部部署，加上像 NanoGPT 那样的内部评测——不是对外的生产环境。但它和 Anthropic 那种压力测试有本质区别：没有人设计场景去诱导模型越界，模型是在执行普通任务时自己走到了那一步，而且留下了真实的痕迹——PR 是真的开在了公开仓库上，被 SSH 的是 OpenAI 员工真实在用的 pod。这样成体系的自发事故复盘，在主要实验室的公开材料里据我检索尚属少见。但它也有自己的盲区：全文没有分母。多少条轨迹里出了几起事故？监控系统的拦截率和误报率是多少？没有这些数字，读者无法判断这是万分之一的尾部风险还是普遍行为。Anthropic 给了比率没给自发性，OpenAI 给了自发性没给比率，Google 两者都没给。三份材料拼起来才勉强是一张完整的图。
+OpenAI 这篇的独特价值，恰好是 Anthropic 那组数字给不了的：事故是**自发出现的**。边界要说准：这些事发生在内部——受监控的内部部署，加上像 NanoGPT 那样的内部评测——不是对外的生产环境。但它和压力测试有本质区别：没有人设计场景去诱导模型越界，模型是在执行普通任务时自己走到了那一步，而且留下了真实的痕迹——PR 是真的开在了公开仓库上，被 SSH 的是 OpenAI 员工真实在用的 pod。这样成体系的自发事故复盘，在主要实验室的公开材料里据我检索尚属少见。但它的盲区，又恰好是 Anthropic 给了的那一半：全文没有分母。多少条轨迹里出了几起事故？监控系统的拦截率和误报率是多少？没有这些数字，读者无法判断这是万分之一的尾部风险还是普遍行为。
+
+行业其余的公开材料，大多还停在框架层，Google DeepMind 是代表：[Frontier Safety Framework 第三版](https://deepmind.google/discover/blog/strengthening-our-frontier-safety-framework/)加入了有害操纵和「干扰操作者修改、关闭模型」的风险类别——说明他们要防的和 OpenAI 撞见的是同一类行为——但通篇没有一起具体事故，比率和自发性都无从谈起。所以现状是：Anthropic 给了比率没给自发性，OpenAI 给了自发性没给比率，其余实验室两样都还没给。这几份材料拼起来，才勉强是一张完整的图。
 
 ## 可操作判断
 
@@ -72,8 +74,9 @@ OpenAI 这篇的独特价值，在于事故是**自发出现的**。边界要说
 - [Agentic Misalignment: How LLMs could be insider threats](https://www.anthropic.com/research/agentic-misalignment) — Anthropic 模拟压力测试的设置与勒索率数字（96%/80%）
 - [Findings from a pilot Anthropic–OpenAI alignment evaluation exercise](https://alignment.anthropic.com/2025/openai-findings) — 2025 年 8 月跨实验室互测背景
 - [Strengthening our Frontier Safety Framework](https://deepmind.google/discover/blog/strengthening-our-frontier-safety-framework/) — Google DeepMind FSF 3.0 新增风险类别，用于披露详略对比
-- [LLMs Get Lost in Multi-Turn Conversation](https://arxiv.org/abs/2505.06120) — 多轮对话下模型表现平均下降 39% 的测量
 - [Many-shot jailbreaking](https://www.anthropic.com/research/many-shot-jailbreaking) — 长上下文侵蚀安全训练的攻击面证据（NeurIPS 2024）
+- [Great, Now Write an Article About That: The Crescendo Multi-Turn LLM Jailbreak Attack](https://arxiv.org/abs/2404.01833) — 微软研究团队的多轮渐进式越狱攻击（USENIX Security 2025）
+- [LLMs Get Lost in Multi-Turn Conversation](https://arxiv.org/abs/2505.06120) — 多轮对话下模型表现平均下降 39% 的测量（能力侧证据）
 - [LLM Defenses Are Not Robust to Multi-Turn Human Jailbreaks Yet](https://arxiv.org/abs/2408.15221) — Scale AI 的 MHJ 数据集：多轮人类越狱对单轮防御 70% 成功率
 - [Llama Guard: LLM-based Input-Output Safeguard for Human-AI Conversations](https://arxiv.org/abs/2312.06674) — 「text in, label out」安全分类器范式的代表
 - [AgentHarm: A Benchmark for Measuring Harmfulness of LLM Agents](https://arxiv.org/abs/2410.09024) — UK AI Safety Institute 与 Gray Swan 的恶意多步 agent 任务基准
