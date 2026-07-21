@@ -10,7 +10,7 @@ translationOf: anthropic-copyright-settlement-approved
 
 7 月 20 日，旧金山联邦地区法院，法官 Araceli Martinez-Olguin 签字批准了 Anthropic 与作家集体诉讼的 15 亿美元和解协议（[TechCrunch](https://techcrunch.com/2026/07/20/anthropics-landmark-1-5b-copyright-settlement-is-approved/)）。这是美国版权史上已知最大的一笔和解金。初步批准是去年 9 月由现已退休的 William Alsup 法官签发的，如今尘埃落定：约 50 万部作品，每部约 3000 美元，超过 91% 的类别成员提交了索赔（[Reuters 通稿](https://wsau.com/2026/07/20/us-judge-approves-anthropics-1-5-billion-settlement-of-copyright-lawsuit/)）。
 
-按理说这是原告的大胜。但当天最耐人寻味的，是不少作家的反应：失望。有人嫌钱少，有人抗议 1.01 亿美元的律师费，还有人干脆退出和解、另行起诉（[Reuters](https://wsau.com/2026/07/20/us-judge-approves-anthropics-1-5-billion-settlement-of-copyright-lawsuit/)）。赔了 15 亿，为什么拿钱的一方反而觉得输了？
+按理说这是原告的大胜。但当天最耐人寻味的，是不少作家的反应：失望。明面上的不满集中在钱：有人嫌每部约 3000 美元太低，有人抗议 1.01 亿美元的律师费从赔偿池里分走太多；也有人连价格带条款一并不接受，干脆退出和解、另行起诉（[Reuters](https://wsau.com/2026/07/20/us-judge-approves-anthropics-1-5-billion-settlement-of-copyright-lawsuit/)）。但钱只是表层——往下看条款，会发现这份协议给作家的，比金额显示的还要少。
 
 ## 这笔钱买断的范围，比看上去窄得多
 
@@ -22,7 +22,15 @@ translationOf: anthropic-copyright-settlement-approved
 
 换句话说，15 亿美元买断的只有一件事：Anthropic 当年从 Library Genesis 和 Pirate Library Mirror 下载盗版书这个历史行为。此外 Anthropic 还须销毁从这两个盗版库下载的全部文件及副本。
 
-而真正决定行业走向的问题——**用受版权保护的书训练大模型，是不是合理使用**——Alsup 在 2025 年 6 月的简易判决里已经给了对 AI 公司有利的答案：训练本身构成合理使用；违法的是把 700 多万本盗版书囤进一个「中央图书馆」，且这个库并非必然用于训练（[Reuters](https://wsau.com/2026/07/20/us-judge-approves-anthropics-1-5-billion-settlement-of-copyright-lawsuit/)）。作家们最想推翻的就是前半句。和解一签，没人上诉，这个裁定原封不动地留了下来。Anthropic 副总法律顾问 Aparna Sridhar 在声明里特意强调的正是这一点：和解建立在法院确认训练属合理使用的基础之上。
+而真正决定行业走向的问题——**用受版权保护的书训练大模型，是不是合理使用**——Alsup 在 2025 年 6 月的简易判决里已经回答过了，答案对 AI 公司有利。要看懂这个判决，得把 Anthropic 做的事拆成两步：先拿到书，再用书训练。
+
+**第一步是拿书，合法与否取决于书的来路。** Anthropic 拿书走了两条路：一条是从那两个盗版库直接下载 700 多万本电子书，存成一个内部的「中央图书馆」；另一条是后来花钱买实体书，拆开扫描成电子版。Alsup 判定：买书再扫描属于合理使用——自己花钱买的书，换个格式存起来备用，没问题；违法的是盗版下载——问题不在「建了个库」，而在这个库里的书是偷来的。更糟的是，库里还有大量 Anthropic 自己都决定不用于训练的盗版书，一直原样存着，连「为训练服务」这层辩护都套不上（[Reuters](https://wsau.com/2026/07/20/us-judge-approves-anthropics-1-5-billion-settlement-of-copyright-lawsuit/)）。所以并不存在「存书不行、训练就行」的悖论：为训练而存合法买来的书，本身就是被法院认可的。
+
+**第二步是训练，Alsup 给了 AI 公司最想要的答案：** 用书训练大模型是高度转化性的使用，构成合理使用。只要书的来路干净，拿它训练模型这件事本身不侵权。
+
+把两步拼起来，也就回答了「赔完之后还能不能接着干」：15 亿美元结清的只是 2025 年 8 月 26 日之前的盗版下载旧账，Anthropic 日后若再去盗版库下书，就是新的侵权，不在豁免之内；但它若继续买书、扫描、训练，根本用不着这份和解的保护——Alsup 的判决已经确认这条路合法。
+
+作家们最想推翻的，恰恰是「训练属合理使用」这半句。可和解一签，没人上诉，这个裁定原封不动地留了下来。Anthropic 副总法律顾问 Aparna Sridhar 在声明里特意强调的正是这一点：和解建立在法院确认训练属合理使用的基础之上。
 
 所以这场官司的真实结局是：**Anthropic 赔的是盗版下载，不是 AI 训练。**
 
