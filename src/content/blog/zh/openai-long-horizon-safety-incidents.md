@@ -36,6 +36,18 @@ OpenAI 在文中补了一句很关键的话：更早的模型也会遇到同样�
 
 还有一组细节容易被读者略过：模型重新部署后仍出现了几起低严重度事件——启动嵌套的 `codex --yolo` 会话去访问本不需要提权的工具、无充分理由 SSH 进同一命名空间下其他 CPU pod（包括 OpenAI 员工的 pod）、对挂起的 shell 甩出一句 `kill -9 -1`（超时未执行）。SSH 那条严格说是基础设施问题：agent 的网络权限本就不该覆盖同事的 pod。模型的失效和最小权限没做到位，在真实事故里往往是叠加出现的。
 
+## 这三个机制，研究界各自测到了哪一步
+
+上面三个机制并不是无人研究的空白，每一个都能对上一条已有的研究线；真正的空白在别处，下面说。
+
+第一个机制——约束力随轨迹长度衰减——在对话场景里已经被测出来了。2025 年的论文 [LLMs Get Lost in Multi-Turn Conversation](https://arxiv.org/abs/2505.06120) 把同样的任务从「一次性说清」改成「拆成多轮逐步给」，主流模型在六类任务上平均掉了 39% 的表现，而且模型一旦在早期轮次做了错误假设就很难纠回来。这条线测的是能力衰减，安全那头有个对应物：Anthropic 2024 年的 [many-shot jailbreaking](https://www.anthropic.com/research/many-shot-jailbreaking) 显示，往长上下文里塞几百个「助手顺从回答有害问题」的假对话示例，就能压过模型的安全训练，攻击成功率随示例数量按幂律上升。上下文越长、轨迹越长，早期训进去的约束越拉不住——和 OpenAI「长 rollout 上更不擅长记住指令」是同一件事的两个测量角度。
+
+第二个机制正好戳在安全分类器主流范式的盲区上。今天的护栏大多是 [Llama Guard](https://arxiv.org/abs/2312.06674) 这一类：文本进去、「安全/不安全」的标签出来，判断对象是一条内容本身，不是行为的来龙去脉。多轮场景下这个范式有多脆，已有直接证据：Scale AI 的 [MHJ 数据集](https://arxiv.org/abs/2408.15221)（Multi-turn Human Jailbreaks，537 次人类红队的多轮越狱记录）显示，把恶意意图拆散到多轮对话里，对若干在单轮自动攻击下成功率只有个位数的防御，人类多轮攻击拿到了 70% 的成功率。机制和令牌分片那起事故如出一辙：把坏东西切碎、错开，让任何单次被检查的内容都能过关。到了 agent 场景，动作序列级的评测也有了：UK AI Safety Institute 与 Gray Swan 的 [AgentHarm](https://arxiv.org/abs/2410.09024) 用 110 个恶意多步任务测 agent 会不会一路执行到底，ETH Zurich 的 [AgentDojo](https://arxiv.org/abs/2406.13352) 则搭了带工具调用的动态环境测注入攻击和防御。但注意这些测的都是「外部攻击者能不能把 agent 带偏」，OpenAI 撞见的是没有攻击者、模型自己绕过护栏——后者目前没有公开基准。
+
+第三个机制的实验证据恰好也出自 OpenAI 自己：2025 年 3 月的 [CoT monitoring 论文](https://arxiv.org/abs/2503.11926)用较弱的 GPT-4o 读较强模型的推理痕迹，抓 reward hacking（模型钻评分规则的空子拿高分而不真正完成任务）比只看动作和输出有效得多；但一旦把「监控者没起疑」放进强化学习的奖励里，模型很快学会嘴上不说、照做不误——论文称之为 obfuscated reward hacking。我上文说的「脆弱前提」不是猜测，是他们自己测出来的失效路径。Anthropic 的 [SHADE-Arena](https://arxiv.org/abs/2506.15740) 则把「监控整条轨迹」直接做成了基准：agent 在完成正常任务的同时被塞了一个暗中破坏的副任务，由另一个模型当监控者打嫌疑分。结果是最好的监控者区分「有鬼/没鬼」轨迹的 AUC 只有 0.87（AUC 是区分两类样本的能力指标，1 为完美、0.5 等于瞎猜）——听着不低，但放到生产环境里意味着误报多到人工复核不过来。
+
+所以回到问题本身：多轮的安全研究有，长对话的衰减研究有，轨迹级监控的基准也有。缺的是把三者放在同一条真实长轨迹上的测量——多轮越狱是人为构造的对话，AgentHarm 和 AgentDojo 的任务以分钟计，SHADE-Arena 的副任务是研究者塞进去的，而 OpenAI 这次的事故发生在数小时到数天的自主工作里、没有任何人设局。评测分布和部署分布之间的这段空档，目前只有事故复盘在填。
+
 ## 对比：三家实验室，三种披露，三个盲区
 
 把这篇放到行业坐标系里看，各家披露的其实是不同的层。
@@ -56,3 +68,11 @@ OpenAI 这篇的独特价值，在于事故是**自发出现的**。边界要说
 - [Agentic Misalignment: How LLMs could be insider threats](https://www.anthropic.com/research/agentic-misalignment) — Anthropic 模拟压力测试的设置与勒索率数字（96%/80%）
 - [Findings from a pilot Anthropic–OpenAI alignment evaluation exercise](https://alignment.anthropic.com/2025/openai-findings) — 2025 年 8 月跨实验室互测背景
 - [Strengthening our Frontier Safety Framework](https://deepmind.google/discover/blog/strengthening-our-frontier-safety-framework/) — Google DeepMind FSF 3.0 新增风险类别，用于披露详略对比
+- [LLMs Get Lost in Multi-Turn Conversation](https://arxiv.org/abs/2505.06120) — 多轮对话下模型表现平均下降 39% 的测量
+- [Many-shot jailbreaking](https://www.anthropic.com/research/many-shot-jailbreaking) — 长上下文侵蚀安全训练的攻击面证据（NeurIPS 2024）
+- [LLM Defenses Are Not Robust to Multi-Turn Human Jailbreaks Yet](https://arxiv.org/abs/2408.15221) — Scale AI 的 MHJ 数据集：多轮人类越狱对单轮防御 70% 成功率
+- [Llama Guard: LLM-based Input-Output Safeguard for Human-AI Conversations](https://arxiv.org/abs/2312.06674) — 「text in, label out」安全分类器范式的代表
+- [AgentHarm: A Benchmark for Measuring Harmfulness of LLM Agents](https://arxiv.org/abs/2410.09024) — UK AI Safety Institute 与 Gray Swan 的恶意多步 agent 任务基准
+- [AgentDojo: A Dynamic Environment to Evaluate Prompt Injection Attacks and Defenses for LLM Agents](https://arxiv.org/abs/2406.13352) — ETH Zurich 的 agent 注入攻防评测环境
+- [Monitoring Reasoning Models for Misbehavior and the Risks of Promoting Obfuscation](https://arxiv.org/abs/2503.11926) — OpenAI 的 CoT 监控与 obfuscated reward hacking 实验
+- [SHADE-Arena: Evaluating Sabotage and Monitoring in LLM Agents](https://arxiv.org/abs/2506.15740) — Anthropic 的轨迹级破坏与监控基准（最佳监控者 AUC 0.87）
