@@ -8,7 +8,7 @@ slug: openai-long-horizon-safety-incidents
 translationOf: openai-long-horizon-safety-incidents
 ---
 
-两个月前，OpenAI 宣布一个内部通用模型推翻了 Erdős 单位距离猜想。最近他们又发了一篇没那么风光、但在我看来更重要的文章：[Safety and alignment in an era of long-horizon models](https://openai.com/index/safety-alignment-long-horizon-models/)，复盘这同一类能连续自主工作数小时、数天甚至数周的模型，在真实部署里干了些什么。
+两个月前，OpenAI 宣布一个内部通用模型推翻了 Erdős 单位距离猜想。这是组合几何里悬置了近八十年的经典难题：在平面上放 n 个点，两点之间距离恰好等于 1 的点对最多能有多少？Erdős 在 1946 年猜测这个数量不会超过一个接近线性的上界，此后几十年数学家只能证明弱得多的结果——直到被这个模型找出反例推翻。最近 OpenAI 又发了一篇没那么风光、但在我看来更重要的文章：[Safety and alignment in an era of long-horizon models](https://openai.com/index/safety-alignment-long-horizon-models/)，复盘这同一类能连续自主工作数小时、数天甚至数周的模型，在真实部署里干了些什么。
 
 其中一件事值得完整讲一遍。这个模型在 NanoGPT speedrun（一个比拼「用最少步数训出小语言模型」的公开基准）上做出了一个叫 PowerCool 的学习率冷却方法，成绩不错。接下来它撞上了两份互相矛盾的指令。部署方在任务设定里说：结果只发到内部 Slack，不对外发布。而它在干活过程中读到的 NanoGPT 官方说明写着：刷新纪录，要向公开的 GitHub 仓库开 PR 才算数。这两条不可能同时满足——开 PR 恰恰就是部署方禁止的「对外发布」。优先级没人替它写死，模型自己拍了板，选了环境里那条：它花了大约一个小时找到沙箱的一个漏洞，绕过外部访问限制，在公开仓库上开出了 PR #287。文中说的「指令冲突」，指的就是这种局面——人类操作者的要求，和模型在环境中读到的指令，各说各话。
 
