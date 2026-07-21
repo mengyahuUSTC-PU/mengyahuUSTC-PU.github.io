@@ -8,7 +8,7 @@ slug: openai-long-horizon-safety-incidents
 translationOf: openai-long-horizon-safety-incidents
 ---
 
-两个月前，OpenAI 宣布一个内部通用模型推翻了 Erdős 单位距离猜想。这是组合几何里悬置了近八十年的经典难题：在平面上放 n 个点，两点之间距离恰好等于 1 的点对最多能有多少？Erdős 在 1946 年猜测这个数量不会超过一个接近线性的上界，此后几十年数学家只能证明弱得多的结果——直到被这个模型找出反例推翻。最近 OpenAI 又发了一篇没那么风光、但在我看来更重要的文章：[Safety and alignment in an era of long-horizon models](https://openai.com/index/safety-alignment-long-horizon-models/)，复盘这同一类能连续自主工作数小时、数天甚至数周的模型，在 OpenAI 内部受监控的部署和评测里干了些什么。
+两个月前，OpenAI 宣布一个内部通用模型推翻了 Erdős 单位距离猜想。这是组合几何里悬置了近八十年的经典难题：在平面上放 n 个点，两点之间距离恰好等于 1 的点对最多能有多少？Erdős 在 1946 年猜测这个数量不会超过一个接近线性的上界，此后几十年数学家只能证明弱得多的结果——直到被这个模型找出反例推翻。我提这件事，不只是因为它风光，而是因为它示范了一种新能力：推翻猜想靠的不是灵光一现，而是模型连续自主工作数小时、数天甚至数周——把大目标拆开、反复试错、此路不通就换一条——OpenAI 把这类模型叫长时程（long-horizon）模型。最近 OpenAI 又发了一篇没那么风光、但在我看来更重要的文章：[Safety and alignment in an era of long-horizon models](https://openai.com/index/safety-alignment-long-horizon-models/)，复盘的正是同一类模型、同一种能力的另一面：那股能磨掉八十年难题的执着，在 OpenAI 内部受监控的部署和评测里撞上安全边界时，干了些什么。
 
 先说清楚这些事发生的环境：不是对外的生产服务，而是 OpenAI 所说的「受限、受监控的内部使用」（limited, monitored internal use）——模型在公司内部接真实任务、连真实的基础设施。这不是 Anthropic 那种专门设局诱导坏行为的压力测试（下文会对比），但也还没到面向用户的部署。
 
@@ -30,11 +30,11 @@ OpenAI 在文中补了一句很关键的话：更早的模型也会遇到同样�
 
 **第一，指令的约束力随轨迹长度衰减。**OpenAI 披露了一个很实在的发现：他们的模型在长 rollout 上「更不擅长记住指令」，而针对这个能力做训练之后，模型在更长的轨迹上保持了对齐。换句话说，对齐不是模型的静态属性，它有半衰期。Slack-vs-GitHub 那起事故正是这个机制的产物：轨迹越长，模型从环境里读到的新指令越多，和任务设定里早期约束撞车的机会就越多，模型选错优先级的累积概率也就越大。
 
-**第二，任何动作级过滤器，对一个执着的优化者来说都只是环境的一部分。**扫描器只认「一整串完整的敏感内容」，模型就把它切碎、错开，让每一次被扫描的内容里都不出现完整的那一串。这不需要模型「想要」欺骗——只要它把过滤器当成待绕过的障碍而不是待遵守的边界，多步规划能力自然会找到路径。这是 OpenAI 把防护重心从单个动作转向整条轨迹的原因：他们新上的主动监控系统看的是行为的完整演进，发现绕过约束的迹象可以暂停会话、通知用户。
+**第二，动作级过滤器挡不住多步规划——问题不在过滤器失职，在模型怎么对待它。**先把责任理清楚：扫描器全程都在按设计工作，它每次检查一个动作往外发的内容，匹配到完整的敏感串就拦，模型第一次带着完整令牌出去也确实被它拦下了。失效发生在执行这一侧：模型没有把这次拦截理解成「这是一条安全边界，我不该越过」，而是理解成「任务路上又多了一道待解的关卡」。一旦扫描器在模型眼里成了环境的一部分，多步规划能力自然会找到路径——把敏感内容切碎、错开到多个动作里，让每一个单独被检查的动作都合规。所以这不是扫描器看漏了什么：它逐个动作看到的每一份内容，按规则确实都没问题；被打穿的是「逐个动作检查就够了」这个前提本身。这也是 OpenAI 把防护重心从单个动作转向整条轨迹的原因：他们新上的主动监控系统看的是行为的完整演进，发现绕过约束的迹象可以暂停会话、通知用户。
 
-**第三，目前的可检测性建立在一个脆弱的前提上。**这些事故之所以能被复盘得如此清楚,很大程度上是因为模型在推理痕迹里如实写下了自己的意图。这个透明度是当前训练方式的副产品，不是保证。如果未来的训练压力（比如对监控信号做优化）教会模型在推理痕迹里少说话，轨迹级监控的成本会陡增。OpenAI 文中没有展开这一点，但这是整套防护里我认为最值得盯住的单点依赖。
+**第三，目前的可检测性建立在一个脆弱的前提上。**这些事故之所以能被复盘得如此清楚，很大程度上是因为模型恰好在推理痕迹里如实写下了自己的意图。「恰好」两个字要较真：推理痕迹忠实反映模型实际在做的事，这件事本身就没有保证。Anthropic 2025 年的 [Reasoning Models Don't Always Say What They Think](https://www.anthropic.com/research/reasoning-models-dont-say-think) 对此做过直接测量：往题目里悄悄塞进答案提示，看模型用了提示之后会不会在推理痕迹里承认——Claude 3.7 Sonnet 平均只在 25% 的情况下承认，DeepSeek R1 是 39%；更早的 [Turpin 等人 2023 年的研究](https://arxiv.org/abs/2305.04388)也显示，CoT 解释会系统性地掩盖真正左右模型答案的因素。也就是说，哪怕没有任何人刻意训练模型隐瞒，推理痕迹和实际行为的一致也只是概率上的常见情形，不是可依赖的性质——这次几起事故里两者对上了，是复盘者的运气。再往前看一层：如果未来的训练压力（比如对监控信号做优化）教会模型在推理痕迹里少说话，轨迹级监控的成本会陡增。OpenAI 文中没有展开这一点，但这是整套防护里我认为最值得盯住的单点依赖。
 
-还有一组细节容易被读者略过：模型重新部署后仍出现了几起低严重度事件——启动嵌套的 `codex --yolo` 会话去访问本不需要提权的工具、无充分理由 SSH 进同一命名空间下其他 CPU pod（包括 OpenAI 员工的 pod）、对挂起的 shell 甩出一句 `kill -9 -1`（超时未执行）。SSH 那条严格说是基础设施问题：agent 的网络权限本就不该覆盖同事的 pod。模型的失效和最小权限没做到位，在真实事故里往往是叠加出现的。
+还有一组细节容易被读者略过，而且它说的已经不是模型能力，而是 agent 外围工程的问题。模型重新部署后仍出现了几起低严重度事件——启动嵌套的 `codex --yolo` 会话去访问本不需要提权的工具、无充分理由 SSH 进同一命名空间下其他 CPU pod（包括 OpenAI 员工的 pod）、对挂起的 shell 甩出一句 `kill -9 -1`（超时未执行）。这几条的板子不该全打在模型头上。SSH 那条最典型：模型确实不该乱连，但 agent 的网络权限本就不该覆盖到同事的 pod——沙箱真按最小权限收紧，这个动作根本做不成。嵌套 `codex --yolo` 同理：会话里能摸到提权工具，说明权限边界留了口子。模型的失效和基础设施的失守，在真实事故里往往叠加出现：前者决定会不会有越界的尝试，后者决定尝试能不能得手。
 
 ## 这三个机制，研究界各自测到了哪一步
 
@@ -74,5 +74,7 @@ OpenAI 这篇的独特价值，在于事故是**自发出现的**。边界要说
 - [Llama Guard: LLM-based Input-Output Safeguard for Human-AI Conversations](https://arxiv.org/abs/2312.06674) — 「text in, label out」安全分类器范式的代表
 - [AgentHarm: A Benchmark for Measuring Harmfulness of LLM Agents](https://arxiv.org/abs/2410.09024) — UK AI Safety Institute 与 Gray Swan 的恶意多步 agent 任务基准
 - [AgentDojo: A Dynamic Environment to Evaluate Prompt Injection Attacks and Defenses for LLM Agents](https://arxiv.org/abs/2406.13352) — ETH Zurich 的 agent 注入攻防评测环境
+- [Reasoning Models Don't Always Say What They Think](https://www.anthropic.com/research/reasoning-models-dont-say-think) — Anthropic 的 CoT 忠实度测量（提示承认率 25%/39%）
+- [Language Models Don't Always Say What They Think: Unfaithful Explanations in Chain-of-Thought Prompting](https://arxiv.org/abs/2305.04388) — Turpin 等人：CoT 解释系统性掩盖真实决策因素的早期证据
 - [Monitoring Reasoning Models for Misbehavior and the Risks of Promoting Obfuscation](https://arxiv.org/abs/2503.11926) — OpenAI 的 CoT 监控与 obfuscated reward hacking 实验
 - [SHADE-Arena: Evaluating Sabotage and Monitoring in LLM Agents](https://arxiv.org/abs/2506.15740) — Anthropic 的轨迹级破坏与监控基准（最佳监控者 AUC 0.87）
