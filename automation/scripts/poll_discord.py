@@ -156,10 +156,11 @@ def handle_distribution(slug: str, when: str = "now"):
     from datetime import timedelta
 
     if when == "peak":
+        # Weekends included: the user's own data shows solid weekend traffic.
         def next_peak(hour_utc: int) -> str:
             slot = datetime.now(timezone.utc).replace(
                 hour=hour_utc, minute=0, second=0, microsecond=0)
-            while slot <= datetime.now(timezone.utc) or slot.weekday() >= 5:
+            while slot <= datetime.now(timezone.utc):
                 slot += timedelta(days=1)
             return slot.strftime("%Y-%m-%dT%H:%M:%SZ")
         x_when, li_when = next_peak(16), next_peak(20)
@@ -179,7 +180,11 @@ def handle_distribution(slug: str, when: str = "now"):
                              "at": datetime.now(timezone.utc).isoformat()}
     dist_file.write_text(json.dumps(pack, ensure_ascii=False, indent=2))
     if when == "peak":
-        send(f"⏰ {slug} 已排进高峰时段：X → {x_when[:16]} UTC（美东中午）· LinkedIn → {li_when[:16]} UTC（美东下午4点），均避开周末。")
+        from zoneinfo import ZoneInfo
+        def pt(s):
+            d = datetime.strptime(s, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            return d.astimezone(ZoneInfo("America/Los_Angeles")).strftime("%m-%d %H:%M")
+        send(f"⏰ {slug} 已排进高峰时段（西雅图时间）：X → {pt(x_when)} · LinkedIn → {pt(li_when)}。")
     else:
         send(f"🚀 {slug} 的 X 帖 + LinkedIn 帖已提交立即发布（Typefully 处理中，1-2 分钟内上线）。")
 
