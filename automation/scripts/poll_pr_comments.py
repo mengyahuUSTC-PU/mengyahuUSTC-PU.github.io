@@ -98,25 +98,53 @@ def main():
         if not (branch.startswith("post/") or branch.startswith("fix/")):
             continue
         number = pr["number"]
+        # Conversation-tab comments (issues API)...
         comments = json.loads(sh(
             "gh", "api", f"repos/{{owner}}/{{repo}}/issues/{number}/comments",
             "--jq", "[.[] | {id, body, login: .user.login}]"
         ) or "[]")
+        # ...plus inline review comments (pulls API) — these carry file/line
+        # anchors, so the revision knows exactly what the comment refers to.
+        inline = json.loads(sh(
+            "gh", "api", f"repos/{{owner}}/{{repo}}/pulls/{number}/comments",
+            "--jq", "[.[] | {id, body, path, line: (.line // .original_line), "
+                    "hunk: .diff_hunk, login: .user.login}]"
+        ) or "[]")
+
+        feedback_parts = []
         for c in comments:
             if c["id"] in seen:
                 continue
             seen.add(c["id"])
             if first_run or "Generated with [Claude Code]" in c["body"]:
                 continue
+            feedback_parts.append(c["body"])
+        for c in inline:
+            key = f"r{c['id']}"
+            if key in seen:
+                continue
+            seen.add(key)
+            if first_run or "Generated with [Claude Code]" in c["body"]:
+                continue
+            context = (c.get("hunk") or "").splitlines()[-3:]
+            feedback_parts.append(
+                f"【inline 定位：{c.get('path')} 第 {c.get('line')} 行，评论所指的原文片段：】\n"
+                + "\n".join("> " + l.lstrip("+- ") for l in context)
+                + f"\n意见：{c['body']}"
+            )
+
+        if feedback_parts:
             rel = article_path(number)
             if not rel:
                 continue
-            send(f"✏️ 收到 PR #{number} 里的评论，按它改稿中…")
+            combined = "\n\n---\n\n".join(feedback_parts)
+            send(f"✏️ 收到 PR #{number} 里的 {len(feedback_parts)} 条评论（含 inline 定位），按它们改稿中…")
             try:
-                changed = revise(number, branch, rel, c["body"])
+                changed = revise(number, branch, rel, combined)
             except Exception as exc:
                 send(f"⚠️ PR #{number} 评论改稿失败：\n```{str(exc)[-400:]}```")
                 continue
+            c = {"body": combined}
             if changed:
                 try:
                     from editorial_memory import update_lessons
@@ -130,7 +158,7 @@ def main():
             else:
                 send(f"ℹ️ PR #{number} 的评论未包含实质修改要求，文章未改动。")
 
-    state["seen"] = sorted(seen)
+    state["seen"] = sorted(seen, key=str)
     STATE_FILE.write_text(json.dumps(state))
 
 
