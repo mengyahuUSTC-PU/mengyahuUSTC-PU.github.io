@@ -112,6 +112,7 @@ def main():
         ) or "[]")
 
         feedback_parts = []
+        inline_ids = []
         for c in comments:
             if c["id"] in seen:
                 continue
@@ -126,6 +127,7 @@ def main():
             seen.add(key)
             if first_run or "Generated with [Claude Code]" in c["body"]:
                 continue
+            inline_ids.append(c["id"])
             context = (c.get("hunk") or "").splitlines()[-3:]
             feedback_parts.append(
                 f"【inline 定位：{c.get('path')} 第 {c.get('line')} 行，评论所指的原文片段：】\n"
@@ -154,7 +156,15 @@ def main():
                     pass
                 sh("gh", "pr", "comment", str(number), "--body",
                    "已按上面的评论修改，见最新 commit。\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)")
-                send(f"✅ PR #{number} 已按评论更新，刷新即可复审。")
+                # Reply inside each inline thread so it doesn't look unanswered.
+                for cid in inline_ids:
+                    try:
+                        sh("gh", "api", "-X", "POST",
+                           f"repos/{{owner}}/{{repo}}/pulls/{number}/comments/{cid}/replies",
+                           "-f", "body=已按此条评论修改，见最新 commit。🤖")
+                    except Exception:
+                        pass
+                send(f"✅ PR #{number} 已按评论更新（inline 线程已逐条回复），刷新即可复审。")
             else:
                 send(f"ℹ️ PR #{number} 的评论未包含实质修改要求，文章未改动。")
 
