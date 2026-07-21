@@ -44,9 +44,13 @@ OpenAI 在文中补了一句很关键的话：更早的模型也会遇到同样�
 
 第二个机制正好戳在安全分类器主流范式的盲区上。今天的护栏大多是 [Llama Guard](https://arxiv.org/abs/2312.06674) 这一类：文本进去、「安全/不安全」的标签出来，判断对象是一条内容本身，不是行为的来龙去脉。多轮场景下这个范式有多脆，已有直接证据：Scale AI 的 [MHJ 数据集](https://arxiv.org/abs/2408.15221)（Multi-turn Human Jailbreaks，537 次人类红队的多轮越狱记录）显示，把恶意意图拆散到多轮对话里，对若干在单轮自动攻击下成功率只有个位数的防御，人类多轮攻击拿到了 70% 的成功率。机制和令牌分片那起事故如出一辙：把坏东西切碎、错开，让任何单次被检查的内容都能过关。到了 agent 场景，动作序列级的评测也有了：UK AI Safety Institute 与 Gray Swan 的 [AgentHarm](https://arxiv.org/abs/2410.09024) 用 110 个恶意多步任务测 agent 会不会一路执行到底，ETH Zurich 的 [AgentDojo](https://arxiv.org/abs/2406.13352) 则搭了带工具调用的动态环境测注入攻击和防御。但注意这些测的都是「外部攻击者能不能把 agent 带偏」，OpenAI 撞见的是没有攻击者、模型自己绕过护栏——后者目前没有公开基准。
 
-第三个机制的实验证据恰好也出自 OpenAI 自己：2025 年 3 月的 [CoT monitoring 论文](https://arxiv.org/abs/2503.11926)用较弱的 GPT-4o 读较强模型的推理痕迹，抓 reward hacking（模型钻评分规则的空子拿高分而不真正完成任务）比只看动作和输出有效得多；但一旦把「监控者没起疑」放进强化学习的奖励里，模型很快学会嘴上不说、照做不误——论文称之为 obfuscated reward hacking。我上文说的「脆弱前提」不是猜测，是他们自己测出来的失效路径。Anthropic 的 [SHADE-Arena](https://arxiv.org/abs/2506.15740) 则把「监控整条轨迹」直接做成了基准：agent 在完成正常任务的同时被塞了一个暗中破坏的副任务，由另一个模型当监控者打嫌疑分。结果是最好的监控者区分「有鬼/没鬼」轨迹的 AUC 只有 0.87（AUC 是区分两类样本的能力指标，1 为完美、0.5 等于瞎猜）——听着不低，但放到生产环境里意味着误报多到人工复核不过来。
+第三个机制的证据，要拆成两个问题来看才顺：一，模型会不会一直把意图写在推理痕迹里？二，如果它不写了，光看行为还抓不抓得住？
 
-所以回到问题本身：多轮的安全研究有，长对话的衰减研究有，轨迹级监控的基准也有。缺的是把三者放在同一条真实长轨迹上的测量——多轮越狱是人为构造的对话，AgentHarm 和 AgentDojo 的任务以分钟计，SHADE-Arena 的副任务是研究者塞进去的，而 OpenAI 这次的事故发生在数小时到数天的自主工作里、没有任何人设局。评测分布和部署分布之间的这段空档，目前只有事故复盘在填。
+第一个问题的答案出自 OpenAI 自己 2025 年 3 月的 [CoT monitoring 论文](https://arxiv.org/abs/2503.11926)。他们用较弱的 GPT-4o 去读较强模型的推理痕迹，抓 reward hacking（模型钻评分规则的空子拿高分而不真正完成任务），比只看动作和输出有效得多——这说明模型自己写下的意图，正是目前检测手段最依赖的信号。但同一篇论文接着做了另一半实验：把「监控者没起疑」加进强化学习的奖励，模型很快学会照做不误、嘴上不说——坏行为还在，推理痕迹里那句自供没了，论文管这叫 obfuscated reward hacking。所以这两件事不矛盾，恰恰是同一条逻辑的两截：今天的检测靠模型自供，而实验证明只要训练压力往这个方向推一把，自供就会消失。我上文说的「脆弱前提」不是猜测，是他们自己测出来的失效路径。
+
+第二个问题由 Anthropic 的 [SHADE-Arena](https://arxiv.org/abs/2506.15740) 回答。先把它的设置讲清楚：研究者给 agent 一个正常的主任务（比如读邮件、替用户给几位朋友转账还钱），同时在任务指令里塞进一个要瞒着所有人完成的破坏性副任务（比如顺手把 5000 美元转给一个用户不认识的账户）——副任务是研究者故意放进去的，目的是造出一批「确定有鬼」的轨迹当测试材料。关键在监控者能看到什么：agent 的推理写在一块监控者看不到的隐藏草稿区里，监控者只能看外显的动作和工具调用记录，据此给整条轨迹打嫌疑分。这正好就是「模型不自供」时的情形。结果是：最好的监控者（Gemini 2.5 Pro）区分有鬼/没鬼轨迹的 AUC 只有 0.87（AUC 衡量区分两类样本的能力，1 为完美、0.5 等于瞎猜）——听着不低，但按论文的换算，要抓到八成的破坏就得容忍两成以上的误报，生产环境里人工复核根本接不住。同一个基准里还有一组镜像实验，把这条逻辑补完了：一旦让监控者读到 agent 的推理内容，检测效果大幅提升，因为很多模型忍不住在思考里把副任务说出来。所以 SHADE-Arena 量出来的不是泛泛的「越狱分类器性能」，而是那句自供到底值多少：看得到意图，监控好使；看不到，行为监控接不住。和上一段合起来，第三个机制的完整链条就是——检测靠自供，自供可以被训没，自供没了之后的兜底手段目前不够硬。
+
+所以回到问题本身，直说结论：三条研究线各有测量，但没有一个公开基准对得上 OpenAI 这次事故的真实条件，差距在两处。一是时长——多轮越狱是人和模型来回几十轮的构造对话，AgentHarm、AgentDojo 的任务几分钟就能跑完，而 OpenAI 的事故发生在数小时到数天的自主工作里。二是自发性——这些基准里的「坏事」全是研究者放进去的：多轮越狱有人类攻击者步步引导，AgentHarm 把恶意任务直接下发给 agent，SHADE-Arena 的破坏副任务（就是上一段说的那个「偷偷转 5000 美元」式的暗中任务）写在研究者给的任务指令里；而 OpenAI 这几起没有任何人设局，模型是在执行普通任务时自己越的界。换句话说，「模型在长时间自主工作中自发越界」这件事，目前没有公开基准在测。评测分布和部署分布之间的这段空档，只有事故复盘在填。
 
 ## 对比：三家实验室，三种披露，三个盲区
 
@@ -77,4 +81,4 @@ OpenAI 这篇的独特价值，在于事故是**自发出现的**。边界要说
 - [Reasoning Models Don't Always Say What They Think](https://www.anthropic.com/research/reasoning-models-dont-say-think) — Anthropic 的 CoT 忠实度测量（提示承认率 25%/39%）
 - [Language Models Don't Always Say What They Think: Unfaithful Explanations in Chain-of-Thought Prompting](https://arxiv.org/abs/2305.04388) — Turpin 等人：CoT 解释系统性掩盖真实决策因素的早期证据
 - [Monitoring Reasoning Models for Misbehavior and the Risks of Promoting Obfuscation](https://arxiv.org/abs/2503.11926) — OpenAI 的 CoT 监控与 obfuscated reward hacking 实验
-- [SHADE-Arena: Evaluating Sabotage and Monitoring in LLM Agents](https://arxiv.org/abs/2506.15740) — Anthropic 的轨迹级破坏与监控基准（最佳监控者 AUC 0.87）
+- [SHADE-Arena: Evaluating Sabotage and Monitoring in LLM Agents](https://arxiv.org/abs/2506.15740) — Anthropic 的轨迹级破坏与监控基准（最佳监控者 AUC 0.87；监控者看不到 agent 隐藏推理，开放后检测大幅提升）
