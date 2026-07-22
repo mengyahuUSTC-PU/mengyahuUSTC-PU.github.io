@@ -16,7 +16,15 @@ translationOf: sanctioning-open-weight-models
 
 ## 「偷 IP」指的是什么
 
-Bessent 说的不是黑客入侵，而是「蒸馏」（distillation）：用一个强模型的输出当训练数据，去调教自己的模型——相当于让学生模型大量「抄」老师模型的答案，把能力低成本地转移过来。这条指控有前史：2025 年初，Microsoft 安全团队发现疑似与 DeepSeek 有关的账号通过 OpenAI 的 API 大规模抽取数据，OpenAI 随后展开调查（[The Hill](https://thehill.com/policy/technology/5113470-openai-deepseek-data-theft/)）。更早些，DeepSeek V3 上线时被用户发现会自称 ChatGPT，连讲的笑话都和 GPT-4 一样（[TechCrunch](https://techcrunch.com/2024/12/27/why-deepseeks-new-ai-model-thinks-its-chatgpt/)）。
+Bessent 说的不是黑客入侵，而是「蒸馏」（distillation）：用一个强模型的输出当训练数据，去调教自己的模型——相当于让学生模型大量「抄」老师模型的答案，把能力低成本地转移过来。这条指控主要落在 DeepSeek 头上，公开证据有几层，成色各不相同。
+
+最实的一层是访问记录：2025 年初，Microsoft 安全团队发现疑似与 DeepSeek 有关的账号通过 OpenAI 的 API 大规模抽取数据，OpenAI 随后展开调查（[The Hill](https://thehill.com/policy/technology/5113470-openai-deepseek-data-theft/)）。这类证据看的是谁在什么时候调了多少 API，跟模型输出像不像无关。
+
+另一层是输出相似。DeepSeek V3 上线时被用户发现会自称 ChatGPT，连讲的笑话都和 GPT-4 一样（[TechCrunch](https://techcrunch.com/2024/12/27/why-deepseeks-new-ai-model-thinks-its-chatgpt/)）。但零星几个样本的雷同本身说明不了蒸馏：各家模型抓取的是同一片公开互联网，GPT-4 的输出早已大量混进网络语料，个别任务上撞车，很可能只是训练数据重合。真要指向蒸馏，得看大规模、跨任务的系统性相似。这方面有研究做过：一篇被 ACL 2025 接收的论文《Quantification of Large Language Model Distillation》用两个指标量化主流模型「像 GPT-4o 的程度」——一是模型会不会在身份问题上答错（比如自称 ChatGPT、说自己由 OpenAI 开发），二是大规模提示下的响应相似度。结果 DeepSeek-V3、Qwen-Max、GLM-4-Plus 两项得分都最高，而同为中国模型的豆包和美国的 Claude 几乎测不出可疑信号（[arXiv](https://arxiv.org/abs/2501.12619)）。这说明相似确实是系统性的，也说明它并非中国模型的普遍属性；但论文测的终究是相似度——高相似可以来自蒸馏，也可以来自数据重合，它能加重嫌疑，坐实不了「盗窃」。
+
+正式指控出现在 2025 年 4 月：美国众议院中共问题特别委员会发布 DeepSeek 调查报告，OpenAI 向委员会表示，DeepSeek 输出的「推理结构与措辞模式」与自家模型相似，并称对 DeepSeek 违反其禁止蒸馏的使用条款「有高度信心」（[委员会报告](https://chinaselectcommittee.house.gov/media/reports/deepseek-unmasked-exposing-the-ccp-s-latest-tool-for-spying-stealing-and-subverting-us-export-control-restrictions)）。但支撑这份「高度信心」的内部证据，OpenAI 至今没有公开。
+
+把三层放在一起看：针对 DeepSeek 的蒸馏指控有异常 API 访问和系统性相似度两类公开依据，不算空穴来风；但公开证据到「高度嫌疑」为止，没有一锤定音的实锤。至于 Kimi 这类此次真正处在风口上的开源模型，公开渠道连这种程度的证据都还没有。
 
 这次 Bessent 加了一个新说法：许多中国模型上发现了美国大模型的「水印」。他没有说明是哪种水印，公开报道里也没有任何可查证的样本或技术细节——目前这只是一句断言。
 
@@ -42,7 +50,7 @@ Bessent 说的不是黑客入侵，而是「蒸馏」（distillation）：用一
 
 但制裁「代码本身」是有法律天花板的，先例就在财政部自己身上。2022 年 OFAC 制裁了混币器 Tornado Cash——不仅制裁运营者，还把一段部署在链上的开源智能合约直接列入清单。2024 年 11 月，第五巡回上诉法院裁定：不可变的开源代码不构成外国实体的「财产」，OFAC 无权制裁它（[判决书](https://www.ca5.uscourts.gov/opinions/pub/23/23-50669-CV0.pdf)）；2025 年 3 月，财政部把这些智能合约从清单上撤了下来（[OFAC 公告](https://ofac.treasury.gov/recent-actions/20250321)）。这是目前最接近的司法先例：**财政部可以制裁 Moonshot 这样的公司，但很难制裁一个已经开源的权重文件。** 文件一旦扩散，就不再是任何人的「财产」意义上的可制裁标的。
 
-举证同样棘手。要制裁，先得证明蒸馏发生了。可归因是概率性的：DeepSeek V3 自称 ChatGPT，既可能因为刻意蒸馏，也可能只是因为公开网络语料里早已充斥 GPT-4 的输出，训练时无意「吃」了进去——研究者当时就指出无法从外部区分这两种情形（[TechCrunch](https://techcrunch.com/2024/12/27/why-deepseeks-new-ai-model-thinks-its-chatgpt/)）。除非拿出 API 日志这类内部证据，「水印」式的输出指纹很难单独撑起一个制裁决定的举证责任。
+举证同样棘手。要制裁，先得证明蒸馏发生了。可如前所述，外部能拿到的只有相似度证据，而相似度是概率性的——高相似既可能来自刻意蒸馏，也可能只是因为公开网络语料里早已充斥 GPT-4 的输出，训练时无意「吃」了进去，研究者从外部无法区分这两种情形（[TechCrunch](https://techcrunch.com/2024/12/27/why-deepseeks-new-ai-model-thinks-its-chatgpt/)）。除非拿出 API 日志这类内部证据，「水印」式的输出指纹很难单独撑起一个制裁决定的举证责任。
 
 ## 制裁的真实产品：不是封锁，是合规寒蝉
 
@@ -62,6 +70,8 @@ Bessent 说的不是黑客入侵，而是「蒸馏」（distillation）：用一
 - [David Sacks says Chinese open-weight AI models push China ahead — Axios](https://www.axios.com/2026/07/17/sacks-kimi-open-source-weights-trump) — Sacks 立场及「消灭开源竞争」引语
 - [OpenAI investigating whether DeepSeek improperly obtained data — The Hill](https://thehill.com/policy/technology/5113470-openai-deepseek-data-theft/) — Microsoft 检测到 API 大规模抽取、OpenAI 调查
 - [Why DeepSeek's new AI model thinks it's ChatGPT — TechCrunch](https://techcrunch.com/2024/12/27/why-deepseeks-new-ai-model-thinks-its-chatgpt/) — V3 自称 ChatGPT、数据污染与蒸馏难以区分
+- [Quantification of Large Language Model Distillation — arXiv (ACL 2025)](https://arxiv.org/abs/2501.12619) — 身份认知与响应相似度两指标量化蒸馏程度；DeepSeek-V3、Qwen-Max、GLM-4-Plus 得分最高，豆包、Claude 最低
+- [DeepSeek Unmasked — 美国众议院中共问题特别委员会调查报告](https://chinaselectcommittee.house.gov/media/reports/deepseek-unmasked-exposing-the-ccp-s-latest-tool-for-spying-stealing-and-subverting-us-export-control-restrictions) — OpenAI 对 DeepSeek 违反禁止蒸馏条款「有高度信心」及「推理结构与措辞模式」说法
 - [Van Loon v. Department of the Treasury 第五巡回法院判决书](https://www.ca5.uscourts.gov/opinions/pub/23/23-50669-CV0.pdf) — 不可变开源代码不构成可制裁「财产」
 - [OFAC Recent Actions 2025-03-21](https://ofac.treasury.gov/recent-actions/20250321) — Tornado Cash 智能合约从 SDN 清单移除
 - [15 亿美元，买不来一个判例（本站）](/zh/anthropic-copyright-settlement-approved) — Anthropic 版权和解背景
