@@ -1,5 +1,5 @@
 ---
-title: "怎么制裁一个人人都能下载的文件？"
+title: "制裁挡不住模型，只能决定谁用它"
 description: "财长 Bessent 威胁制裁『偷 IP』的中国模型。但芯片出口管制之所以能咬住，靠的是三个抓手——物理瓶颈、可追踪、可拦截。开源权重一个都没有。"
 pubDate: 2026-07-21
 tags: [ai-governance, us-china, open-source]
