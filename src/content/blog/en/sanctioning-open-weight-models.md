@@ -1,5 +1,5 @@
 ---
-title: "How Do You Sanction a File Anyone Can Download?"
+title: "Sanctions Can't Stop the Model — Only Decide Who Uses It"
 description: "Treasury Secretary Bessent threatens sanctions against Chinese AI models that steal IP. But chip export controls bite because of three grips — physical chokepoints, traceability, interceptability. Open weights have none of them."
 pubDate: 2026-07-21
 tags: [ai-governance, us-china, open-source]
