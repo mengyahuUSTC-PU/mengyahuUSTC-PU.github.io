@@ -40,7 +40,7 @@ Bessent 说的不是黑客入侵，而是「蒸馏」（distillation）：用一
 
 **可拦截。** 货物要过海关。禁运的芯片被查到，可以扣下、罚没。
 
-即便三个抓手都在，管制依然是漏的——H100 走私进中国的报道从未断过。而开源权重呢？**三个抓手一个都没有。** 复制的边际成本是零；一个几百 GB 的文件走网络传输，没有报关单；Kimi K3 这样的模型权重已经在 Hugging Face 和无数镜像、种子上扩散，已经落到全球开发者硬盘里的副本，任何行政令都收不回。更麻烦的是衍生物：有人下载权重、用自己的数据微调后再发布，这个新模型还算不算被制裁对象？再被别人二次蒸馏呢？制裁名单写得出公司名字，写不出一条能圈住衍生模型的边界。
+即便三个抓手都在，管制依然是漏的——H100 走私进中国的报道从未断过。而开源权重呢？**三个抓手一个都没有。** 复制的边际成本是零；一个几百 GB 的文件走网络传输，没有报关单。截至本文发稿，风口上的 Kimi K3 还只开放了 API 和聊天界面，权重尚未出现在 Moonshot 的 [Hugging Face 官方仓库](https://huggingface.co/moonshotai)；但它的前代 Kimi K2 系列和 DeepSeek 的权重，早已在 Hugging Face 和无数镜像、种子上扩散——已经落到全球开发者硬盘里的副本，任何行政令都收不回。更麻烦的是衍生物：有人下载权重、用自己的数据微调后再发布，这个新模型还算不算被制裁对象？再被别人二次蒸馏呢？制裁名单写得出公司名字，写不出一条能圈住衍生模型的边界。
 
 ## 制裁真正能咬到的地方
 
@@ -68,6 +68,7 @@ Bessent 说的不是黑客入侵，而是「蒸馏」（distillation）：用一
 - [Bessent Says US to Scrutinize Chinese AI Models for IP Theft — Bloomberg](https://www.bloomberg.com/news/articles/2026-07-21/bessent-says-us-will-scrutinize-chinese-ai-models-for-ip-theft) — 原始报道：蒸馏与「水印」说法、9 月美中 AI 对话时点
 - [The secret Trump administration battle to fight Chinese AI — Axios](https://www.axios.com/2026/07/20/ai-us-china-open-source-kimi) — 政府内部辩论、实体清单/采购规则/行政令的「更慢但更耐久」路线
 - [David Sacks says Chinese open-weight AI models push China ahead — Axios](https://www.axios.com/2026/07/17/sacks-kimi-open-source-weights-trump) — Sacks 立场及「消灭开源竞争」引语
+- [Moonshot AI 官方 Hugging Face 仓库](https://huggingface.co/moonshotai) — Kimi K2 系列权重已公开；截至发稿未见 K3 权重
 - [OpenAI investigating whether DeepSeek improperly obtained data — The Hill](https://thehill.com/policy/technology/5113470-openai-deepseek-data-theft/) — Microsoft 检测到 API 大规模抽取、OpenAI 调查
 - [Why DeepSeek's new AI model thinks it's ChatGPT — TechCrunch](https://techcrunch.com/2024/12/27/why-deepseeks-new-ai-model-thinks-its-chatgpt/) — V3 自称 ChatGPT、数据污染与蒸馏难以区分
 - [Quantification of Large Language Model Distillation — arXiv (ACL 2025)](https://arxiv.org/abs/2501.12619) — 身份认知与响应相似度两指标量化蒸馏程度；DeepSeek-V3、Qwen-Max、GLM-4-Plus 得分最高，豆包、Claude 最低
