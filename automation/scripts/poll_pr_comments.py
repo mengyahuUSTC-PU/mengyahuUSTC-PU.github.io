@@ -18,6 +18,8 @@ STATE_FILE = DATA / "state" / "pr_comments.json"
 SCRIPTS = REPO_ROOT / "automation" / "scripts"
 PROMPTS = REPO_ROOT / "automation" / "prompts"
 
+BOT_MARKERS = ("Generated with [Claude Code]", "已按此条评论修改")
+
 sys.path.insert(0, str(SCRIPTS))
 from discord_notify import load_env, send  # noqa: E402
 
@@ -117,7 +119,7 @@ def main():
             if c["id"] in seen:
                 continue
             seen.add(c["id"])
-            if first_run or "Generated with [Claude Code]" in c["body"]:
+            if first_run or any(m in c["body"] for m in BOT_MARKERS):
                 continue
             feedback_parts.append(c["body"])
         for c in inline:
@@ -125,7 +127,7 @@ def main():
             if key in seen:
                 continue
             seen.add(key)
-            if first_run or "Generated with [Claude Code]" in c["body"]:
+            if first_run or any(m in c["body"] for m in BOT_MARKERS):
                 continue
             inline_ids.append(c["id"])
             context = (c.get("hunk") or "").splitlines()[-3:]
@@ -161,7 +163,7 @@ def main():
                     try:
                         sh("gh", "api", "-X", "POST",
                            f"repos/{{owner}}/{{repo}}/pulls/{number}/comments/{cid}/replies",
-                           "-f", "body=已按此条评论修改，见最新 commit。🤖")
+                           "-f", "body=已按此条评论修改，见最新 commit。\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)")
                     except Exception:
                         pass
                 send(f"✅ PR #{number} 已按评论更新（inline 线程已逐条回复），刷新即可复审。")
