@@ -58,7 +58,7 @@ Bessent 说的不是黑客入侵，而是「蒸馏」（distillation）：用一
 
 这类制裁管不住权重的流通——文件已经在全世界的硬盘里。它真正生产的东西是**合规不确定性**：美国企业的采购和法务流程厌恶模糊地带，只要「用中国开源模型」和「制裁风险」出现在同一句话里，大量美国公司就会主动回避，根本不需要禁令写得多严密。Axios 报道里官员们自己也说，走的是「更慢但更耐久」的路线：采购规则、安全要求、舆论施压，让美国企业用之前先掂量。制裁威胁是这套组合拳里声音最大的一记。
 
-代价是市场分叉。美国企业退回本土模型的同时，世界其他地区照样免费下载中国权重——对预算有限的全球开发者来说，被美国制裁点名甚至算一种广告。Sacks 反对限制时说得直白：领先的闭源实验室「想让政府替他们消灭开源竞争」（[Axios](https://www.axios.com/2026/07/17/sacks-kimi-open-source-weights-trump)）。这句话未必全对，但指出了同一个事实的另一面：制裁挡不住模型，只能改变谁用它。
+代价是市场分叉。而且要看清这个分叉的分量，得先看清一个现状：全球开源模型生态的重心已经在中国这边。新华社援引 Hugging Face 平台数据报道，阿里的 Qwen（千问）系列累计下载量在 2025 年 10 月就超过了 Meta 的 Llama，成为全球下载量最大的开放权重模型家族，2025 年 12 月单月下载量甚至超过其后八家（Meta、DeepSeek、OpenAI、Mistral 等）之和；据千问团队同期披露，社区基于千问微调的衍生模型已超过 18 万个（[新华社](https://english.news.cn/20260113/004b0522f987475cbf83ffc3a8d009aa/c.html)）。另据南华早报援引行业报告，到 2026 年 3 月，千问一家占了全球开源模型下载量的一半以上（[SCMP](https://www.scmp.com/tech/big-tech/article/3349552/alibabas-qwen-family-captures-over-50-global-open-source-downloads-report-finds)）。换句话说，今天一个团队要微调开源模型，起点多半已经是中国权重。在这个格局下，美国企业退回本土模型的同时，世界其他地区照样免费下载中国权重——对预算有限的全球开发者来说，被美国制裁点名甚至算一种广告。Sacks 反对限制时说得直白：领先的闭源实验室「想让政府替他们消灭开源竞争」（[Axios](https://www.axios.com/2026/07/17/sacks-kimi-open-source-weights-trump)）。这句话未必全对，但指出了同一个事实的另一面：制裁挡不住模型，只能改变谁用它。
 
 所以这句威胁最合理的读法，不是一项即将落地的封锁政策，而是 9 月对话桌上的一枚筹码，外加一针给美国企业的预防性寒蝉剂。芯片管制好歹能让对手拿不到东西；对开源模型的制裁做不到这一点——它只能决定美国人用不用，而这恰恰是对美国 AI 生态自身影响最大的那个变量。
 
@@ -69,6 +69,8 @@ Bessent 说的不是黑客入侵，而是「蒸馏」（distillation）：用一
 - [The secret Trump administration battle to fight Chinese AI — Axios](https://www.axios.com/2026/07/20/ai-us-china-open-source-kimi) — 政府内部辩论、实体清单/采购规则/行政令的「更慢但更耐久」路线
 - [David Sacks says Chinese open-weight AI models push China ahead — Axios](https://www.axios.com/2026/07/17/sacks-kimi-open-source-weights-trump) — Sacks 立场及「消灭开源竞争」引语
 - [Moonshot AI 官方 Hugging Face 仓库](https://huggingface.co/moonshotai) — Kimi K2 系列权重已公开；截至发稿未见 K3 权重
+- [Alibaba's Qwen leads global open-source AI community with 700 million downloads — Xinhua](https://english.news.cn/20260113/004b0522f987475cbf83ffc3a8d009aa/c.html) — 援引 Hugging Face 数据：Qwen 累计下载量 2025 年 10 月超过 Llama、2025 年 12 月单月下载超其后八家之和；千问团队披露衍生模型超 18 万个
+- [Alibaba's Qwen family captures over 50% of global open-source downloads — SCMP](https://www.scmp.com/tech/big-tech/article/3349552/alibabas-qwen-family-captures-over-50-global-open-source-downloads-report-finds) — 援引行业报告：截至 2026 年 3 月 Qwen 占全球开源模型下载量一半以上
 - [OpenAI investigating whether DeepSeek improperly obtained data — The Hill](https://thehill.com/policy/technology/5113470-openai-deepseek-data-theft/) — Microsoft 检测到 API 大规模抽取、OpenAI 调查
 - [Why DeepSeek's new AI model thinks it's ChatGPT — TechCrunch](https://techcrunch.com/2024/12/27/why-deepseeks-new-ai-model-thinks-its-chatgpt/) — V3 自称 ChatGPT、数据污染与蒸馏难以区分
 - [Quantification of Large Language Model Distillation — arXiv (ACL 2025)](https://arxiv.org/abs/2501.12619) — 身份认知与响应相似度两指标量化蒸馏程度；DeepSeek-V3、Qwen-Max、GLM-4-Plus 得分最高，豆包、Claude 最低
