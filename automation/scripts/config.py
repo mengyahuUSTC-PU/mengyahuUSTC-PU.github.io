@@ -79,6 +79,11 @@ RSS_FEEDS = [
     # so it carries the "filter" flag (keyword-gated in fetch_rss).
     ("Federal Register (AI)", "https://www.federalregister.gov/api/v1/documents.rss?conditions%5Bterm%5D=artificial%20intelligence"),
     ("NIST News", "https://www.nist.gov/news-events/news/rss.xml", "filter"),
+    # AI dev-tool release notes (added 2026-07-22, reverse-engineered from
+    # yage.ai: changelogs/PRs/issues reveal product direction before blogs do)
+    ("Claude Code Releases", "https://github.com/anthropics/claude-code/releases.atom"),
+    ("Codex CLI Releases", "https://github.com/openai/codex/releases.atom"),
+    ("Gemini CLI Releases", "https://github.com/google-gemini/gemini-cli/releases.atom"),
 ]
 
 # Sources with no working feed (verified 2026-07): scrape the index page and

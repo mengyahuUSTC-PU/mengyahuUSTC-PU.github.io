@@ -23,7 +23,21 @@ POOL="$DATA/pool-$DATE.json"
 [ -s "$POOL" ] || { echo "error: pool file missing"; exit 1; }
 
 echo "=== topic selection ==="
+RECENT_TOPICS=$("$PY" -c "
+import json, glob
+titles = []
+for f in sorted(glob.glob('$DATA/selection-*.json'))[-7:]:
+    if '$DATE' in f: continue
+    try:
+        d = json.load(open(f))
+        for k in ('briefing_items', 'deep_dive_candidates'):
+            titles += [i.get('title', '') for i in d.get(k, [])]
+    except Exception: pass
+print(chr(10).join('- ' + t for t in titles if t))
+")
 cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/topic-selection.md" \
+  <(echo "## 近 7 天已推荐过的选题（同一事件除非有重大新进展，否则不得再次推荐）") \
+  <(echo "$RECENT_TOPICS") \
   <(echo "## 当日条目池 JSON") "$POOL" \
   | claude -p --output-format text --model sonnet \
   | "$PY" "$SCRIPTS/split_output.py" json > "$DATA/selection-$DATE.json"
