@@ -12,7 +12,7 @@ translationOf: chatgpt-health-hipaa-gap
 
 先把一件事说清楚：这整个流程不违反 HIPAA 的任何一个条款。
 
-这不是 OpenAI 找到了什么漏洞。做 Responsible AI 这行，我见过太多「合规」和「受保护」被当成同义词用的场合——ChatGPT Health 是把这两个词拆开的最好教材：产品可以全程合规，而你的病历自始至终不在法律保护之内。
+这不是 OpenAI 找到了什么漏洞。我入行 Responsible AI 的第一个项目，就是和医疗 AI 公司 Nuance 合作，给医患对话的自动摘要做幻觉检测——AI 进医疗场景后哪些环节容易出问题、哪些风险法规根本没接住，我是从那时开始亲手摸的。这些年我见过太多「合规」和「受保护」被当成同义词用的场合——ChatGPT Health 是把这两个词拆开的最好教材：产品可以全程合规，而你的病历自始至终不在法律保护之内。
 
 ## 空白不是钻出来的，是法律本来就长这样
 
@@ -53,3 +53,5 @@ OpenAI 给出的隐私承诺本身不算含糊：连接的病历和 Apple Health
 - [FTC Enforcement Action to Bar GoodRx from Sharing Consumers' Sensitive Health Info for Advertising — FTC](https://www.ftc.gov/news-events/news/press-releases/2023/02/ftc-enforcement-action-bar-goodrx-sharing-consumers-sensitive-health-info-advertising) — GoodRx 150 万美元罚款、HBNR 首次执法
 - [Updated FTC Health Breach Notification Rule — FTC](https://www.ftc.gov/business-guidance/blog/2024/04/updated-ftc-health-breach-notification-rule-puts-new-provisions-place-protect-users-health-apps) — 2024 年规则更新纳入健康应用
 - [How we're responding to The New York Times' data demands — OpenAI](https://openai.com/index/response-to-nyt-data-demands/) — NYT 诉讼中的用户日志保留令
+
+<!-- 待核实：应用户要求加入 Nuance 合作经历（医患对话自动摘要的幻觉检测，按上下文推断用户所说 "alligator detection" 为 hallucination detection 的笔误）。Nuance 为 Microsoft 子公司，此处仅保留高层次描述、未涉及项目细节，但请用户确认该合作经历可公开提及、不涉及雇主内部信息（编辑方针雇主边界条款）。 -->
