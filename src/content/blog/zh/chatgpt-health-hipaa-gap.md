@@ -46,7 +46,7 @@ OpenAI 给出的隐私承诺本身不算含糊：连接的病历和 Apple Health
 
 能直接搬到 ChatGPT Health 场景的教训有三条。第一，别问会不会出事，问出事之后你有什么。Nuance 背着全套 HIPAA 义务运营，十年仍有三次大事故；指望 OpenAI 凭工程能力做到零事故不现实，真正的变量是事后患者手里的牌。第二，数清链条上有多少双手。MOVEit 之所以成为缺口，就因为它是数据链条里用户从没听说过的一环；ChatGPT Health 的链条里同样有 b.well 这样的聚合中间层，你看到的是 ChatGPT 的界面，数据实际经过的主体更多。第三，知情同意经得起法庭逐字检验才算数。诊室环境录音这一产品类别正在引来窃听类集体诉讼——2025 年 11 月，使用 AI 转写工具 Abridge 的 Sharp HealthCare 因涉嫌未经患者明确同意录音被集体起诉（[KPBS](https://www.kpbs.org/news/health/2025/12/11/lawsuit-claims-sharp-healthcare-secretly-recorded-exam-room-conversations-without-patient-consent)）；2026 年 4 月，同样部署 Abridge 的 Sutter Health 与 MemorialCare 也被诉（[TechTarget](https://www.techtarget.com/healthtechsecurity/news/366641717/Sutter-Health-MemorialCare-face-class-action-lawsuit-over-AI-scribe-use)），两案被告都是医疗系统本身。ChatGPT Health 默认每次调用病历前请求许可，这个设计方向是对的，但这批诉讼提醒所有人：同意的粒度、告知的充分性，最终是在法庭上被逐条验的。
 
-## 能带走什么
+## 核心启示
 
 我不打算劝人别用。用自己的真实化验单提问，比让模型对着一句模糊描述瞎猜要好，健康提问本来就是 ChatGPT 的高频场景——据报道每周有约 3 亿人次向它提出健康相关问题（[TechCrunch](https://techcrunch.com/2026/07/23/openai-makes-chatgpt-health-available-to-all-u-s-users/) 转述 OpenAI 自报数据），OpenAI 认真做这个产品比放任用户在普通对话框里贴病历要负责任。何况 OpenAI 条款里也写明了：该服务不用于任何健康状况的诊断或治疗（[TechCrunch](https://techcrunch.com/2026/07/23/openai-makes-chatgpt-health-available-to-all-u-s-users/)）。
 
