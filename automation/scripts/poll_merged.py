@@ -139,21 +139,34 @@ def main():
             state["done"].append(number)
             continue
 
-        # zh deep dive merged -> post-merge audit (user has finished iterating).
+        # zh deep dive merged -> post-merge audit. Runs in the dedicated
+        # audit clone (own lock) so it never blocks revisions/polls here.
         if branch.startswith("post/"):
             slug = branch.removeprefix("post/")
             if not zh_path(slug).exists() or en_path(slug).exists():
                 state["done"].append(number)
                 continue
-            send(f"🔍 {slug} 已合并，启动三方核查（Opus + Fable + GPT）…")
-            outcome = run_audit(number)
-            if outcome == "fix_pr":
-                send("核查发现问题，修正 PR 已开（见上方链接）。**Merge 修正后我再生成英文版。**")
+            audit_clone = Path("/home/mia/site-audit")
+            if audit_clone.exists():
+                send(f"🔍 {slug} 已合并，三方核查已在并行通道启动（不阻塞其他任务）…")
+                py = "/home/mia/site/automation/.venv/bin/python"
+                cmd = (f"nohup flock /tmp/audit-git.lock bash -c "
+                       f"'cd {audit_clone} && git fetch -q origin && "
+                       f"git checkout -q -B master origin/master && "
+                       f"{py} automation/scripts/audit_and_continue.py {number} {slug}' "
+                       f">> /home/mia/audit.log 2>&1 &")
+                subprocess.Popen(cmd, shell=True)
                 state["done"].append(number)
-            elif outcome == "clean":
-                generate_en(slug)
-                state["done"].append(number)
-            # on "error": leave un-done so the next cron retries
+            else:
+                send(f"🔍 {slug} 已合并，启动三方核查（Opus + Fable + GPT）…")
+                outcome = run_audit(number)
+                if outcome == "fix_pr":
+                    send("核查发现问题，修正 PR 已开（见上方链接）。**Merge 修正后我再生成英文版。**")
+                    state["done"].append(number)
+                elif outcome == "clean":
+                    generate_en(slug)
+                    state["done"].append(number)
+                # on "error": leave un-done so the next cron retries
             continue
 
         # Audit fix PR merged -> the zh text is final; generate EN if missing.
