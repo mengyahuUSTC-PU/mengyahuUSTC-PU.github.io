@@ -131,8 +131,11 @@ def main():
                 send(f"⚠️ 分发内容生成失败（{slug}）：\n```{(exc.stderr or str(exc))[-500:]}```")
             continue
 
-        # Briefings are audited before review; nothing to do post-merge.
+        # Briefings are audited before review; just confirm publication.
         if branch.startswith("post/briefing-"):
+            date_part = branch.removeprefix("post/briefing-")
+            send(f"✅ {date_part} 快讯已合并，网站部署中（约 2 分钟后上线）："
+                 f"https://mengyahuustc-pu.github.io/zh/briefing-{date_part}/")
             state["done"].append(number)
             continue
 
