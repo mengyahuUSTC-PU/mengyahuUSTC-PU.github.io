@@ -148,3 +148,50 @@ h2 { font-size: 1.3rem; }
 @media (prefers-reduced-motion: no-preference) {
   a, .post-card { transition: color 120ms ease, border-color 120ms ease; }
 }
+
+/* ---------- subscribe box ---------- */
+.subscribe-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.6rem;
+  margin: 2.8rem auto 0;
+  max-width: 40rem;
+}
+.subscribe-heading {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 1.15rem;
+  margin: 0;
+}
+.subscribe-blurb { color: var(--muted); font-size: 0.9rem; margin: 0.35rem 0 1rem; }
+.subscribe-form { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.subscribe-form input[type='email'] {
+  flex: 1 1 14rem;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+}
+.subscribe-form input[type='email']:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+.subscribe-form button {
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 999px;
+  padding: 0.45rem 1.4rem;
+  cursor: pointer;
+}
+.subscribe-form button:hover { filter: brightness(1.08); }
+.subscribe-form button:disabled { opacity: 0.6; cursor: wait; }
+.subscribe-note { color: var(--accent); font-size: 0.88rem; margin: 0.6rem 0 0; min-height: 1em; }
