@@ -34,11 +34,17 @@ Schneier 和 Raghavan 提出的测量基准是法律里的老概念——**合�
 
 这几条比现在的能力榜单诚实。尤其是最后一条：能力榜单比的是上限，信任问题全在下限。
 
+## 意图偏差不是新问题，那系数新在哪
+
+得先说清楚：「AI 执行的不是用户本意」在研究界是一条老线，术语叫 **specification gaming**——系统满足了指令的字面定义，却没实现下指令的人的真实意图。DeepMind 安全团队 2020 年就发过[专文](https://medium.com/@deepmindsafetyresearch/specification-gaming-the-flip-side-of-ai-ingenuity-c85bdb0deeb4)梳理这个现象，收集了约 60 个强化学习 agent 钻字面空子的实例——文中举的例子里同样有迈达斯王。到了 LLM agent 时代，测量工作也已经有了：2023 年的 [ToolEmu](https://arxiv.org/abs/2309.15817) 用语言模型模拟工具执行环境，自动化地测 agent 在高风险场景下的危险失误，结论是当时最安全的 agent 也有 23.9% 的场景会出这类错；OpenAI 2024 年的[指令层级研究](https://arxiv.org/abs/2404.13208)处理的是相邻问题——不同来源的指令冲突时，模型该听谁的。再算上各家 system card 里的内部定级（前文 OpenAI 的「严重度三级」就是一例），「模型会不会曲解意图」并不缺人测。
+
+那精灵系数新在哪？我的读法是三点。第一，现有工作各测各的：判分标准由研究者自拟，报的多是平均失败率，数字在实验室之间、厂商之间没法横向比。第二，合理人标准把判分依据从研究者自拟的评分细则，换成一个在法律里已经运转上百年的外部标准——这让分数第一次有可能写进采购合同、拿上法庭，学术 benchmark 走不到这一步。第三，也是最实质的一点：它不止于测量，直接把测量接到责任划分上——偏离合理含义算系统的错，而不是用户没把话说全的错。换句话说，两位作者不是发现了新现象，而是提议把一个散落在论文里的研究议题，升格成治理基础设施。「精灵系数」（Genie Coefficient）和「基尼系数」（Gini coefficient）读音相撞，对照也确实贴切：收入不平等在基尼之前人人都知道存在，那个系数的贡献是让它变成一个可跨国比较、可逐年跟踪、可写进政策目标的数。这个提案想对「意图偏差」做的正是同一件事。
+
 ## 拿三起真实事故反推：能拦住哪些
 
 提案是否有用，要看它对已经发生的事故有没有预警力。近几个月刚好有三起可以做检验。
 
-**第一起，GPT-5.6 的虚拟机误删**——正中靶心。这正是精灵系数设计出来要抓的行为类型：埋了字面歧义（虚拟机名字对不上）、给了工具权限、模型选了「合理用户会强烈反对」的路径。要说明的是，这起发生在 OpenAI 的内部测试里，不是生产事故——但这恰恰证明这类测试测得出来。问题在于目前只有厂商自测自报：口径各家自定，数字无法横向比较，报不报、报多细全看厂商自觉。精灵系数的增量价值不在概念新，而在把这件事标准化、第三方化。
+**第一起，GPT-5.6 的虚拟机误删**——正中靶心。这正是精灵系数设计出来要抓的行为类型：埋了字面歧义（虚拟机名字对不上）、给了工具权限、模型选了「合理用户会强烈反对」的路径。要说明的是，这起发生在 OpenAI 的内部测试里，不是生产事故——但这恰恰证明这类测试测得出来。问题在于目前只有厂商自测自报：口径各家自定，数字无法横向比较，报不报、报多细全看厂商自觉。这正是上一节说的空档：不缺测量，缺的是标准化和第三方。
 
 **第二起，Codex Desktop 删掉用户 706 GB 数据**——测不测得出来，说不清。今年 4 月一位 Windows 用户报告（[GitHub issue #18509](https://github.com/openai/codex/issues/18509)，官方尚未确认原因）：在多个 agent 线程运行时归档会话，归档失败，随后 C:\src 下十多个工作区目录连同 Program Files 里的应用被程序化删除，绕过回收站，约 706 GB 无法恢复。这里的要害是：没人知道这是模型曲解了意图，还是客户端在并发状态下的软件 bug。精灵系数测的是模型在沙盒里的解释行为；生产事故往往出在模型、harness（外壳程序）、并发状态的组合上。一个系数漂亮的模型，装进一个有状态管理 bug 的客户端，照样删你的盘。
 
@@ -60,5 +66,8 @@ Schneier 和 Raghavan 提出的测量基准是法律里的老概念——**合�
 
 - [Why AI Needs a "Genie Coefficient" — Schneier on Security](https://www.schneier.com/blog/archives/2026/07/why-ai-needs-a-genie-coefficient.html) — 精灵系数的定义、两类精灵行为分类、合理人标准、基准设计原则、责任划分主张（作者本人博客，首发于 IEEE Spectrum）
 - [GPT-5.6 System Card — OpenAI Deployment Safety Hub](https://deploymentsafety.openai.com/gpt-5-6) — 虚拟机误删、凭据复制、虚报验证三起内部测试记录；严重度三级定义；与 GPT-5.5 的对比；「长任务需人工监督」建议
+- [Specification gaming: the flip side of AI ingenuity — DeepMind Safety Research](https://medium.com/@deepmindsafetyresearch/specification-gaming-the-flip-side-of-ai-ingenuity-c85bdb0deeb4) — specification gaming 的定义与约 60 个强化学习 agent 实例（2020）
+- [Identifying the Risks of LM Agents with an LM-Emulated Sandbox（ToolEmu）— arXiv:2309.15817](https://arxiv.org/abs/2309.15817) — 用语言模型模拟工具环境自动测 agent 危险失误；「最安全的 agent 也有 23.9% 失败率」数据来源
+- [The Instruction Hierarchy — arXiv:2404.13208](https://arxiv.org/abs/2404.13208) — OpenAI 关于指令冲突时优先级的研究，与意图曲解相邻的问题
 - [Codex Desktop deleted workspace roots + installed apps on failed archive — openai/codex issue #18509](https://github.com/openai/codex/issues/18509) — Codex Desktop 删除事故的用户原始报告：时间、系统环境、约 706 GB 损失、绕过回收站等细节
 - [What xAI Grok Build CLI actually sends — Cereblab 抓包分析 gist](https://gist.github.com/cereblab/dc9a40bc26120f4540e4e09b75ffb547) — Grok Build 0.2.93 双通道流量数据（192 KB vs 5.1 GiB）、隐私开关无效、金丝雀测试、xAI 事后处置
