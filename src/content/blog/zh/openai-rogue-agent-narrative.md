@@ -28,7 +28,7 @@ translationOf: openai-rogue-agent-narrative
 
 **归因有五天时差，且至今没对上。** Hugging Face 在 16 日说不知道背后是哪个模型；OpenAI 在 21 日认领并点名了两个模型。但截至本文写作，公开检索未见两家发布联合技术报告，OpenAI 自己的文件也标注为「初步发现」，并且没有把每一步动作归到具体哪个模型头上。
 
-**入侵路径的描述不一致。** Hugging Face 说初始入口是恶意数据集加代码执行路径；OpenAI 强调的是自家沙箱里代理软件的零日。两者可能分别对应「逃出 OpenAI 环境」和「进入 Hugging Face」两个阶段，但两份文件没有互相印证这一点——目前的完整攻击链，仍然只是 OpenAI 单方叙述。
+**入侵路径的描述不一致。** Hugging Face 说初始入口是恶意数据集加代码执行路径；OpenAI 强调的则是前文那个零日漏洞——自家沙箱里代理缓存软件中那个没有补丁的漏洞。两者可能分别对应「逃出 OpenAI 环境」和「进入 Hugging Face」两个阶段，但两份文件没有互相印证这一点——目前的完整攻击链，仍然只是 OpenAI 单方叙述。
 
 **最响亮的形容词都出自肇事方。** 「前所未有」「最先进的网络能力」这些定性来自 OpenAI 的博客，而不是受害方或第三方取证。Hugging Face 的措辞冷静得多，其 CEO Clément Delangue 还对[半岛电视台](https://www.aljazeera.com/news/2026/7/22/open-ai-says-its-ai-model-went-rogue-what-do-we-know)表示「强烈相信不存在恶意意图」。
 
