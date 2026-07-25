@@ -179,6 +179,24 @@ def handle_distribution(slug: str, when: str = "now"):
     pack["scheduled_for"] = {"x": x_when, "linkedin": li_when,
                              "at": datetime.now(timezone.utc).isoformat()}
     dist_file.write_text(json.dumps(pack, ensure_ascii=False, indent=2))
+
+    # Newsletter: same approval gate as Typefully ("发" = user reviewed the pack).
+    if pack.get("email"):
+        from kit_client import send_broadcast
+        counts = {}
+        for lang in ("zh", "en"):
+            part = pack["email"].get(lang) or {}
+            if not (part.get("subject") and part.get("html")):
+                continue
+            try:
+                counts[lang] = send_broadcast(lang, part["subject"], part["html"])
+            except Exception as exc:
+                send(f"⚠️ Newsletter（{lang}）发送失败：{str(exc)[:300]}")
+        sent = [f"{l} → {n} 人" for l, n in counts.items() if n]
+        if sent:
+            send(f"📧 Newsletter 已排入 Kit（2 分钟后发出）：{' · '.join(sent)}")
+        elif counts:
+            send("📧 Newsletter 跳过：目前还没有订阅者。")
     if when == "peak":
         from zoneinfo import ZoneInfo
         def pt(s):

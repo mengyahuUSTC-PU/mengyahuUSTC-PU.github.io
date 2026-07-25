@@ -45,7 +45,7 @@ def claude_gen(prompt: str) -> str:
 
 
 def section(text: str, name: str) -> str:
-    m = re.search(rf"==={name}===\s*(.*?)(?====[A-Z]+===|$)", text, re.S)
+    m = re.search(rf"==={name}===\s*(.*?)(?====[A-Z_]+===|$)", text, re.S)
     return m.group(1).strip() if m else ""
 
 
@@ -75,18 +75,47 @@ def main():
     if not thread or not linkedin:
         sys.exit("error: social generation missing THREAD/LINKEDIN sections")
 
+    # --- Newsletter emails (zh + en), only when both language versions exist ---
+    email = None
+    zh = REPO_ROOT / "src" / "content" / "blog" / "zh" / f"{slug}.md"
+    if zh.exists():
+        news_raw = claude_gen(
+            baseline + "\n\n" + (PROMPTS / "newsletter.md").read_text() + fb
+            + f"\n\n## 中文版 UTM 链接\n{utm(slug, 'zh', 'newsletter', 'email')}"
+            + f"\n\n## 英文版 UTM 链接\n{utm(slug, 'en', 'newsletter', 'email')}"
+            + "\n\n## 中文版全文\n\n" + zh.read_text()
+            + "\n\n## 英文版全文\n\n" + en.read_text()
+        )
+        email = {
+            "zh": {"subject": section(news_raw, "SUBJECT_ZH"),
+                   "html": section(news_raw, "HTML_ZH")},
+            "en": {"subject": section(news_raw, "SUBJECT_EN"),
+                   "html": section(news_raw, "HTML_EN")},
+        }
+        if not all(email[l][k] for l in ("zh", "en") for k in ("subject", "html")):
+            sys.exit("error: newsletter generation missing SUBJECT/HTML sections")
+
     DIST.mkdir(parents=True, exist_ok=True)
     (DIST / f"{slug}.json").write_text(
         json.dumps({"slug": slug, "thread": thread, "linkedin": linkedin,
-                    "status": "pending"}, ensure_ascii=False, indent=2)
+                    "email": email, "status": "pending"},
+                   ensure_ascii=False, indent=2)
     )
 
     # --- Discord preview ---
     send(f"🐦 **X 帖预览（单条）**（{slug}）\n\n{thread}")
     send(f"💼 **LinkedIn 帖预览**（{slug}）\n\n{linkedin}")
+    if email:
+        send(
+            f"📧 **Newsletter 预览**（{slug}）\n\n"
+            f"**中文主题**：{email['zh']['subject']}\n```{email['zh']['html']}```\n"
+            f"**EN subject**: {email['en']['subject']}\n```{email['en']['html']}```"
+        )
+    steps = "thread + LinkedIn 排进 Typefully" + (
+        " + newsletter 发给订阅者" if email else "")
     send(
         f"⏸ 以上是 **{slug}** 的分发队列（未排程）。\n"
-        f"回复 `发 {slug}` → thread + LinkedIn 排进 Typefully。不回复则不排程。"
+        f"回复 `发 {slug}` → {steps}。不回复则不排程。"
     )
     print(f"distribution pack ready for {slug}")
 
