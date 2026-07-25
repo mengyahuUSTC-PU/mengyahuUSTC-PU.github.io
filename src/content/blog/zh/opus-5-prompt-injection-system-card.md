@@ -38,7 +38,7 @@ translationOf: opus-5-prompt-injection-system-card
 
 第二，横向差距是量级差距。GPT-5.6 Sol 在 15 次预算下 20%，Gemini 3.1 Pro 接近一半。如果这张图表数字属实，提示注入鲁棒性目前不是各家挤在一起的赛道，而是拉开了 10 倍以上的分布。
 
-第三个细节容易被忽略：Opus 5（2.0%）比定位更高的 Mythos 5（2.6%）还略好。鲁棒性不随模型能力自动上涨，它是单独训练出来的性质——这也解释了为什么这个数字值得单独看，而不能从能力跑分里推出来。
+第三个细节容易被忽略：Opus 5（2.0%）比 Mythos 5（2.6%）还略好。这里先交代一下 Anthropic 这批模型的命名，免得表格看着糊涂：Mythos 是 Anthropic 新设的能力档位，[官方公告](https://www.anthropic.com/news/claude-fable-5-mythos-5)写明它「在能力上位于 Opus 档之上」，目前只向获授权的网络安全与研究合作方开放；面向所有用户发售的版本叫 Claude Fable 5——底层就是 Mythos 5 同一个模型，只是加装了针对网络安全、生物化学等高危话题的分类器护栏（触发时改由 Opus 4.8 应答）。所以表里的对比是：定位更高的 Mythos 5，注入成功率反而比 Opus 5 略高。鲁棒性不随模型能力自动上涨，它是单独训练出来的性质——这也解释了为什么这个数字值得单独看，而不能从能力跑分里推出来。
 
 ## 2% 不是「解决」，是攻击成本上升
 
@@ -61,6 +61,7 @@ translationOf: opus-5-prompt-injection-system-card
 ## 参考来源
 
 - [Introducing Claude Opus 5（Anthropic 官方公告）](https://www.anthropic.com/news/claude-opus-5) — 发布日期、能力断言；核实公告正文未提及 prompt injection
+- [Claude Fable 5 and Claude Mythos 5（Anthropic 官方公告）](https://www.anthropic.com/news/claude-fable-5-mythos-5) — Mythos 档位「在能力上位于 Opus 档之上」、Fable 5 与 Mythos 5 同底层模型、护栏触发时回落 Opus 4.8、Mythos 5 仅向授权合作方开放
 - [Claude Opus 5 System Card（PDF）](https://www.anthropic.com/claude-opus-5-system-card) — 第 5.2 节（71–76 页）原文措辞「largest gains in prompt injection robustness across coding, computer use, and browser use」
 - [Boris Cherny 的 X 帖](https://twitter.com/bcherny/status/2080713091688583312) — 「least prompt injectable model yet」引言（X 原帖无法直接抓取，引文经 [Simon Willison 的转录](https://simonwillison.net/2026/Jul/25/boris-cherny/)核对）
 - [MarkTechPost 报道](https://www.marktechpost.com/2026/07/24/meet-the-new-claude-opus-5-frontier-class-agentic-coding-and-computer-use-at-unchanged-opus-pricing/) — Gray Swan 15 次尝试数字、浏览器场景 31.5%→3.7%→0%（129 环境）的交叉核对
