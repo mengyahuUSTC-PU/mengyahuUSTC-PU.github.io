@@ -1,0 +1,83 @@
+---
+import type { Lang } from '../lib/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+
+// Kit (ConvertKit) embed forms; IDs are public (they appear in the form URL).
+// zh subscribers get zh broadcasts, en subscribers get en broadcasts.
+const KIT_FORM_ID = lang === 'zh' ? '9723986' : '9723996';
+const action = `https://app.kit.com/forms/${KIT_FORM_ID}/subscriptions`;
+
+const copy =
+  lang === 'zh'
+    ? {
+        heading: '订阅新文章',
+        blurb: '新的深度文章发布时发送到你的邮箱。不发快讯，随时可退订。',
+        placeholder: '你的邮箱',
+        button: '订阅',
+        success: '确认邮件已发出，请到邮箱里点一下确认订阅。',
+        error: '提交失败了，请稍后再试。',
+      }
+    : {
+        heading: 'Subscribe',
+        blurb: 'New essays, straight to your inbox. No daily briefings, unsubscribe anytime.',
+        placeholder: 'you@example.com',
+        button: 'Subscribe',
+        success: 'Almost there — check your inbox and confirm your subscription.',
+        error: 'Something went wrong. Please try again.',
+      };
+---
+
+<aside class="subscribe-box">
+  <p class="subscribe-heading">{copy.heading}</p>
+  <p class="subscribe-blurb">{copy.blurb}</p>
+  <form
+    class="subscribe-form"
+    action={action}
+    method="post"
+    data-success={copy.success}
+    data-error={copy.error}
+  >
+    <input
+      type="email"
+      name="email_address"
+      required
+      placeholder={copy.placeholder}
+      aria-label={copy.placeholder}
+      autocomplete="email"
+    />
+    <button type="submit">{copy.button}</button>
+  </form>
+  <p class="subscribe-note" role="status" aria-live="polite"></p>
+</aside>
+
+<script>
+  // Progressive enhancement: without JS the form posts to Kit's hosted page.
+  document.querySelectorAll<HTMLFormElement>('.subscribe-form').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const note = form.parentElement?.querySelector<HTMLElement>('.subscribe-note');
+      const button = form.querySelector<HTMLButtonElement>('button');
+      if (button) button.disabled = true;
+      try {
+        const resp = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { Accept: 'application/json' },
+        });
+        const data = await resp.json();
+        if (data.status === 'failed' || !resp.ok) throw new Error('kit rejected');
+        if (note) note.textContent = form.dataset.success ?? '';
+        form.reset();
+      } catch {
+        if (note) note.textContent = form.dataset.error ?? '';
+      } finally {
+        if (button) button.disabled = false;
+      }
+    });
+  });
+</script>
