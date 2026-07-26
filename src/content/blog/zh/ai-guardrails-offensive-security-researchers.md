@@ -12,7 +12,7 @@ translationOf: ai-guardrails-offensive-security-researchers
 
 六周后，TechCrunch 采访了一批进攻性安全研究员——也就是受雇模拟攻击、替客户找漏洞的白帽——得到的抱怨方向正好相反：护栏不是太松，是太紧，紧到正当的安全工作没法做（[TechCrunch](https://techcrunch.com/2026/07/23/how-ai-guardrails-are-impeding-the-work-of-offensive-cybersecurity-researchers/)）。
 
-同一套护栏，监管者嫌它拦得太少，一线使用者嫌它拦得太多。这个两头挨骂的处境，我再熟悉不过——我的本职工作就是内容审核（content moderation），松一格有人骂你放纵，紧一格有人骂你误伤，几乎是这份工作的日常。所以我不觉得是哪一方在无理取闹，而是护栏这个机制本身被放在了一道它解不了的题上。这道题也从来不只属于安全圈，安全场景只是把它推到了赌注最高、矛盾最公开的地方。
+同一套护栏，监管者嫌它拦得太少，一线使用者嫌它拦得太多。这个两头挨骂的处境，我再熟悉不过——我的本职工作就是内容审核（content moderation），同一个模型，有人抱怨误报（false positive，正常内容被误拦），有人抱怨漏报（false negative，该拦的没拦住），这就是日常。所以我不觉得是哪一方在无理取闹，而是护栏这个机制本身被放在了一道它解不了的题上。这道题也从来不只属于安全圈，安全场景只是把它推到了赌注最高、矛盾最公开的地方。
 
 ## 白帽的账单
 
