@@ -8,9 +8,9 @@ slug: debian-llm-general-resolution
 translationOf: debian-llm-general-resolution
 ---
 
-2026 年 7 月 24 日,Debian 开启了一场全员公投(General Resolution,简称 GR,由全体 Debian 开发者投票表决的正式决议)的讨论期,议题只有一个:开发者能不能用 LLM 参与 Debian 的官方工作。Hacker News 上的帖子标题还写着「三个提案」,等我打开[官方投票页面](https://www.debian.org/vote/2026/vote_002)时,提案已经变成了四个——讨论期才过去一天。
+2026 年 7 月 24 日,Debian(最老牌的社区驱动 Linux 发行版之一,Ubuntu 就是在它基础上构建的)开启了一场全员公投(General Resolution,简称 GR,由全体 Debian 开发者投票表决的正式决议)的讨论期,议题只有一个:开发者能不能用 LLM 参与 Debian 的官方工作。[官方投票页面](https://www.debian.org/vote/2026/vote_002)上,提案一共四个。
 
-更有意思的是附议名单。Ian Jackson 自己提出了要求项目「尽可能拒绝 LLM」的提案 C,却同时附议了最严格的全面禁令提案 A;Pierre-Elliott Bécue 一边提出最宽松的提案 D(接受 AI 贡献、责任归提交者),一边也附议了 A。对立阵营互相把对方的提案送上选票,这不是立场混乱。Debian 公投用的是排序投票([宪章](https://www.debian.org/devel/constitution)附录 A 规定的 Cloneproof Schwartz Sequential Dropping,Condorcet 法的一种):投票人给所有选项排优先序,附议(second)只决定一个选项能否上选票,不代表支持。把光谱两端都摆上选票,投出的结果才没有议程设置的水分。这套流程本身,就比大多数公司和行业组织制定 AI 政策的方式干净。
+有意思的是附议名单。Ian Jackson 自己提出了要求项目「尽可能拒绝 LLM」的提案 C,却同时附议了最严格的全面禁令提案 A;Pierre-Elliott Bécue 一边提出最宽松的提案 D(接受 AI 贡献、责任归提交者),一边也附议了 A。对立阵营互相把对方的提案送上选票,这不是立场混乱。Debian 公投用的是排序投票([宪章](https://www.debian.org/devel/constitution)附录 A 规定的 Cloneproof Schwartz Sequential Dropping,Condorcet 法的一种):投票人给所有选项排优先序,附议(second)只决定一个选项能否上选票,不代表支持。把光谱两端都摆上选票,投出的结果才没有议程设置的水分。这套流程本身,就比大多数公司和行业组织制定 AI 政策的方式干净。
 
 ## 四个提案,两个真问题
 
