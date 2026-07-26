@@ -12,6 +12,8 @@ translationOf: ai-jobs-data-reality-check
 
 裁员是现在时，AI 是将来时。这两句话被大多数标题合并成了一句。
 
+而且裁员还在继续：就在本文发稿这一周（2026 年 7 月 22 日），[据 CNBC 报道](https://www.cnbc.com/2026/07/22/amazon-lays-off-some-employees-in-its-agi-unit.html)，亚马逊又在 AGI（通用人工智能，即研发前沿大模型的部门）部门裁掉一批员工——这次被裁的恰恰是做 AI 的人。这类新闻这两年每隔几周就来一轮，很自然让人想问：这么多被裁的人，都找到下一份工作了吗？为什么就业数据里看不出裁员潮？这个问题下文会专门拆。
+
 这种「现在裁员、将来归因」的错位，正是斯坦福经济政策研究所（SIEPR）2026 年 7 月一份政策简报（[原文](https://siepr.stanford.edu/publications/policy-brief/what-really-happening-jobs-separating-ai-hype-reality)）要拆解的问题。作者阵容值得注意：SIEPR 主任 Neale Mahoney、前美国劳工统计局局长 Erika McEntarfer、研究员 Karsen Wahal——其中 McEntarfer 直到 2025 年 8 月还在主管美国官方就业数据的编制。
 
 ## 总量数据里没有失业潮
@@ -21,6 +23,8 @@ translationOf: ai-jobs-data-reality-check
 结果是全文最硬的一组数字：2022 年以来，暴露度最高一档的失业率上升了 0.77 个百分点，暴露度最低一档上升了 0.85 个百分点。最该被 AI 冲击的人群，失业率涨得反而比最不该被冲击的人群略慢。作者的结论是：这是一个整体走软的劳动力市场，而不是一个被 AI 驱动失业的劳动力市场——真正拖慢招聘的宏观因素（美联储 2022 年 3 月开始加息、疫情期间的超额招聘回调）对所有人一视同仁。
 
 企业侧数据同样平淡。人口普查局的企业调查里，已采用 AI 的企业中只有 5% 报告 AI 影响了用工人数——而且这 5% 里增员和减员各占一半。亚特兰大联储的高管调查里，约 80% 的高管承认 AI 投资尚未改变公司的人员规模或生产率。
+
+回到开头那个问题：这两年裁员新闻此起彼伏，为什么总量数据里看不到？答案主要在规模和流量上。失业率是一个净值：美国就业人口约 1.6 亿，按[劳工统计局的 JOLTS 数据](https://www.bls.gov/news.release/jolts.nr0.htm)，即便在当下，每月被裁员和解雇的也有约 160 万人（月度裁员率约 1.0%，处于历史低位），同时每月新招聘约 520 万人。单个公司裁掉一两万人，放进这个流量里连零头都算不上——裁员新闻上头条，靠的是公司名字，不是人数。至于被裁的人去了哪里：多数会重新就业，但眼下是一个「低招聘、低裁员」的市场——公司不太裁人，也不太招人，被裁之后找到下一份工作的时间在拉长。这正是失业率对所有暴露度分组都在缓慢上行的原因，也是简报所说「整体走软」的具体含义。还要说明简报的时间边界：它的数据止于 2026 年中，7 月下旬这轮 AGI 部门裁员发生在简报发布之后，不在其覆盖范围内。
 
 那为什么裁员公告言必称 AI？简报作者对企业自报的归因明确持保留态度，理由是激励不对：把裁员说成「为 AI 转型」，比承认「疫情期间招多了」体面得多，也更符合投资者想听的故事——尤其当公司同时在为 AI 基础设施筹措巨额资本开支时，「裁员省下现金投 AI」本身就是叙事的一部分。裁员公告首先是写给资本市场的文本，其次才是对劳动力市场的描述。
 
@@ -38,9 +42,9 @@ translationOf: ai-jobs-data-reality-check
 
 简报最有方法论价值的部分，是把「AI 采用率」的各种口径摆在一起：问企业（人口普查局调查），约两成在用；问员工（家庭调查），超四成说工作中用 AI；问高管，声称超八成员工在用；看企业实际付费（Ramp 平台数据，样本不具代表性），超半数客户在为 AI 工具花钱。同一个问题，答案从 20% 到 80%,取决于问谁、怎么问。任何一篇拿单一口径下结论的报道，都值得先打个问号。
 
-生产率证据同样撕裂。实验室一侧：呼叫中心研究测得整体生产率提升 15%、新手提升约 30%；GitHub Copilot 实验中开发者完成任务快 56%——增益集中在经验较浅的人身上。但 [METR 的随机对照实验](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/)给了反例：16 名资深开源开发者在自己熟悉的代码库上用 AI 工具，完成任务反而慢了 19%——而他们自己感觉快了 20%。感知与实测的落差高达约 40 个百分点，这解释了为什么高管调查和实测数据经常互相矛盾：所有人都「感觉」AI 提效了。
+生产率证据同样撕裂。实验室一侧：呼叫中心研究测得整体生产率提升 15%、新手提升约 30%；GitHub Copilot 实验中开发者完成任务快 56%——增益集中在经验较浅的人身上。但 [METR 的随机对照实验](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/)给了反例。这个实验的设计值得细说：16 名资深开源开发者，在自己维护多年的大型代码库（平均超 2.2 万 star、上百万行代码）上，拿出 246 个真实任务——修 bug、加功能、重构，都是他们本来就要干的活，平均每个约两小时。每个任务被随机分到「可用 AI」或「禁用 AI」两组之一，每个任务只做一遍——不是同一个任务做两遍再比时间，所以不存在「第二遍已经熟悉了所以更快」的学习效应；对比发生在两组任务之间，随机分配保证两组任务的难度在统计上相当。结果：允许用 AI 的那组任务，平均完成时间反而长了 19%——而开发者自己事后仍感觉 AI 让他们快了 20%。感知与实测的落差高达约 40 个百分点，这解释了为什么高管调查和实测数据经常互相矛盾：所有人都「感觉」AI 提效了。
 
-这不是新故事。经济学家 Solow 在 1987 年就说过「计算机时代处处可见，唯独在生产率统计里看不见」——个人电脑的生产率效应花了十几年才在宏观数据里显形。简报的判断是：AI 在经济中的扩散速度会远慢于技术突破的速度。
+这不是新故事。1987 年，经济学家 Robert Solow 说过一句著名的话：「计算机时代处处可见，唯独在生产率统计里看不见」——当时美国企业已经大量购入电脑，但宏观生产率增速多年毫无起色，直到 1990 年代中期才明显加速。原因不是电脑没用，而是企业要把新技术真正转化为产出，得先重组工作流程、重新培训员工、配齐周边投资，这些以十年计。简报认为 AI 会重演这个模式：模型能力的突破可以一年一个台阶，但它渗透进企业日常运营、进而在经济数据里留下痕迹的速度要慢得多。换句话说，不是 AI 对经济没有影响，而是影响的显形有很长的时滞。
 
 ## 给行业观测者的三个判断
 
@@ -57,5 +61,7 @@ translationOf: ai-jobs-data-reality-check
 - [What is really happening to jobs? Separating AI hype from reality（SIEPR 政策简报）](https://siepr.stanford.edu/publications/policy-brief/what-really-happening-jobs-separating-ai-hype-reality) — 核心数据与结论：0.77/0.85 个百分点、新毕业生 5.6%、采用率各口径、5% 企业报告用工影响、80% 高管称未改变人员规模、呼叫中心与 Copilot 生产率研究转引
 - [Occupational, industry, and geographic exposure to artificial intelligence（Felten, Raj & Seamans, 2021）](https://sms.onlinelibrary.wiley.com/doi/full/10.1002/smj.3286) — 简报所用 AI 职业暴露指数（AIOE）的原始论文；最高/最低暴露职业例子（遗传咨询师、金融审查员 vs 舞蹈演员、建筑辅助工）出自该指数
 - [An update from SVP Beth Galetti on Amazon workforce reduction（亚马逊官方备忘录）](https://www.aboutamazon.com/news/company-news/amazon-workforce-reduction) — 开篇案例：1.4 万岗位裁减的官方归因原文
+- [Amazon lays off some employees in its AGI unit（CNBC，2026-07-22）](https://www.cnbc.com/2026/07/22/amazon-lays-off-some-employees-in-its-agi-unit.html) — 开篇补充案例：亚马逊 AGI 部门新一轮裁员（亚马逊未发官方公告，此为原始报道）
+- [Job Openings and Labor Turnover Summary（美国劳工统计局 JOLTS）](https://www.bls.gov/news.release/jolts.nr0.htm) — 月度裁员率约 1.0%（历史低位）、每月新招聘约 520 万人；「低招聘、低裁员」市场的判断依据
 - [Canaries in the Coal Mine?（Stanford Digital Economy Lab）](https://digitaleconomy.stanford.edu/publication/canaries-in-the-coal-mine-six-facts-about-the-recent-employment-effects-of-artificial-intelligence/) — 22–25 岁高暴露职业就业下滑约 13%、年轻软件开发者下滑近 20%、替代型与辅助型职业的区分、修订分析中下滑推迟到 2024 年才显现
-- [Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity（METR）](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/) — 16 名资深开发者实测慢 19%、自感快 20% 的感知落差
+- [Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity（METR）](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/) — 16 名资深开发者、246 个真实任务随机分组的实验设计；实测慢 19%、自感快 20% 的感知落差
