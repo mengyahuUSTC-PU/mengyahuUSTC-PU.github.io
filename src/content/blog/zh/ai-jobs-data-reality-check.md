@@ -28,9 +28,9 @@ translationOf: ai-jobs-data-reality-check
 
 简报没有停在「虚惊一场」。它承认有一个信号是真的：入口岗位。
 
-2026 年一季度，美国新毕业生失业率达到 5.6%，比三年前高 1.6 个百分点。更细的证据来自 Brynjolfsson 团队的「煤矿里的金丝雀」研究（[Stanford Digital Economy Lab](https://digitaleconomy.stanford.edu/publication/canaries-in-the-coal-mine-six-facts-about-the-recent-employment-effects-of-artificial-intelligence/)，用 ADP 工资单数据）：22–25 岁年轻人在 AI 暴露度最高的职业里，就业相对下滑约 13%；22–25 岁软件开发者的就业从 2022 年底的峰值到 2025 年 7 月下滑近 20%，而同职业的资深员工基本稳定。下滑集中在 AI 更可能「替代」而非「辅助」人类任务的职业里。
+2026 年一季度，美国新毕业生失业率达到 5.6%，比三年前高 1.6 个百分点。更细的证据来自 Brynjolfsson 团队的「煤矿里的金丝雀」研究（[Stanford Digital Economy Lab](https://digitaleconomy.stanford.edu/publication/canaries-in-the-coal-mine-six-facts-about-the-recent-employment-effects-of-artificial-intelligence/)，用 ADP 工资单数据）：在 AI 暴露度最高的职业里，22–25 岁年轻人的就业下滑了约 13%，而同职业的资深员工基本稳定——最典型的是软件开发：22–25 岁开发者的就业从 2022 年底的峰值到 2025 年 7 月下滑近 20%。而且下滑集中在 AI 更可能「替代」人类任务（直接接手活儿）而非「辅助」人类（帮人把活干得更快）的职业里。同一职业、只有新人受冲击、且冲击集中在替代型职业——这个模式看起来确实像 AI 的指纹。
 
-但简报对这个信号也做了减法，列出三个混杂因素：加息始于 2022 年 3 月，早于 ChatGPT 发布；远程办公削弱了入门岗位在工作中学习的机会，本身就压低企业招新人的意愿；而且修订后的分析显示，入门岗位的明显下滑要到 2024 年才出现——如果 AI 是主因，时间线上应该更早、更陡。
+但简报提醒：先别急着把账全记在 AI 头上，因为时间线有个疑点。年轻人就业的下滑从 2022 年底就开始了，而 ChatGPT 也是 2022 年 11 月底才发布——企业不可能在它发布的同时就已经用 AI 替代掉了员工。那段时间真正在发生的是另外两件事：美联储 2022 年 3 月开始加息，科技行业招聘应声收缩；疫情后的远程办公让新人失去了在办公室里边干边学的机会，企业招新人的意愿本来就在下降。针对这类质疑，Brynjolfsson 团队后来做了修订分析，把这些混杂因素当作控制变量剔除，结果是：剔除之后，入门岗位的明显下滑要到 2024 年才出现。换句话说，2022–2023 年那段下滑更可能是加息和远程办公造成的；AI 如果真的在压缩入门岗位，它的影响是从 2024 年才开始显现的。
 
 所以准确的读法是：入口岗位的困境是真的，AI 是嫌疑人之一，但目前的证据不足以让它单独定罪。
 
@@ -57,5 +57,5 @@ translationOf: ai-jobs-data-reality-check
 - [What is really happening to jobs? Separating AI hype from reality（SIEPR 政策简报）](https://siepr.stanford.edu/publications/policy-brief/what-really-happening-jobs-separating-ai-hype-reality) — 核心数据与结论：0.77/0.85 个百分点、新毕业生 5.6%、采用率各口径、5% 企业报告用工影响、80% 高管称未改变人员规模、呼叫中心与 Copilot 生产率研究转引
 - [Occupational, industry, and geographic exposure to artificial intelligence（Felten, Raj & Seamans, 2021）](https://sms.onlinelibrary.wiley.com/doi/full/10.1002/smj.3286) — 简报所用 AI 职业暴露指数（AIOE）的原始论文；最高/最低暴露职业例子（遗传咨询师、金融审查员 vs 舞蹈演员、建筑辅助工）出自该指数
 - [An update from SVP Beth Galetti on Amazon workforce reduction（亚马逊官方备忘录）](https://www.aboutamazon.com/news/company-news/amazon-workforce-reduction) — 开篇案例：1.4 万岗位裁减的官方归因原文
-- [Canaries in the Coal Mine?（Stanford Digital Economy Lab）](https://digitaleconomy.stanford.edu/publication/canaries-in-the-coal-mine-six-facts-about-the-recent-employment-effects-of-artificial-intelligence/) — 22–25 岁高暴露职业就业下滑约 13%、年轻软件开发者下滑近 20%、替代型与辅助型职业的区分
+- [Canaries in the Coal Mine?（Stanford Digital Economy Lab）](https://digitaleconomy.stanford.edu/publication/canaries-in-the-coal-mine-six-facts-about-the-recent-employment-effects-of-artificial-intelligence/) — 22–25 岁高暴露职业就业下滑约 13%、年轻软件开发者下滑近 20%、替代型与辅助型职业的区分、修订分析中下滑推迟到 2024 年才显现
 - [Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity（METR）](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/) — 16 名资深开发者实测慢 19%、自感快 20% 的感知落差
