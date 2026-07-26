@@ -16,7 +16,7 @@ translationOf: ai-jobs-data-reality-check
 
 ## 总量数据里没有失业潮
 
-简报的核心方法是「按暴露度分组对比」：给每个职业打一个 AI 暴露度分数（衡量该职业的任务与现有 AI 能力的重合程度），把所有职业按分数分成五档，然后用 IPUMS-CPS 微观数据（2015–2026 年，按季度）比较各档的失业率走势。
+简报的核心方法是「按暴露度分组对比」：给每个职业打一个 AI 暴露度分数，衡量该职业的任务与现有 AI 能力的重合程度。分数不是简报作者自己打的，用的是经济学家 Felten、Raj 和 Seamans 2021 年发表的 [AI 职业暴露指数（AIOE）](https://sms.onlinelibrary.wiley.com/doi/full/10.1002/smj.3286)——该指数把 O*NET 职业数据库里各职业依赖的能力，与各类 AI 应用的进展逐项对应起来算分。把所有职业按分数分成五档，再用 IPUMS-CPS 微观数据（2015–2026 年，按季度）比较各档的失业率走势。两头的职业大致长这样：暴露度最高一档是遗传咨询师、金融审查员这类核心工作是标准化处理文本信息的岗位，最低一档是舞蹈演员、建筑辅助工这类依赖现场肢体劳动的岗位。
 
 结果是全文最硬的一组数字：2022 年以来，暴露度最高一档的失业率上升了 0.77 个百分点，暴露度最低一档上升了 0.85 个百分点。最该被 AI 冲击的人群，失业率涨得反而比最不该被冲击的人群略慢。作者的结论是：这是一个整体走软的劳动力市场，而不是一个被 AI 驱动失业的劳动力市场——真正拖慢招聘的宏观因素（美联储 2022 年 3 月开始加息、疫情期间的超额招聘回调）对所有人一视同仁。
 
@@ -55,6 +55,7 @@ translationOf: ai-jobs-data-reality-check
 ## 参考来源
 
 - [What is really happening to jobs? Separating AI hype from reality（SIEPR 政策简报）](https://siepr.stanford.edu/publications/policy-brief/what-really-happening-jobs-separating-ai-hype-reality) — 核心数据与结论：0.77/0.85 个百分点、新毕业生 5.6%、采用率各口径、5% 企业报告用工影响、80% 高管称未改变人员规模、呼叫中心与 Copilot 生产率研究转引
+- [Occupational, industry, and geographic exposure to artificial intelligence（Felten, Raj & Seamans, 2021）](https://sms.onlinelibrary.wiley.com/doi/full/10.1002/smj.3286) — 简报所用 AI 职业暴露指数（AIOE）的原始论文；最高/最低暴露职业例子（遗传咨询师、金融审查员 vs 舞蹈演员、建筑辅助工）出自该指数
 - [An update from SVP Beth Galetti on Amazon workforce reduction（亚马逊官方备忘录）](https://www.aboutamazon.com/news/company-news/amazon-workforce-reduction) — 开篇案例：1.4 万岗位裁减的官方归因原文
 - [Canaries in the Coal Mine?（Stanford Digital Economy Lab）](https://digitaleconomy.stanford.edu/publication/canaries-in-the-coal-mine-six-facts-about-the-recent-employment-effects-of-artificial-intelligence/) — 22–25 岁高暴露职业就业下滑约 13%、年轻软件开发者下滑近 20%、替代型与辅助型职业的区分
 - [Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity（METR）](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/) — 16 名资深开发者实测慢 19%、自感快 20% 的感知落差
