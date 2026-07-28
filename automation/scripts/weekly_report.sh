@@ -18,6 +18,13 @@ POSTS=$(ls -1 src/content/blog/zh/*.md | xargs -n1 basename)
   echo "$DATA"
   echo "## 已发布文章列表"
   echo "$POSTS"
+  echo "## 分发发布记录（scheduled_for.at=下发时刻，x/linkedin=实际发出时刻，均 UTC；发出与下发相差≤3 分钟＝晚间即时发，否则＝高峰时段定时发）"
+  "$PY" -c "
+import json, glob
+for f in sorted(glob.glob('automation/data/dist/*.json')):
+    d = json.load(open(f))
+    print(json.dumps({'slug': d.get('slug'), 'status': d.get('status'), 'scheduled_for': d.get('scheduled_for')}, ensure_ascii=False))
+"
   if [ -n "$PREV" ]; then
     echo "## 上一期周报全文"
     cat "$PREV"
