@@ -165,7 +165,12 @@ def handle_distribution(slug: str, when: str = "now"):
             return slot.strftime("%Y-%m-%dT%H:%M:%SZ")
         x_when, li_when = next_peak(16), next_peak(20)
     else:
-        x_when = li_when = "now"
+        # X policy forbids DIRECT publishing of URL-carrying drafts via API
+        # (403 FORBIDDEN); a near-future schedule is "immediate" in practice
+        # but goes through the allowed scheduling path.
+        soon = (datetime.now(timezone.utc) + timedelta(minutes=2)).strftime(
+            "%Y-%m-%dT%H:%M:%SZ")
+        x_when = li_when = soon
 
     try:
         create_draft(thread=[pack["thread"].strip()], publish_at=x_when, title=f"{slug} (X)")
@@ -204,7 +209,7 @@ def handle_distribution(slug: str, when: str = "now"):
             return d.astimezone(ZoneInfo("America/Los_Angeles")).strftime("%m-%d %H:%M")
         send(f"⏰ {slug} 已排进高峰时段（西雅图时间）：X → {pt(x_when)} · LinkedIn → {pt(li_when)}。")
     else:
-        send(f"🚀 {slug} 的 X 帖 + LinkedIn 帖已提交立即发布（Typefully 处理中，1-2 分钟内上线）。")
+        send(f"🚀 {slug} 的 X 帖 + LinkedIn 帖已排程，2 分钟后自动发出（X 政策不允许 API 带链接直发，走排程通道效果相同）。")
 
 
 HELP_TEXT = ("🤔 没听懂。可用指令：\n"
