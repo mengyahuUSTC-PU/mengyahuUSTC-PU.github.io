@@ -435,7 +435,8 @@ def route_free_text(content, date):
     open_prs = json.loads(sh("gh", "pr", "list", "--state", "open",
                              "--json", "number,headRefName,title"))
     packs = []
-    for f in (DATA / "dist").glob("*.json"):
+    # mtime-sorted so the last entry is the most recently previewed pack
+    for f in sorted((DATA / "dist").glob("*.json"), key=lambda p: p.stat().st_mtime):
         try:
             d = json.loads(f.read_text())
             packs.append({"slug": d["slug"], "status": d.get("status", "pending")})
@@ -467,7 +468,9 @@ def route_free_text(content, date):
         "- 提出候选清单之外的新话题想写成深度文章（描述一条新闻/论文/贴个链接说想写这个，"
         "或说候选都不喜欢想写别的）→ new_topic，topic 填用户描述原文\n"
         "- 闲聊、提问、与上述无关 → none\n"
-        "- slug 从上下文推断：只有一个候选对象时直接用它\n\n"
+        "- slug 从上下文推断：只有一个候选对象时直接用它\n"
+        "- revise_distribution 的 slug 只能取 distribution_packs 里已有的 slug"
+        "（列表按时间排序，最后一个=最新预览）；用户没点名文章时 slug 留空\n\n"
         f"## 当前上下文\n{json.dumps(ctx, ensure_ascii=False)}\n\n## 用户消息\n{content}"
     )
     run = subprocess.run(
@@ -489,6 +492,15 @@ def route_free_text(content, date):
     feedback = (intent.get("feedback") or content).strip()
     if action == "none":
         return True  # deliberate chatter, stay silent
+    if action == "revise_distribution":
+        # Hard-validate against real packs: the router must never send
+        # distribute.py after a slug with no pack (unpublished article etc.).
+        pendings = [p["slug"] for p in packs if p["status"] != "scheduled"]
+        if slug not in pendings:
+            slug = pendings[-1] if pendings else ""
+        if not slug:
+            send("⚠️ 没有待发布的分发内容可改（都已排程或尚未生成）。")
+            return True
     if action == "revise_distribution" and slug:
         send(f"✏️ 收到对 {slug} 分发内容的意见，重新生成中…")
         r = subprocess.run(
