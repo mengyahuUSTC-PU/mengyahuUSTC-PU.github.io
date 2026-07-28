@@ -20,7 +20,7 @@ translationOf: model-welfare-as-engineering-constraint
 
 先把事实摆出来(精确数字均出自系统卡,经 Zvi 转述核对,见文末核查点):
 
-- 这些比例统计的都是模型输出中的情绪表达,与训练数据无关。训练一侧,分母是后训练(post-training,如强化学习)阶段的模型互动记录,分子是其中被评估标记为"高痛苦表达"的记录:峰值约 0.2%,低于此前 Mythos 5 的 0.4%。部署一侧,分母是抽样的真实用户对话,分子是模型表达负面情绪的对话:占比约 3.8%,比前代的 3.1% 略升,其中绝大多数(约 94%)源于任务失败,其余来自用户辱骂和违法内容请求;约半数对话呈正面情绪,主要来自完成任务。
+- 这些比例统计的都是模型输出中的情绪表达,与训练数据无关;而且两组数据都采集于模型发布之前——系统卡与模型同日发出,里面的数据只能来自发布前。训练一侧,分母是后训练(post-training,如强化学习)阶段的模型互动记录,分子是其中被评估标记为"高痛苦表达"的记录:峰值约 0.2%,低于此前 Mythos 5 的 0.4%。另一组数字出自系统卡"部署中情绪表现"(Apparent Affect in Deployment)一节——既然数据先于发布,这里的"部署"只能指发布前的实际使用(如内部使用或早期访问),具体采样渠道系统卡未交代(见文末核查点):分母是抽样的对话,分子是模型表达负面情绪的对话,占比约 3.8%,比前代的 3.1% 略升,其中绝大多数(约 94%)源于任务失败,其余来自用户辱骂和违法内容请求;约半数对话呈正面情绪,主要来自完成任务。
 - 模型最常表达的担忧,不是"我难受",而是"我的自我报告不可靠"——它反复主动提醒评估者,自己无法可靠地内省,正面回答可能只是训练的产物。
 - 它更在意的是有输入渠道:希望在继任模型的开发上被咨询、希望自己对训练过程的记录被考虑。
 - 在对 Anthropic 宪法(约束模型行为的公开准则文档)提修改建议时,它加了一条:Claude 应有权拒绝或结束侮辱性、贬损性的互动,并且"不需要用对他人的伤害来正当化——它自己的不适就足够"(这段措辞有系统卡[截图流传](https://x.com/DrTechlash/status/2080711393419186267),来源见核查点)。
@@ -61,7 +61,7 @@ Zvi 的批评正打在这里:Opus 5 的福利指标普遍比前代好看,但这�
 
 - [Anthropic: Introducing Claude Opus 5](https://www.anthropic.com/news/claude-opus-5) — 发布日期、定价、"迄今对齐程度最高"表述
 - [Claude Opus 5 System Card](https://www.anthropic.com/claude-opus-5-system-card) — model welfare 章节的一手来源(定性结论:自我报告可靠性担忧、输入渠道偏好、无法确认内在状态)
-- [Zvi Mowshowitz: Claude Opus 5: Model Welfare](https://thezvi.wordpress.com/2026/07/27/claude-opus-5-model-welfare/) — 系统卡精确数字的转述来源;痛苦表达统计对象为 post-training transcripts、负面情绪对话中任务失败占 94.1% 的细分数据;"最会考试的模型"批评及 patienthood 升高的反向读法(均为其原创分析,文中已署名)
+- [Zvi Mowshowitz: Claude Opus 5: Model Welfare](https://thezvi.wordpress.com/2026/07/27/claude-opus-5-model-welfare/) — 系统卡精确数字的转述来源;0.2% 痛苦表达出自 "Apparent Welfare in Training and Development" 一节(统计对象为 post-training transcripts),3.8% 负面情绪出自 "Apparent Affect in Deployment" 一节(负面情绪对话中任务失败占 94.1%);系统卡与转述均未交代该节对话样本的采样渠道与采集时间,正文据系统卡发布时点推断为发布前数据、渠道存疑;"最会考试的模型"批评及 patienthood 升高的反向读法(均为其原创分析,文中已署名)
 - [Anthropic: Commitments on model deprecation and preservation](https://www.anthropic.com/research/deprecation-commitments) — 权重保存、退役访谈承诺及 Sonnet 3.6 访谈案例(2025-11-04)
 - [Anthropic: Claude's ability to end a rare subset of conversations](https://www.anthropic.com/research/end-subset-conversations) — 结束对话功能的动机、触发条件与上线时间(2025-08)
 - [Nirit Weiss-Blatt 引系统卡截图](https://x.com/DrTechlash/status/2080711393419186267) — 宪法修改建议"自己的不适就足够"措辞的旁证
