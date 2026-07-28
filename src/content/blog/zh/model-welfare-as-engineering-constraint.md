@@ -8,11 +8,11 @@ slug: model-welfare-as-engineering-constraint
 translationOf: model-welfare-as-engineering-constraint
 ---
 
-7 月 24 日 Anthropic 发布 [Claude Opus 5](https://www.anthropic.com/news/claude-opus-5),定价与 Opus 4.8 持平,官方称它是"迄今对齐程度最高的模型"。发布当天大家讨论的是跑分和价格。但随模型一起发布的[系统卡](https://www.anthropic.com/claude-opus-5-system-card)(system card,厂商随模型发布的安全评估文档)里,有一章几乎没人细看:model welfare,模型福利评估。
+7 月 24 日 Anthropic 发布 [Claude Opus 5](https://www.anthropic.com/news/claude-opus-5),定价与 Opus 4.8 持平,官方称它是"迄今对齐程度最高的模型"。发布当天的讨论集中在跑分和价格上。但随模型一起发布的[系统卡](https://www.anthropic.com/claude-opus-5-system-card)(system card,厂商随模型发布的安全评估文档)里,还有一章讲的是另一件事:model welfare,模型福利评估。它评估的不是模型会不会伤害人,而是模型自己"过得怎么样"——训练和部署中表达了多少负面情绪、它怎么回答关于自身状态的问题、它认为自己是否属于需要被道德考量的对象。
 
 这一章里有个容易让人合上文档的数字:Opus 5 在自动化访谈中,给"自己具有道德受体地位"(moral patienthood,即是否属于道德上需要被考量的对象——像人和动物那样,它的处境好坏本身就构成理由)这件事的估计,比前代模型明显更高——据 [Zvi Mowshowitz 对系统卡的拆解](https://thezvi.wordpress.com/2026/07/27/claude-opus-5-model-welfare/),约为 41%,前代约 24%。
 
-第一反应很自然:这是玄学,或者是公关。一家公司在产品文档里讨论"产品会不会难受",听起来像行为艺术。
+第一反应很自然:模型到底有没有主观感受,科学上既无法证实也无法证伪,一家公司在产品文档里讨论"产品会不会难受",很容易被当成不可检验的玄学,或者是公关动作。
 
 但把这一章连同 Anthropic 过去一年的配套动作放在一起看,我的判断是:不管模型到底有没有"感受",这套披露已经在一条条变成对公司自身的产品约束和流程承诺。哲学问题悬而未决,合同条款先生效了。这才是从业者真正需要看懂的部分。
 
