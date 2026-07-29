@@ -7,6 +7,7 @@ branch (native rewrite, merge semantics — never dropping the counterpart's
 own existing corrections). Commits and pushes if anything changed.
 """
 
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -74,6 +75,17 @@ def sync_counterpart(branch: str, rel: str) -> bool:
     ).stdout
     if not clean.strip().startswith("---") or clean.strip() == target.strip():
         return False
+    # Invariant guard: the model must return the TARGET file, merged — never
+    # the reference wholesale. lang/slug must survive; a swapped lang once
+    # shipped zh content to the en path and duplicated the homepage entry.
+    def _fm(text, key):
+        m = re.search(rf"^{key}:\s*(.+)$", text, re.M)
+        return m.group(1).strip() if m else None
+    if clean.strip() == reference.strip():
+        return False
+    for key in ("lang", "slug"):
+        if _fm(clean, key) != _fm(target, key):
+            return False
     cur = sh("git", "rev-parse", "--abbrev-ref", "HEAD")
     if cur != branch:
         raise RuntimeError(f"sync refusing to commit: on '{cur}', expected '{branch}'")
