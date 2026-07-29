@@ -10,7 +10,7 @@ translationOf: discovering-cryptographic-weaknesses
 
 一个提示词里带着三个拼写错误——`inteligent`、`agian`、`worth`——就把一台模型从「这题太难我不做」推到了发现一个躲过多年专家审查的密码学缺陷。
 
-这是 Anthropic 在 7 月 28 日公开的一项研究里最反直觉的细节（[Discovering cryptographic weaknesses with Claude](https://www.anthropic.com/research/discovering-cryptographic-weaknesses)）。他们用 Claude Mythos Preview，在两个真实的密码学目标上找到了**数学层面**的攻击——不是代码实现里的 bug，是算法本身的结构性弱点。一个是 HAWK，NIST 后量子签名标准化竞赛的候选方案；另一个是砍到 7 轮的 AES-128（完整版是 10 轮）。
+这是 Anthropic 在 7 月 28 日公开的一项研究里最反直觉的细节（[Discovering cryptographic weaknesses with Claude](https://www.anthropic.com/research/discovering-cryptographic-weaknesses)）。他们用 Claude Mythos Preview，在两个真实的密码学目标上找到了**数学层面**的攻击——不是代码实现里的 bug，是算法本身的结构性弱点。一个是 HAWK——一种基于格（lattice）的数字签名算法，正在参与 NIST（美国国家标准与技术研究院，负责制定全球广泛采用的密码标准）主持的后量子签名标准化竞赛，入选就意味着未来可能被各国系统大规模部署；另一个是砍到 7 轮的 AES-128（完整版是 10 轮）。
 
 先把数字摆出来，因为这决定了这件事该被认真到什么程度。
 
