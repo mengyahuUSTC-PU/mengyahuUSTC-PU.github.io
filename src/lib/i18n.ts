@@ -9,7 +9,7 @@ export const ui = {
     'nav.writing': 'Writing',
     'nav.about': 'About',
     'nav.projects': 'Projects',
-    'home.tagline': 'First-hand notes on AI safety, industry shifts, and building with AI. Every post bilingual; opinions are my own.',
+    'home.tagline': 'First-hand notes on AI safety, industry shifts, and building with AI. Every post is bilingual; opinions are my own.',
     'home.latest': 'Latest writing',
     'home.deepDives': 'Deep dives',
     'home.briefings': 'Daily briefing',
