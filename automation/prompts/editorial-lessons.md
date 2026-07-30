@@ -53,3 +53,36 @@
 - 将某公司计划类比/对照到其他公司历史先例时，必须实际调研该先例公司具体做了什么、是否有相关诉讼及结果，逐项梳理与本文场景的相同点、不同点，并提炼可直接迁移的经验教训，不能只做浮于表面的泛泛类比（2026-07-24，Nuance 先例调研）
 - 描述算法/技术机制的具体运作步骤（如推测解码的"起草-验收"流程）时，须核实一手论文对该步骤的准确定义，不能凭直觉或常见类比代入；若声称某步骤更快，须点明真正的计算原理（如并行前向计算 vs 依次生成）；模型输出本身是概率采样、同一输入结果可能不同，描述接受/拒绝判定时须讲清具体比对方式（贪心匹配还是按概率比值的拒绝采样），不能默认存在笼统的"容差"（2026-07-28）
 - 引用统计数字/比例时，须说清统计的是训练阶段还是部署后输出、分子分母具体指代什么；分母若是"互动/对话"，还须说清抽样方式——是自然抽取所有类型任务，还是专门筛选情感相关 prompt，因为混入大量无情绪场景任务会稀释比例；说明统计对象是"模型输出"时不能因此暗示与输入无关，需把"统计输出而非训练数据"和"输出是否受当批输入类型影响"分开讲清楚（2026-07-28）
+
+## 反 AI 腔硬规则（2026-07-28，用户反馈：有读者因「一看就是 AI 写的」而流失。来源：Wikipedia:Signs of AI writing、COLING 2025 词频研究、社区共识。以下规则适用于所有产出——文章、快讯、X/LinkedIn、newsletter）
+
+**英文禁用词表**（LLM 统计性过度使用的标记词，一律换成朴素说法）：
+delve, tapestry, landscape/realm（抽象义）, pivotal, crucial, testament, underscore, highlight（动词）, showcase, foster, robust, intricate, meticulous, vibrant, boast, seamless, leverage, navigate（抽象义）, elevate, compelling, paramount, garner, bolster, interplay, groundbreaking, renowned, invaluable, comprehensive。
+系动词回归：直接用 is/are/has，不写 serves as / stands as / functions as / marks / represents。
+
+**英文禁用句式**：
+- 否定排比："It's not just X, it's Y" / "not only…but also" / "It isn't about X; it's about Y"——全文一次都不要
+- rule of three：三个并列形容词/名词/短语撑排场（"fast, reliable, and scalable"）
+- 尾挂分词句："…, contributing to / highlighting / underscoring / reflecting …"——句尾不挂空泛意义
+- false range："from X to Y" 而 X、Y 并不构成真实谱系
+- 复述式收尾："In conclusion / Overall / Ultimately" + 重述前文；结尾停在具体判断上
+- 空泛归因："Experts argue / Studies show / Observers note" 无具体人名出处
+- 顿悟公式："Here's the catch / Here's the thing / Let that sink in / Read that again"
+
+**标点与排版**：
+- em dash 全文最多 1 处（这是流传最广的 AI 标志），改用逗号、冒号或拆句
+- 不机械加粗关键词；不用「**加粗短语**: 说明文字」式列表；标题不用 Title Case（首词大写即可）
+- X/LinkedIn 禁装饰性 emoji（尤其 🚀✨💡）；hook 不用「反直觉断言+换行+Here's why」模板
+
+**中文禁用**：
+- 「不是…而是…」「不仅…更是…」否定排比（全文最多一次，且必须承载真实对立）
+- 「首先…其次…最后」「总而言之」「综上所述」「值得注意的是」「不难发现」
+- 空心词：赋能、抓手、闭环、底层逻辑、破局、重塑、护城河（除非引用原文）
+- 段段四平八稳的公文腔；每个论点都配一句升华的「金句体」
+
+**正向写法**（去 AI 味的本质是有真人痕迹）：
+- 句子长短交错，允许极短句。允许一个自然段只有一句话
+- 具体压倒概括：数字、人名、日期、实际发生的事，替代形容词堆叠
+- 同一个词重复用没关系，不要为避免重复硬换同义词（elegant variation 是 AI 标志）
+- 第一人称的真实局限可以写：「我没验证过」「这点我拿不准」——AI 从不承认拿不准
+- 交稿前通读自查一遍本节全部黑名单；命中即改
