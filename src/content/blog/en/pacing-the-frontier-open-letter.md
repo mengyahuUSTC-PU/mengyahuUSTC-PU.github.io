@@ -1,6 +1,6 @@
 ---
-title: "This Open Letter Doesn't Ask AI to Slow Down — What It Admits Is Scarier"
-description: "1,273 frontier-lab employees signed Pacing the Frontier, with the chief scientists of five rival companies at the top and two labs endorsing officially. Why everyone felt safe signing, where the ask gets stuck, and what the letter actually accomplishes."
+title: "What are 1,273 frontier-lab signatures actually worth?"
+description: "1,273 frontier-lab employees signed Pacing the Frontier, with the chief scientists of five rival companies at the top and two labs endorsing officially. Why the letter got every name it wanted, and a rubric for what a signature roster does and doesn't prove."
 pubDate: 2026-07-29
 tags: [ai-governance, ai-safety]
 lang: en
@@ -45,6 +45,14 @@ Because the letter hands the responsibility to government. It states the bind ex
 The genuinely hard part is the tools themselves, which the letter deliberately leaves unspecified. Follow the logic — what follows is my extrapolation, not the letter's text — and pacing the frontier presupposes knowing how fast each lab is moving, which almost certainly means compute monitoring, coordination of model releases, and some way to verify how much of a lab's R&D is internally automated. The arms-control analogy is instructive: disarmament treaties work because satellites and on-site inspectors can count the other side's missiles. "AI research progress" lives inside data centers and codebases, and in my view is far harder to verify than counting missiles. That is the real engineering buried under the phrase "technical tools."
 
 The political wall is higher still. The letter is addressed to the U.S. government — whose July 2025 AI policy framework is literally titled [*Winning the Race: America's AI Action Plan*](https://www.whitehouse.gov/wp-content/uploads/2025/07/Americas-AI-Action-Plan.pdf), with acceleration and deregulation as its main axes. Asking a government whose organizing principle is winning the race to lead an international effort to build slowdown tools is a stretch on its own — and any "international effort" that covers the major players can hardly exclude China, and my judgment is that pacing without Chinese participation would, in Washington's framing, most likely be read as unilateral concession.
+
+## How to weigh the next letter
+
+Strip away the specifics and this story leaves a small tool that outlasts it. When the next open letter arrives, ask three questions. What exactly does it ask for, and by when? Who signed, and are they insiders signing under their own names while still employed? And what does signing cost each signer? The 2023 pause letter scored high on the first question and low on the second. The CAIS statement scored high on the second and near zero on the first. This letter maxed out the second question precisely because the answer to the third is "almost nothing."
+
+That yields a discount rule worth keeping: a signature roster is strong evidence for how *widely* a concern is held, and weak evidence for how *deeply*. The 1,273 names tell you that worry about automated AI R&D is now a normal position inside frontier labs, held openly by the people running research, not a fringe view whispered on the way out the door. They tell you nothing about how many of those people would accept a slowdown that costs them their project or their equity. Those are different claims, and open letters are routinely presented as proof of the second when they only prove the first.
+
+The same discounting applies in reverse to the hard evidence embedded in the story. Whatever becomes of the letter, the automation numbers behind it (80% of merged code written by Claude, engineers merging 8× more code per day) are disclosures a company made about itself, against its promotional interest in the first case and with stated caveats in the second. For a practitioner trying to gauge how far along automated AI R&D actually is, those numbers are worth more than all 1,273 signatures combined.
 
 ## What the letter actually leaves behind
 
