@@ -52,6 +52,36 @@ const canonical = new URL(path, SITE_URL).href;
       gtag('js', new Date());
       gtag('config', 'G-6F7TVKDCGG');
     </script>
+    <script type="application/ld+json" is:inline set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Person',
+          '@id': `${SITE_URL}/#person`,
+          name: 'Mengya Hu',
+          alternateName: ['Mia Hu', 'Mengya (Mia) Hu', '胡梦雅'],
+          url: SITE_URL,
+          jobTitle: 'Senior Applied Scientist, Responsible AI',
+          worksFor: { '@type': 'Organization', name: 'Microsoft' },
+          alumniOf: [
+            { '@type': 'CollegeOrUniversity', name: 'Princeton University' },
+            { '@type': 'CollegeOrUniversity', name: 'University of Science and Technology of China' },
+          ],
+          sameAs: [
+            'https://www.linkedin.com/in/mengya-mia-hu/',
+            'https://x.com/Mengya_Mia_Hu',
+            'https://github.com/mengyahuUSTC-PU',
+          ],
+        },
+        {
+          '@type': 'WebSite',
+          name: SITE_TITLE,
+          url: SITE_URL,
+          publisher: { '@id': `${SITE_URL}/#person` },
+          inLanguage: ['en', 'zh-CN'],
+        },
+      ],
+    })} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
