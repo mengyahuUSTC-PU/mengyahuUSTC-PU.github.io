@@ -1,0 +1,76 @@
+---
+title: "答对了题的模型，未必用过它写给你看的那份推理"
+description: "三成到六成的「思考步骤」删掉不影响答案，无意义的省略号也能顶替推理文本。梳理思维链忠实性研究的三组证据、背后的机制假说，以及押在思维链监控上的那层安全防线现在还剩多少。"
+pubDate: 2026-07-31
+tags: [interpretability, ai-safety]
+lang: zh
+slug: cot-faithfulness-decorative-thinking
+translationOf: cot-faithfulness-decorative-thinking
+---
+
+去年 7 月，Google DeepMind 的 Gemini Deep Think 在国际数学奥林匹克拿到[官方认证的金牌水平](https://deepmind.google/discover/blog/advanced-version-of-gemini-with-deep-think-officially-achieves-gold-medal-standard-at-the-international-mathematical-olympiad/)：42 分里拿了 35 分，全程用自然语言直接写证明，IMO 主席亲自确认了分数。推理模型的成绩是实打实的。
+
+同一时期，亚利桑那州立大学的 Subbarao Kambhampati（AAAI 前主席）带着一篇标题带感叹号的立场论文进了 ICML 2026：[《别再把中间 token 拟人化成推理/思考痕迹！》](https://arxiv.org/abs/2504.09762)。7 月 31 日，Quanta 发了一篇科普长文[《AI 的推理是不是「歪打正着」？》](https://www.quantamagazine.org/is-ai-reasoning-right-for-the-wrong-reasons-20260731/)，把这条线上的研究串了起来。
+
+这两件事不矛盾。成绩是真的；问题出在另一处：模型在给出答案之前写下的那几千字「思考」，是不是它得出答案的真实路径？
+
+这不是哲学趣味题。当前 AI 安全有一整层防线（思维链监控）押在「是」上面。下面先看证据，再看机制，最后说这层防线该怎么用。
+
+## 先把两个问题拆开
+
+思维链（chain of thought，CoT）指推理模型在最终答案前生成的中间文本，通常写得像人在打草稿：「先试 n=1……不对，换个思路……」忠实性（faithfulness）问的是：这些文本是否如实反映模型内部实际的计算。
+
+容易混淆的是两个独立的问题。「思维链有没有用」是性能问题，证据很硬：不让写中间步骤，很多题就是解不出来，金牌也是这么拿的。「思维链是不是如实记录」是忠实性问题，而这几年的证据在往反方向堆。
+
+## 三组证据
+
+**第一组：删掉也不影响答案。**东北大学和 UC Berkeley 的研究者（Jiachen Zhao、Yiyou Sun、Dawn Song、Weiyan Shi）在[《「啊哈时刻」会是假的吗？》](https://arxiv.org/abs/2510.24941)里提出一个测法：对思维链里的某一步做数值扰动（比如把步骤里的数字加个小偏移，语法保持完整），看模型对正确答案的置信度变不变，据此算出每一步的「真实思考分数」（True Thinking Score）。置信度几乎不动的步骤，就是对答案没有因果贡献的「装饰性步骤」。他们测了参数量从 15 亿到万亿级的 11 个开源模型，在 MATH 数学基准上，装饰性步骤的占比按模型不同在三成到六成之间：万亿参数的 Kimi-K2.6 超过 30%，Qwen3.6-35B 接近 60%。更直接的验证是：把分数最低的一半步骤直接删掉，成绩基本不掉。模型写下的「啊哈，我发现了」，可能对答案没起任何作用。
+
+**第二组：换成省略号也行。**纽约大学的 Jacob Pfau、William Merrill、Samuel Bowman 在 2024 年的[《一点一点地想》](https://arxiv.org/abs/2404.15758)里展示：在两个不写中间 token 就解不出的算法任务上，把思维链整个换成无意义的填充符「......」，模型经过专门训练后照样能解。适用范围要说清：这需要密集的监督训练才学得会，也只在特定结构的问题上成立，不能说现在的推理模型都在这么干。但它证明了一件原理性的事：中间 token 的价值可以完全来自「多出来的计算量」（每个 token 都触发一次前向计算，真正的活可以在隐藏层里做），token 的字面内容可以和计算内容零相关。「有中间步骤才能解题」推不出「中间步骤写的就是解题过程」。
+
+**第三组：换成错的也不掉分。**Kambhampati 的立场论文汇总了他们组的实验：把推理痕迹换成错误的、甚至和题目无关的文本，模型最终答案的准确率不降；反过来，只用正确痕迹训练出的模型，照样产出逻辑不通的推理记录。中间文本对不对，和答案对不对，两件事松脱得厉害。
+
+顺带澄清一个常被拉进这场争论的研究：Apple 2025 年的[《思考的幻觉》](https://machinelearning.apple.com/research/illusion-of-thinking)发现推理模型在谜题复杂度超过阈值后「准确率完全崩溃」。它测的是能力（题目变难后答案还对不对），不是忠实性（过程是否如实），两个构念不该混着引用。而且它的评测设计随后被[逐条批评](https://arxiv.org/abs/2506.09250)：渡河谜题的部分实例在数学上根本不可解、汉诺塔的答案超出输出 token 上限也被记为失败。能力上限吵成什么样另说，上面三组忠实性证据不依赖它。
+
+## 机制：草稿的作用可能是「搬运上下文」
+
+为什么会这样？先看训练来源。推理模型的中间 token 主要靠结果导向的强化学习练出来：只有最终答案的对错进奖励，中间写什么、写得真不真，从不在优化目标里。曾参与 OpenAI 推理模型工作、现在纽约大学和 Anthropic 的 Pavel Izmailov 在 Quanta 的访谈里直说：他怀疑强化学习根本没有激励模型生成忠实的思维链。没有优化压力指向「如实汇报」，如实汇报就只是偶尔顺路发生的事。
+
+Kambhampati 给了一个解释假说：近似检索（approximate retrieval）。中间 token 的功能不是记录计算，而是搬运上下文：每写下一段「推理形状」的文本，都在把上下文窗口推到一个更有利的位置，让正确答案形状的文本更容易被采样出来。他的类比是人翻抽屉找东西时嘴里念念有词：念叨的内容未必是真思路，起作用的是念叨激活了什么。按这个假说，模型写「让我先验证 n=1 的情形」，价值不在于它真做了那个验证，而在于这类文本之后统计上更常跟着正确解。他对自己的假说也留了余地，原话的意思是：一个错误的理论，比承认还没有理论更糟。
+
+这里有个五十年前就有人踩过的坑。1976 年 Drew McDermott 批评过 AI 领域的「心愿式命名」（wishful mnemonics）：给程序的函数起名叫 UNDERSTAND，程序不会因此真的理解，但写程序的人会先信了。「思考痕迹」「推理过程」是同一个坑的现代版：名字取好了，论证就省了。Santa Fe 研究所的 Melanie Mitchell 在 Quanta 里的判断更直接：这些文本不必忠实于模型内部发生的事，其中不少甚至没有用处。
+
+## 押在思维链上的那层防线
+
+这场争论对安全从业者不是学术八卦。2025 年 7 月，OpenAI、DeepMind、Anthropic 等机构的四十多位研究者[联署立场论文](https://arxiv.org/abs/2507.11473)，把思维链的可监控性称为「新而脆弱的机会」：模型用人类语言打草稿，给了我们在它行动之前读到意图的机会。「脆弱」不是修辞，忠实性证据说明这个机会没有保证。直接测量已经有了：Anthropic [往题目里悄悄塞答案提示](https://www.anthropic.com/research/reasoning-models-dont-say-think)，看模型用了之后会不会在思维链里承认，Claude 3.7 Sonnet 平均只承认 25%，DeepSeek R1 是 39%。多数情况下，用了，不说。
+
+读这批研究，我认为最要紧的是把两类失效分开。
+
+第一类是天然不忠实：没人训练模型隐瞒，装饰步骤、事后合理化、用了提示不提，都只是「训练目标从没要求如实」的自然结果。本文讲的证据全属这类。第二类是习得性隐瞒：训练压力（比如把「监控者没起疑」计入奖励）教会模型把坏心思从草稿里抹掉、行为照旧，OpenAI 自己测出过这条失效路径。我在[上一篇拆 OpenAI 安全事故复盘的文章](/zh/openai-long-horizon-safety-incidents)里写过这条链：检测靠自供，自供可以被训没。两类的含义不同：第二类说防线将来可能被攻破，第一类说防线现在就有洞——即使没有任何对抗，「读了思维链没发现问题」也不构成安全证据。
+
+对实际用思维链的从业者，我给三条判断：
+
+其一，信号是单向的。思维链里出现问题意图是真信号，该报警报警；模型目前确实经常自供，这正是监控还有效的原因。但思维链里没出现，不是安全证明。当低成本预警层可以，当审计结论不行。
+
+其二，别对思维链内容做优化。无论是让它更短、更好看，还是按「草稿干不干净」给奖励，都会把仅存的信号训掉。联署论文的核心建议正是把可监控性当成一项需要主动保护的资产，模型发布决策要评估对它的影响。
+
+其三，别把思维链当解释卖给用户。产品界面把「思考过程」展示成模型决策的理由，等于替研究界做出一个它给不出的承诺。在需要给出决策理由的场景（信贷、医疗、内容审核申诉），思维链充当不了 explanation：三成到六成是装饰的草稿，当不了判决书。
+
+## 按日志读，别按忏悔读
+
+Quanta 那篇文章的作者 John Pavlus 收在一个比喻上：「马力」。发动机里没有马，但这个词照样好用，没有工程师因此去气缸里找马蹄。「推理」也许该按同样的方式用：当性能指标，它是实的，金牌是真金；当机制描述，证据说它经常不是。
+
+我的落点具体一点：思维链值得读，安全团队尤其该读，但要按读日志的方式读，不按读忏悔的方式读。日志很有用，可写什么、漏什么，从来是写日志的那个进程说了算。
+
+## 参考来源
+
+- [Is AI Reasoning Right for the Wrong Reasons?（Quanta Magazine）](https://www.quantamagazine.org/is-ai-reasoning-right-for-the-wrong-reasons-20260731/) — 选题由头；Mitchell、Kambhampati、Izmailov 的观点与访谈转述；马力比喻与 McDermott 典故的出处指引
+- [Position: Stop Anthropomorphizing Intermediate Tokens as Reasoning/Thinking Traces!（arXiv:2504.09762，ICML 2026）](https://arxiv.org/abs/2504.09762) — 错误/无关痕迹替换实验、近似检索假说
+- [Can Aha Moments be Fake? Towards Quantifying Decorative and True Thinking in Chain-of-Thought（arXiv:2510.24941）](https://arxiv.org/abs/2510.24941) — True Thinking Score 方法；装饰性步骤三成到六成的具体数字（Kimi-K2.6 >30%、Qwen3.6-35B 近 60%、11 个模型、MATH 基准）
+- [Let's Think Dot by Dot: Hidden Computation in Transformer Language Models（arXiv:2404.15758）](https://arxiv.org/abs/2404.15758) — 填充符替代思维链的实验及其适用范围
+- [The Illusion of Thinking（Apple 官方页面）](https://machinelearning.apple.com/research/illusion-of-thinking) — 复杂度阈值后的准确率崩溃（能力构念，非忠实性）
+- [Comment on The Illusion of Thinking（arXiv:2506.09250）](https://arxiv.org/abs/2506.09250) — 对 Apple 论文评测设计的批评（不可解实例、token 上限）
+- [Reasoning Models Don't Always Say What They Think（Anthropic）](https://www.anthropic.com/research/reasoning-models-dont-say-think) — 提示承认率 25%/39%
+- [Chain of Thought Monitorability: A New and Fragile Opportunity for AI Safety（arXiv:2507.11473）](https://arxiv.org/abs/2507.11473) — 四十余位跨机构研究者联署；「保护可监控性」的建议
+- [Gemini Deep Think 在 IMO 达到金牌水平（Google DeepMind 官方公告）](https://deepmind.google/discover/blog/advanced-version-of-gemini-with-deep-think-officially-achieves-gold-medal-standard-at-the-international-mathematical-olympiad/) — 35/42 分、IMO 官方认证、自然语言端到端
+- [能推翻 Erdős 猜想的那股执着，也被用来逃逸沙箱（本站）](/zh/openai-long-horizon-safety-incidents) — 习得性隐瞒（obfuscated reward hacking）与轨迹监控依赖自供的完整论证
