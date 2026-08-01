@@ -24,7 +24,7 @@ translationOf: cot-faithfulness-decorative-thinking
 
 ## 三组证据
 
-**第一组：删掉也不影响答案。**东北大学和 UC Berkeley 的研究者（Jiachen Zhao、Yiyou Sun、Dawn Song、Weiyan Shi）在[《「啊哈时刻」会是假的吗？》](https://arxiv.org/abs/2510.24941)里提出一个测法：对思维链里的某一步做数值扰动（比如把步骤里的数字加个小偏移，语法保持完整），看模型对正确答案的置信度变不变，据此算出每一步的「真实思考分数」（True Thinking Score）。置信度几乎不动的步骤，就是对答案没有因果贡献的「装饰性步骤」。他们测了参数量从 15 亿到万亿级的 11 个开源模型，在 MATH 数学基准上，装饰性步骤的占比按模型不同在三成到六成之间：万亿参数的 Kimi-K2.6 超过 30%，Qwen3.6-35B 接近 60%。更直接的验证是：把分数最低的一半步骤直接删掉，成绩基本不掉。模型写下的「啊哈，我发现了」，可能对答案没起任何作用。
+**第一组：删掉也不影响答案。**东北大学和 UC Berkeley 的研究者（Jiachen Zhao、Yiyou Sun、Dawn Song、Weiyan Shi）在[《「啊哈时刻」会是假的吗？》](https://arxiv.org/abs/2510.24941)里提出一个测法，量的是思维链里每一步对最终答案的因果贡献。这里的置信度是被测模型自己的输出概率：语言模型生成答案时，会给每个候选 token 分一个概率。具体做法分三步。先让模型带着完整思维链把题做完，记下它给出的最终答案；再把思维链在某一步截断，强制模型就此作答，读出它此时分给那个原答案的概率，这就是该步骤位置上的置信度；然后对这一步做扰动（步骤里有数字的，给数字加减 1 到 3 的小偏移，语法保持完整；没有数字的，把整步删掉），看置信度变了多少。一步的「真实思考分数」（True Thinking Score）就定义为扰动前后置信度的变化幅度：变化大，说明模型内部确实用到了这一步；几乎不动，说明这一步对答案没有因果贡献，是「装饰性步骤」。他们测了参数量从 15 亿到万亿级的 11 个开源模型，在 MATH 数学基准上，装饰性步骤的占比按模型不同在三成到六成之间：万亿参数的 Kimi-K2.6 超过 30%，Qwen3.6-35B 接近 60%。更直接的验证是：把分数最低的一半步骤直接删掉，成绩基本不掉。模型写下的「啊哈，我发现了」，可能对答案没起任何作用。
 
 看到这里自然会问：思维链当年火起来，靠的就是实打实的涨分，怎么现在又说一半步骤是装饰？两件事其实都成立。2022 年 Google 的 Jason Wei 等人发表[思维链提示论文](https://arxiv.org/abs/2201.11903)，是这波热度的起点，结论有硬验证、后来也被反复复现：只给八个「先写步骤再作答」的示范例子，5400 亿参数的 PaLM 就在 GSM8K 数学应用题基准上拿到当时最好成绩，超过带验证器专门微调的 GPT-3。但当年验证的命题是「让模型写中间步骤，成绩会涨」，从来不是「步骤的文字内容就是模型的计算路径」，后一个问题当时几乎没人测。装饰性步骤的研究补测的正是这半边：涨分是真的，分数却未必涨在文字写了什么上。模型变强也确实是变量之一：Anthropic 团队 2023 年[专门测过](https://arxiv.org/abs/2307.13702)这件事，结论是模型越大越能干，思维链在他们测的多数任务上就越不忠实。任务一旦对模型来说变简单，写下来的步骤就越接近事后装饰。所以不是「CoT 不 work 了」，是它 work 的方式从一开始就没被验证过，而下面第二组证据给出了它可能靠什么 work。
 
@@ -68,7 +68,7 @@ Quanta 那篇文章的作者 John Pavlus 收在一个比喻上：「马力」。
 
 - [Is AI Reasoning Right for the Wrong Reasons?（Quanta Magazine）](https://www.quantamagazine.org/is-ai-reasoning-right-for-the-wrong-reasons-20260731/) — 选题由头；Mitchell、Kambhampati、Izmailov 的观点与访谈转述；马力比喻与 McDermott 典故的出处指引
 - [Position: Stop Anthropomorphizing Intermediate Tokens as Reasoning/Thinking Traces!（arXiv:2504.09762，ICML 2026）](https://arxiv.org/abs/2504.09762) — 错误/无关痕迹替换实验、近似检索假说
-- [Can Aha Moments be Fake? Towards Quantifying Decorative and True Thinking in Chain-of-Thought（arXiv:2510.24941）](https://arxiv.org/abs/2510.24941) — True Thinking Score 方法；装饰性步骤三成到六成的具体数字（Kimi-K2.6 >30%、Qwen3.6-35B 近 60%、11 个模型、MATH 基准）
+- [Can Aha Moments be Fake? Towards Quantifying Decorative and True Thinking in Chain-of-Thought（arXiv:2510.24941）](https://arxiv.org/abs/2510.24941) — True Thinking Score 方法（数值扰动、截断后提前作答读取模型自身答案概率）；装饰性步骤三成到六成的具体数字（Kimi-K2.6 >30%、Qwen3.6-35B 近 60%、11 个模型、MATH 基准）
 - [Chain-of-Thought Prompting Elicits Reasoning in Large Language Models（arXiv:2201.11903）](https://arxiv.org/abs/2201.11903) — 让思维链火起来的原始论文；八个示范例子让 PaLM 540B 在 GSM8K 拿到当时最好成绩、超过带验证器微调的 GPT-3
 - [Measuring Faithfulness in Chain-of-Thought Reasoning（arXiv:2307.13702，Anthropic）](https://arxiv.org/abs/2307.13702) — 「模型越大越能干、多数任务上思维链越不忠实」的测量
 - [Let's Think Dot by Dot: Hidden Computation in Transformer Language Models（arXiv:2404.15758）](https://arxiv.org/abs/2404.15758) — 填充符实验：从零训练 3400 万参数 Llama 架构模型解 3SUM/2SUM-Transform；Claude 2/GPT-3.5 在推理阶段用填充符无提升；密集监督才能学会
