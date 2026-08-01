@@ -28,7 +28,7 @@ translationOf: cot-faithfulness-decorative-thinking
 
 看到这里自然会问：思维链当年火起来，靠的就是实打实的涨分，怎么现在又说一半步骤是装饰？两件事其实都成立。2022 年 Google 的 Jason Wei 等人发表[思维链提示论文](https://arxiv.org/abs/2201.11903)，是这波热度的起点，结论有硬验证、后来也被反复复现：只给八个「先写步骤再作答」的示范例子，5400 亿参数的 PaLM 就在 GSM8K 数学应用题基准上拿到当时最好成绩，超过带验证器专门微调的 GPT-3。但当年验证的命题是「让模型写中间步骤，成绩会涨」，从来不是「步骤的文字内容就是模型的计算路径」，后一个问题当时几乎没人测。装饰性步骤的研究补测的正是这半边：涨分是真的，分数却未必涨在文字写了什么上。模型变强也确实是变量之一：Anthropic 团队 2023 年[专门测过](https://arxiv.org/abs/2307.13702)这件事，结论是模型越大越能干，思维链在他们测的多数任务上就越不忠实。任务一旦对模型来说变简单，写下来的步骤就越接近事后装饰。所以不是「CoT 不 work 了」，是它 work 的方式从一开始就没被验证过，而下面第二组证据给出了它可能靠什么 work。
 
-**第二组：换成省略号也行。**纽约大学的 Jacob Pfau、William Merrill、Samuel Bowman 在 2024 年的[《一点一点地想》](https://arxiv.org/abs/2404.15758)里展示：在两个不写中间 token 就解不出的算法任务上，把思维链整个换成无意义的填充符「......」，模型经过专门训练后照样能解。适用范围要说清：这需要密集的监督训练才学得会，也只在特定结构的问题上成立，不能说现在的推理模型都在这么干。但它证明了一件原理性的事：中间 token 的价值可以完全来自「多出来的计算量」（每个 token 都触发一次前向计算，真正的活可以在隐藏层里做），token 的字面内容可以和计算内容零相关。「有中间步骤才能解题」推不出「中间步骤写的就是解题过程」。
+**第二组：换成省略号也行。**纽约大学的 Jacob Pfau、William Merrill、Samuel Bowman 在 2024 年的[《一点一点地想》](https://arxiv.org/abs/2404.15758)里做了填充符实验。先把实验方式说清楚。这不是拿一个现成大模型、在推理（inference）阶段把它的思维链临时换成省略号：论文自己测过这条路，给 Claude 2 和 GPT-3.5 塞填充符，在常见问答和数学基准上成绩与直接作答持平，没有任何提升。他们做的是从零训练：拿一个 3400 万参数、随机初始化的小型 Llama 架构模型，在两个专门构造的算法任务（3SUM 和 2SUM-Transform，都属于不写中间 token 就解不出的类型）上训练，模型学到的输出格式是先吐一串无意义的填充符「......」、再直接给答案。这样训出来的模型照样能解题。学会这一招也不容易：训练数据里还得掺入写明真实步骤的思维链示范做密集监督，模型才收敛。适用范围要说清：这只在特定结构的问题上成立，也依赖专门训练，不能说现在的推理模型都在这么干。但它证明了一件原理性的事：中间 token 的价值可以完全来自「多出来的计算量」（每个 token 都触发一次前向计算，真正的活可以在隐藏层里做），token 的字面内容可以和计算内容零相关。「有中间步骤才能解题」推不出「中间步骤写的就是解题过程」。
 
 **第三组：换成错的也不掉分。**Kambhampati 的立场论文汇总了他们组的实验：把推理痕迹换成错误的、甚至和题目无关的文本，模型最终答案的准确率不降；反过来，只用正确痕迹训练出的模型，照样产出逻辑不通的推理记录。中间文本对不对，和答案对不对，两件事松脱得厉害。
 
@@ -36,7 +36,7 @@ translationOf: cot-faithfulness-decorative-thinking
 
 ## 机制：草稿的作用可能是「搬运上下文」
 
-为什么会这样？先看训练来源。推理模型的中间 token 主要靠结果导向的强化学习练出来：只有最终答案的对错进奖励，中间写什么、写得真不真，从不在优化目标里。曾参与 OpenAI 推理模型工作、现在纽约大学和 Anthropic 的 Pavel Izmailov 在 Quanta 的访谈里直说：他怀疑强化学习根本没有激励模型生成忠实的思维链。没有优化压力指向「如实汇报」，如实汇报就只是偶尔顺路发生的事。
+为什么会这样？先补一个背景：那些「让我先验证一下」的推理文本，本身是从哪来的。推理模型和普通聊天模型的底子相同，都先在海量人类文本上预训练，教科书的解题过程、数学论坛的讨论、带注释的代码全在语料里，「设 x，代入，验证」这种推理腔的文字，模型在这一步就见过、也会模仿了。两类模型的分岔在后续训练。普通模型走指令微调加人类偏好对齐，学的是把答案直接答好；推理模型在此之外多加一个阶段：结果导向的强化学习。做法是让模型在作答前先自由生成长草稿，最终答案对了，整条轨迹连同草稿一起被加强；答错了就被压低。反复下来，模型学会先写一长段推理形状的文字再作答，因为这样统计上更容易答对。要点在于这个奖励只看最终答案的对错：草稿里写什么、写得真不真，从不在优化目标里。曾参与 OpenAI 推理模型工作、现在纽约大学和 Anthropic 的 Pavel Izmailov 在 Quanta 的访谈里直说：他怀疑强化学习根本没有激励模型生成忠实的思维链。没有优化压力指向「如实汇报」，如实汇报就只是偶尔顺路发生的事。
 
 Kambhampati 给了一个解释假说：近似检索（approximate retrieval）。中间 token 的功能不是记录计算，而是搬运上下文：每写下一段「推理形状」的文本，都在把上下文窗口推到一个更有利的位置，让正确答案形状的文本更容易被采样出来。他的类比是人翻抽屉找东西时嘴里念念有词：念叨的内容未必是真思路，起作用的是念叨激活了什么。按这个假说，模型写「让我先验证 n=1 的情形」，价值不在于它真做了那个验证，而在于这类文本之后统计上更常跟着正确解。他对自己的假说也留了余地，原话的意思是：一个错误的理论，比承认还没有理论更糟。
 
@@ -71,7 +71,7 @@ Quanta 那篇文章的作者 John Pavlus 收在一个比喻上：「马力」。
 - [Can Aha Moments be Fake? Towards Quantifying Decorative and True Thinking in Chain-of-Thought（arXiv:2510.24941）](https://arxiv.org/abs/2510.24941) — True Thinking Score 方法；装饰性步骤三成到六成的具体数字（Kimi-K2.6 >30%、Qwen3.6-35B 近 60%、11 个模型、MATH 基准）
 - [Chain-of-Thought Prompting Elicits Reasoning in Large Language Models（arXiv:2201.11903）](https://arxiv.org/abs/2201.11903) — 让思维链火起来的原始论文；八个示范例子让 PaLM 540B 在 GSM8K 拿到当时最好成绩、超过带验证器微调的 GPT-3
 - [Measuring Faithfulness in Chain-of-Thought Reasoning（arXiv:2307.13702，Anthropic）](https://arxiv.org/abs/2307.13702) — 「模型越大越能干、多数任务上思维链越不忠实」的测量
-- [Let's Think Dot by Dot: Hidden Computation in Transformer Language Models（arXiv:2404.15758）](https://arxiv.org/abs/2404.15758) — 填充符替代思维链的实验及其适用范围
+- [Let's Think Dot by Dot: Hidden Computation in Transformer Language Models（arXiv:2404.15758）](https://arxiv.org/abs/2404.15758) — 填充符实验：从零训练 3400 万参数 Llama 架构模型解 3SUM/2SUM-Transform；Claude 2/GPT-3.5 在推理阶段用填充符无提升；密集监督才能学会
 - [The Illusion of Thinking（Apple 官方页面）](https://machinelearning.apple.com/research/illusion-of-thinking) — 复杂度阈值后的准确率崩溃（能力构念，非忠实性）
 - [Comment on The Illusion of Thinking（arXiv:2506.09250）](https://arxiv.org/abs/2506.09250) — 对 Apple 论文评测设计的批评（不可解实例、token 上限）
 - [Reasoning Models Don't Always Say What They Think（Anthropic）](https://www.anthropic.com/research/reasoning-models-dont-say-think) — 提示承认率 25%/39%
