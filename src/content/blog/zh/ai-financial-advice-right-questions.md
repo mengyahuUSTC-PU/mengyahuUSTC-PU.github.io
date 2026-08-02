@@ -36,7 +36,7 @@ translationOf: ai-financial-advice-right-questions
 
 但「比问亲友强」这话得多想一层:强在哪?存款少不等于意识不到该存钱。「多存点」这条建议问谁都能拿到,亲友会说,上网搜也会说;很多人存不下钱,未必是不知道,更可能是坚持不住。如果 AI 的增量只是把「存更多」再说一遍,这个「比现状强」就没多大分量。
 
-模拟里打分的规则其实有两部分:存多少,以及存下来的钱怎么配置——股票占多少、随年龄怎么降、留多少应急现金、坏年景怎么平滑消费。后一半才是亲友和随手搜索给不出的个性化数字。下一节还有个直观例子:流动性这个维度,绝大多数用户压根没想到要问,模型主动补上了。至于增益里多少来自「多存」、多少来自「配好」,公开材料没拆开讲,这点我没核实到。
+模拟里打分的规则其实有两部分:存多少,以及存下来的钱怎么配置——股票占多少、随年龄怎么降、留多少应急现金、坏年景怎么平滑消费。后一半才是亲友和随手搜索给不出的个性化数字。下一节还有个直观例子:流动性这个维度,绝大多数用户压根没想到要问,模型主动补上了。至于这份改善里多少来自「多存」、多少来自「配好」,公开材料没拆开讲,这点我没核实到。
 
 而「知道该存却坚持不住」的问题,这项研究测不了。模拟里的虚拟人严格照做几十年,不会半途而废;所以「比现状强」说的是建议本身的质量,前提是照做。AI 能不能让真人把钱真的存下来,是另一个问题。
 
@@ -48,15 +48,21 @@ translationOf: ai-financial-advice-right-questions
 
 也就是说,「问对问题」并非提示词话术,它约等于「你本来就得懂点理财,还得把自己的家底说全」。de Silva 给个人用户的建议也是先补金融常识,他说提问的写法「影响极大」,有了基础知识才能把这个工具用出威力(据 phys.org 转述)。
 
-第三,建议质量因人而异,而且偏差的方向很糟糕。建议随性别和金融素养系统性变化,几十年累积下来,组间退休财富差 4% 到 5%。按 [MIT Sloan 报道](https://mitsloan.mit.edu/ideas-made-to-matter/ai-financial-advice-surprisingly-good-especially-if-you-ask-right-questions)给的绝对数:女性和金融素养较低的用户,60 岁时财富少约 5 万美元;没用过 AI 的用户少近 10 万美元(6%)。
+第三,建议质量因人而异,吃亏的正是本来就弱势的群体。先说清「因人而异」指什么:不是说各人起点不同所以终点不同。模拟器对每个人跑的是同一套流程,差距出在模型给出的建议本身:照各自拿到的建议模拟到 60 岁,女性和金融素养较低的用户,财富比男性和高素养用户少约 4% 到 5%。按 [MIT Sloan 报道](https://mitsloan.mit.edu/ideas-made-to-matter/ai-financial-advice-surprisingly-good-especially-if-you-ask-right-questions)给的绝对数:少约 5 万美元;没用过 AI 的用户比用过的少近 10 万美元(6%)。
 
-论文把差异拆成两半。需求端:不同人写的 prompt 不同,素养低的人给的信息少,拿到的建议就糙。供给端:同样的 prompt,模型给的建议也不同,这一点论文摘要明确写了;据 phys.org 转述,即便 prompt 内容相同,模型给女性的股票配置建议也更保守(具体实验做法待核实,见文末)。供给端这半是模型自身的问题;需求端那半构成一个循环:最需要建议的人,恰恰最问不出好问题。
+那差距从哪来?拿性别差距来说,论文拆出了两个来源,大小还不一样。
 
-## 为什么增益分布是这样
+约三分之二来自需求端:男女写的 prompt 本来就不一样。据 phys.org 转述的词频统计,女性更常用「family」「grocery」「credit」「loan」这类词,模型顺着话头,给的建议偏保守,多留现金、建应急缓冲;男性更常用「portfolio」「equity」「strategy」「crypto」,拿到的投资建议就更激进。金融素养低的用户同理,prompt 里交代的自身财务信息少,拿到的建议就糙。这一半不是模型在歧视谁,是输入不同、输出跟着不同。
+
+剩下约三分之一来自供给端,这才是模型自身的偏差。研究者做了对照实验:同一条 prompt,内容一字不改,只把它标注成来自女性而非男性,模型建议的股票配置就变保守了([MIT Sloan 报道](https://mitsloan.mit.edu/ideas-made-to-matter/ai-financial-advice-surprisingly-good-especially-if-you-ask-right-questions)原文)。至于日常使用中模型怎么知道用户性别:通常不知道,据 phys.org 转述,受访者自然写 prompt 时模型一般拿不到这个信息;对照实验里的性别标签是研究者主动写进提问的。但实验说明,一旦提问透露了性别,建议就会被它带偏。
+
+两个来源方向一致,都对弱势群体不利。需求端构成一个循环:最需要建议的人,恰恰最问不出好问题;供给端则意味着,就算问出了同样的问题,模型还会再偏一点。
+
+## 为什么好处偏向会提问的人
 
 LLM 按输入定输出。你给的信息越完整、框架越对,它的建议越接近最优;你只说「我 30 岁,该怎么投资」,它只能给通用模板。这不是缺陷,是这类系统的工作方式。
 
-后果是:传统理财顾问的门槛在价格,请得起的人才有;LLM 把价格降到零,却立起另一道门槛,会提问的人才能问出好建议。下限确实抬高了,大多数人照做都比现状强。但增益向高金融素养、高 AI 熟练度的人倾斜。工具普惠,增益不均。
+后果是:传统理财顾问的门槛在价格,请得起的人才有;LLM 把价格降到零,却立起另一道门槛,会提问的人才能问出好建议。下限确实抬高了,大多数人照做都比现状强。但好处的大头流向金融素养高、会用 AI 的人。工具人人可用,好处并不均摊。
 
 ## 静态原则会背,动态调整不会做
 
@@ -80,7 +86,7 @@ Vanguard(先锋领航,低费率指数基金巨头)的产品出现在 6% 的回�
 
 要打折的部分:状态变化后的动态调整。失业、市场暴跌之后怎么办,模拟里模型明确做不好,这种时刻别只听它的。
 
-要自己动手的部分:把 prompt 写全。收入、资产、负债、年龄、目标期限、风险承受能力,一项别省,再要求模型说明它做了哪些假设。研究里学术 prompt 的增益,正是来自这些信息。
+要自己动手的部分:把 prompt 写全。收入、资产、负债、年龄、目标期限、风险承受能力,一项别省,再要求模型说明它做了哪些假设。研究里学术 prompt 带来的改善,正是来自这些信息。
 
 始终记住的部分:这是模拟结果。论文测的是「严格照做几十年」的虚拟人,真人做不到;从建议文本到可执行规则的转译,也经过研究者的解释。它证明的是建议文本的方向质量,不是真实用户的真实收益。
 
@@ -88,7 +94,7 @@ Vanguard(先锋领航,低费率指数基金巨头)的产品出现在 6% 的回�
 
 ## 参考来源
 
-- [AI financial advice is surprisingly good — especially if you ask the right questions | MIT Sloan](https://mitsloan.mit.edu/ideas-made-to-matter/ai-financial-advice-surprisingly-good-especially-if-you-ask-right-questions) — 选题来源;「照 AI 建议模拟 vs 受访者现有做法模拟」的比较方法、Choukhmane「有点意外」引语、5 万/10 万美元财富差距、Vanguard 6%/iShares 3.4%/提及率 0.4%、失业后砍支出与组合漂移两处失效模式、「学术 prompt 改善建议」表述
+- [AI financial advice is surprisingly good — especially if you ask the right questions | MIT Sloan](https://mitsloan.mit.edu/ideas-made-to-matter/ai-financial-advice-surprisingly-good-especially-if-you-ask-right-questions) — 选题来源;「照 AI 建议模拟 vs 受访者现有做法模拟」的比较方法、Choukhmane「有点意外」引语、5 万/10 万美元财富差距、Vanguard 6%/iShares 3.4%/提及率 0.4%、失业后砍支出与组合漂移两处失效模式、「学术 prompt 改善建议」表述、性别差距分解(约三分之二来自 prompt 写法差异,约三分之一来自同一 prompt 标注性别后建议变化)
 - [AI Financial Advice: Supply, Demand, and Life Cycle Implications(论文 PDF,作者官网)](https://tahachoukhmane.com/wp-content/uploads/2026/03/CdSLA-2026-AI-Financial-Advice.pdf) — 论文本体(本环境无法解析 PDF 文本,细节核对见下方核查点)
 - [论文页 | MIT Sloan CFI](https://mitsloan.mit.edu/centers-initiatives/cfi/ai-financial-advice-supply-demand-and-life-cycle-implications) — 摘要原文:测试模型为 GPT-5.2 与 Gemini 3 Flash、三大发现、组间退休财富差 4-5%、supply/demand 分解、工作论文编号 7377-26、瑞士金融研究所奖项
-- [Study finds LLMs nudge users toward smart savings and investing habits | phys.org](https://phys.org/news/2026-07-llms-nudge-users-smart-investing.html) — de Silva 引语、四成受访者存款不足 1 万美元、83%/6% 流动性数据、相同 prompt 下对女性更保守、3%-4% 提取率失效模式
+- [Study finds LLMs nudge users toward smart savings and investing habits | phys.org](https://phys.org/news/2026-07-llms-nudge-users-smart-investing.html) — de Silva 引语、四成受访者存款不足 1 万美元、83%/6% 流动性数据、男女 prompt 用词差异、「模型一般不知道用户性别」表述、3%-4% 提取率失效模式
