@@ -22,6 +22,8 @@ translationOf: ai-financial-advice-right-questions
 
 第二步,把模型的建议解析成可执行的规则:存多少、股票配多少。
 
+这一步顺带框定了研究范围。「理财建议」这个词能装下很多东西,但这项研究只测了其中一条线:长期的消费储蓄和投资配置。论文摘要写得明白,受访者被要求写的就是 spending 和 investing 的提问,模拟器跑的也只有这两个变量的长期轨迹。买房、房贷、信贷、保险、税务筹划这些同样日常的理财决策,都不在测试范围内。后文所有「好」与「不好」的结论,都只覆盖这条线。
+
 第三步,把这些规则放进一个生命周期模拟器,让「虚拟的你」带着这套建议过完一生。收入按真实劳动力市场数据涨跌,会失业,会遇到熊市,要交税。最后看 60 岁时的财富和一生的消费水平。
 
 评判标准是生命周期理论。这是家庭金融的规范框架,核心处方大致是:年轻时投资期限长、未来工资收入多,该多配股票;随年龄增长逐步降低股票比例;留出应急储蓄;让消费在好坏年景之间尽量平滑,别大起大落。
@@ -88,13 +90,15 @@ Vanguard(先锋领航,低费率指数基金巨头)的产品出现在 6% 的回�
 
 要自己动手的部分:替模型做追问。「信息给全才有定制方案」算不上新发现,找真人顾问你同样得交底;差别在于真人发现你没说清会反过来问,把信息问全,模型不会,信息缺了它就只给模糊的通用答案。所以这份清单得你自己过一遍:收入、资产、负债、年龄、目标期限、风险承受能力,一项别省,再要求模型说明它做了哪些假设。研究里学术 prompt 带来的改善,正是来自这些信息。
 
+管不到的部分:范围外的理财决策。前面说过,这项研究只测了长期的存钱和配置。买房、房贷、信贷、保险不在其中,而这些决策往往一次性、金额大、错了难回头,和存钱配置这种可以逐年修正的决策性质不同。AI 在这些问题上表现如何,这项研究没有提供任何证据,「出人意料地好」的结论搬不过去。
+
 始终记住的部分:这是模拟结果。论文测的是「严格照做几十年」的虚拟人,真人做不到;从建议文本到可执行规则的转译,也经过研究者的解释。它证明的是建议文本的方向质量,不是真实用户的真实收益。
 
-回到标题的问题:AI 理财建议赢了谁?赢的是「没有顾问、靠亲友和搜索做决定」的现状。这个结论我信,也有实际意义,毕竟这是绝大多数人的处境。但它没和人类顾问比过,没在真实世界跑过,还会因为你是谁、你怎么问而给出成色不同的答案。当第一意见,值得用;当唯一意见,风险自负。
+回到标题的问题:AI 理财建议赢了谁?赢的是「没有顾问、靠亲友和搜索做决定」的现状,而且只赢在长期存钱和配置这一条线上。这个结论我信,也有实际意义,毕竟这是绝大多数人的处境。但它没和人类顾问比过,没在真实世界跑过,没测过买房信贷这类一次性大决策,还会因为你是谁、你怎么问而给出成色不同的答案。当第一意见,值得用;当唯一意见,风险自负。
 
 ## 参考来源
 
 - [AI financial advice is surprisingly good — especially if you ask the right questions | MIT Sloan](https://mitsloan.mit.edu/ideas-made-to-matter/ai-financial-advice-surprisingly-good-especially-if-you-ask-right-questions) — 选题来源;「照 AI 建议模拟 vs 受访者现有做法模拟」的比较方法、Choukhmane「有点意外」引语、5 万/10 万美元财富差距、Vanguard 6%/iShares 3.4%/提及率 0.4%、失业后砍支出与组合漂移两处失效模式、「学术 prompt 改善建议」表述、性别差距分解(约三分之二来自 prompt 写法差异,约三分之一来自同一 prompt 标注性别后建议变化)
 - [AI Financial Advice: Supply, Demand, and Life Cycle Implications(论文 PDF,作者官网)](https://tahachoukhmane.com/wp-content/uploads/2026/03/CdSLA-2026-AI-Financial-Advice.pdf) — 论文本体(本环境无法解析 PDF 文本,细节核对见下方核查点)
-- [论文页 | MIT Sloan CFI](https://mitsloan.mit.edu/centers-initiatives/cfi/ai-financial-advice-supply-demand-and-life-cycle-implications) — 摘要原文:测试模型为 GPT-5.2 与 Gemini 3 Flash、三大发现、组间退休财富差 4-5%、supply/demand 分解、工作论文编号 7377-26、瑞士金融研究所奖项
+- [论文页 | MIT Sloan CFI](https://mitsloan.mit.edu/centers-initiatives/cfi/ai-financial-advice-supply-demand-and-life-cycle-implications) — 摘要原文:受访者被要求写 spending 与 investing 提问(即研究范围仅覆盖消费储蓄与投资配置,不含买房/信贷/保险)、测试模型为 GPT-5.2 与 Gemini 3 Flash、三大发现、组间退休财富差 4-5%、supply/demand 分解、工作论文编号 7377-26、瑞士金融研究所奖项
 - [Study finds LLMs nudge users toward smart savings and investing habits | phys.org](https://phys.org/news/2026-07-llms-nudge-users-smart-investing.html) — de Silva 引语、四成受访者存款不足 1 万美元、83%/6% 流动性数据、男女 prompt 用词差异、「模型一般不知道用户性别」表述、3%-4% 提取率失效模式
