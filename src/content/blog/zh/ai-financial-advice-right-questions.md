@@ -26,9 +26,11 @@ translationOf: ai-financial-advice-right-questions
 
 评判标准是生命周期理论。这是家庭金融的规范框架,核心处方大致是:年轻时投资期限长、未来工资收入多,该多配股票;随年龄增长逐步降低股票比例;留出应急储蓄;让消费在好坏年景之间尽量平滑,别大起大落。
 
-看清这个设计,「出人意料地好」的确切含义就出来了:照 AI 的建议做,大多数受访者会比他们现在的实际做法更接近生命周期理论的处方。
+看清这个设计,「出人意料地好」的意思就落定了。这话是 MIT Sloan 报道标题的原话,夸的对象是模型给出的建议;作者之一 Choukhmane 也说,看到人们实际提的那些糙问题,再看建议的质量,他们「有点意外」。
 
-对照组是受访者自己的现状。不是人类理财顾问。
+那和什么比?比较的两边都是模拟出来的一生。一边把受访者现在的实际做法(存多少、股票配多少)当作会一直延续下去的规则,放进模拟器跑到老;另一边照 AI 建议解析出的规则,跑同一个模拟器。两条人生轨迹都拿生命周期理论打分,结果是:对大多数受访者,照 AI 建议跑出的那条更接近理论处方。所以严格说,对照组不是某个时间点上的「现状」,而是「按现状的做法过完一生」。
+
+不管哪种说法,对照组里都没有人类理财顾问。
 
 这个基线有多低?据 [phys.org 转述](https://phys.org/news/2026-07-llms-nudge-users-smart-investing.html),写 prompt 的受访者里约四成存款不到一万美元。作者之一 de Silva 的原话也很诚实:「它不完美,但比很多人现在做决定的方式强,比如问亲友,或者随手上网搜。」
 
@@ -80,7 +82,7 @@ Vanguard(先锋领航,低费率指数基金巨头)的产品出现在 6% 的回�
 
 ## 参考来源
 
-- [AI financial advice is surprisingly good — especially if you ask the right questions | MIT Sloan](https://mitsloan.mit.edu/ideas-made-to-matter/ai-financial-advice-surprisingly-good-especially-if-you-ask-right-questions) — 选题来源;5 万/10 万美元财富差距、Vanguard 6%/iShares 3.4%/提及率 0.4%、失业后砍支出与组合漂移两处失效模式、「学术 prompt 改善建议」表述
+- [AI financial advice is surprisingly good — especially if you ask the right questions | MIT Sloan](https://mitsloan.mit.edu/ideas-made-to-matter/ai-financial-advice-surprisingly-good-especially-if-you-ask-right-questions) — 选题来源;「照 AI 建议模拟 vs 受访者现有做法模拟」的比较方法、Choukhmane「有点意外」引语、5 万/10 万美元财富差距、Vanguard 6%/iShares 3.4%/提及率 0.4%、失业后砍支出与组合漂移两处失效模式、「学术 prompt 改善建议」表述
 - [AI Financial Advice: Supply, Demand, and Life Cycle Implications(论文 PDF,作者官网)](https://tahachoukhmane.com/wp-content/uploads/2026/03/CdSLA-2026-AI-Financial-Advice.pdf) — 论文本体(本环境无法解析 PDF 文本,细节核对见下方核查点)
 - [论文页 | MIT Sloan CFI](https://mitsloan.mit.edu/centers-initiatives/cfi/ai-financial-advice-supply-demand-and-life-cycle-implications) — 摘要原文:测试模型为 GPT-5.2 与 Gemini 3 Flash、三大发现、组间退休财富差 4-5%、supply/demand 分解、工作论文编号 7377-26、瑞士金融研究所奖项
 - [Study finds LLMs nudge users toward smart savings and investing habits | phys.org](https://phys.org/news/2026-07-llms-nudge-users-smart-investing.html) — de Silva 引语、四成受访者存款不足 1 万美元、83%/6% 流动性数据、相同 prompt 下对女性更保守、3%-4% 提取率失效模式
