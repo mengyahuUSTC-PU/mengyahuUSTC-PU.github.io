@@ -10,7 +10,7 @@ translationOf: ai-financial-advice-right-questions
 
 七月底,MIT Sloan 一篇研究的报道在 Hacker News 上传开,标题自带结论:[AI 理财建议出人意料地好,尤其当你问对问题时](https://mitsloan.mit.edu/ideas-made-to-matter/ai-financial-advice-surprisingly-good-especially-if-you-ask-right-questions)。
 
-我读完的第一个问题是:「好」是个比较级,和谁比?
+我读完的第一个问题是:和谁比?标题用的是 good,不是 better,没有点出比较对象,可评价一份建议好不好,总得有个参照。
 
 答案藏在研究设计里,比标题有意思得多。
 
