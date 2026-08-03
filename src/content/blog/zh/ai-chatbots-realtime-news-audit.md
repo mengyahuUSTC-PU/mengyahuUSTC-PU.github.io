@@ -12,9 +12,9 @@ translationOf: ai-chatbots-realtime-news-audit
 
 答案带着引用链接，看起来有根有据。错了。而且从界面上，用户完全看不出它错在哪一步。
 
-## 这次审计测了什么
+## 这次评测怎么做的
 
-这个例子来自斯坦福团队（Mirac Suzgun、James Zou 等八位作者）的一次实时审计（[arXiv:2605.22785](https://arxiv.org/abs/2605.22785)）。2026 年 2 月 9 日至 22 日，他们每天从 BBC 六个语种地区版的当日报道里出题：美加英语、法语（BBC Afrique，面向非洲）、阿拉伯语、印地语、俄语、土耳其语，每区每天 25 道选择题，14 天共 2100 道，全部针对当天文章里的具体细节。答题的是六款接了实时搜索的商用产品：Gemini 3 Flash、Gemini 3 Pro、GPT-5、Claude 4.5 Sonnet、Grok 4、GPT-4o-mini，共收回 12600 份回答。
+这个例子来自斯坦福团队（Mirac Suzgun、James Zou 等八位作者）的一次实时评测（论文原词是 evaluation，HAI 官方文章标题称之为 real-time audit）（[arXiv:2605.22785](https://arxiv.org/abs/2605.22785)）。2026 年 2 月 9 日至 22 日，他们每天从 BBC 六个语种地区版的当日报道里出题：美加英语、法语（BBC Afrique，面向非洲）、阿拉伯语、印地语、俄语、土耳其语，每区每天 25 道选择题，14 天共 2100 道，全部针对当天文章里的具体细节。答题的是六款接了实时搜索的商用产品：Gemini 3 Flash、Gemini 3 Pro、GPT-5、Claude 4.5 Sonnet、Grok 4、GPT-4o-mini，共收回 12600 份回答。
 
 头部成绩单相当好看：Gemini 3 Flash 95.6%，Grok 4 95.0%，Gemini 3 Pro 93.7%，前沿模型普遍在 90% 以上。比起早前同类评测，这是实打实的进步。
 
@@ -38,7 +38,7 @@ translationOf: ai-chatbots-realtime-news-audit
 
 ## 假前提一上，差距从 8 个点拉到 51 个点
 
-审计里最该被记住的是这组：研究者把问题里的一个事实细节改错再提问，测模型会不会顺着错误前提走。正常提问时，前沿模型的准确率挤在 88%–96% 之间，差距 8 个点；假前提之下，差距拉到 51 个点。Grok 4 还剩 70%，GPT-5 跌到 19%。
+这次评测里最该被记住的是这组：研究者把问题里的一个事实细节改错再提问，测模型会不会顺着错误前提走。正常提问时，前沿模型的准确率挤在 88%–96% 之间，差距 8 个点；假前提之下，差距拉到 51 个点。Grok 4 还剩 70%，GPT-5 跌到 19%。
 
 更有意思的是，「发现前提有问题」和「答对」是两回事。Gemini 3 Pro 标出了 80% 的假前提，最终只答对 55%；Claude 4.5 Sonnet 标出 78%，答对 46%；Grok 4 只标出 59%，准确率却排第一。也就是说，模型说一句「你的说法可能不准确」之后，未必能顶住那个前提、给出正确事实；反过来，不怎么明说的模型也可能实际答得更稳。
 
@@ -50,11 +50,11 @@ translationOf: ai-chatbots-realtime-news-audit
 
 对普通用户，最实用的一个动作是追问来源语言。回答非英语地区的新闻时，模型给出的引用不等于它实际依据的材料，问一句「你引的这篇是什么语言、哪家媒体的」，能暴露掉相当一部分静默替换。
 
-对做产品的人，这份审计等于给出了一个待办：来源分歧应该暴露给用户。检索结果和提问的语种、指向的媒体对不上时，界面上该有提示，「未找到印地语来源，以下回答基于英文材料」，这一句话的成本，换的是用户判断要不要信的依据。分语种做检索评测也该是标配，聚合准确率会把 79% 和 95% 平均成一个看不出问题的数字。
+对做产品的人，这份评测等于给出了一个待办：来源分歧应该暴露给用户。检索结果和提问的语种、指向的媒体对不上时，界面上该有提示，「未找到印地语来源，以下回答基于英文材料」，这一句话的成本，换的是用户判断要不要信的依据。分语种做检索评测也该是标配，聚合准确率会把 79% 和 95% 平均成一个看不出问题的数字。
 
-至于「AI 能不能当新闻入口」这个大问题，这份审计给的答案很具体：它读没读到那篇报道，取决于检索管线；它能不能告诉你读的是哪篇，取决于爬虫政策和授权协议。这两件事目前用户都看不见。看不见的时候，它答对 95% 和答错的那 5% 长得一模一样。
+至于「AI 能不能当新闻入口」这个大问题，这份评测给的答案很具体：它读没读到那篇报道，取决于检索管线；它能不能告诉你读的是哪篇，取决于爬虫政策和授权协议。这两件事目前用户都看不见。看不见的时候，它答对 95% 和答错的那 5% 长得一模一样。
 
 ## 参考来源
 
-- [Reading today's headlines through AI: a real-time audit of six commercial chatbots](https://hai.stanford.edu/news/reading-todays-headlines-through-ai-a-real-time-audit-of-six-commercial-chatbots) — Stanford HAI 官方文章，全部审计数字、海员案例、引用率与假前提测试结果
+- [Reading today's headlines through AI: a real-time audit of six commercial chatbots](https://hai.stanford.edu/news/reading-todays-headlines-through-ai-a-real-time-audit-of-six-commercial-chatbots) — Stanford HAI 官方文章，全部评测数字、海员案例、引用率与假前提测试结果
 - [Evaluating Commercial AI Chatbots as News Intermediaries (arXiv:2605.22785)](https://arxiv.org/abs/2605.22785) — 论文原文，核对作者名单、评测规模与错误归类口径
