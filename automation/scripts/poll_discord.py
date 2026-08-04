@@ -230,13 +230,31 @@ def latest_article_slug():
     return max(posts, key=lambda p: p.stat().st_mtime).stem
 
 
+def ask_which_pack(pending, cmd_hint):
+    """Never guess between multiple pending packs — a wrong guess once mixed
+    two same-evening articles' distribution content. Ask the user instead."""
+    send("❓ 现在有多篇待发布的分发内容，你指的是哪一篇？\n"
+         + "\n".join(f"- `{s}`" for s in pending)
+         + f"\n请点名重发指令，例如 `{cmd_hint}`。")
+
+
 def handle_dist_edit(part: str, feedback: str):
-    """Revise only one part (thread/linkedin) of the newest pending dist pack."""
-    packs = sorted((DATA / "dist").glob("*.json"), key=lambda p: p.stat().st_mtime)
-    if not packs:
+    """Revise only one part (thread/linkedin) of the pending dist pack."""
+    pending_packs = []
+    for f in sorted((DATA / "dist").glob("*.json"), key=lambda p: p.stat().st_mtime):
+        try:
+            d = json.loads(f.read_text())
+            if d.get("status") != "scheduled":
+                pending_packs.append(d)
+        except Exception:
+            continue
+    if not pending_packs:
         send("⚠️ 没有待发布的分发内容。")
         return
-    pack = json.loads(packs[-1].read_text())
+    if len(pending_packs) > 1:
+        ask_which_pack([d["slug"] for d in pending_packs], "改发 <slug> 意见")
+        return
+    pack = pending_packs[-1]
     slug = pack["slug"]
     label = "LinkedIn 帖" if part == "linkedin" else "X thread"
     fb = (f"只修改 {label}，另一部分必须原样保留。上一版内容如下：\n\n"
@@ -297,7 +315,12 @@ def main():
                 except Exception:
                     continue
             tokens = peak_match.group(1).split()
-            slug_ = next((s for s in pending if s in tokens), None) or (pending[-1] if pending else None)
+            slug_ = next((s for s in pending if s in tokens), None)
+            if not slug_ and len(pending) == 1:
+                slug_ = pending[0]
+            if not slug_ and len(pending) > 1:
+                ask_which_pack(pending, "定时发 <slug>")
+                continue
             if slug_:
                 handle_distribution(slug_, when="peak")
             else:
@@ -318,7 +341,12 @@ def main():
                 except Exception:
                     continue
             tokens = dist_match.group(1).split()
-            slug_ = next((s for s in pending if s in tokens), None) or (pending[-1] if pending else None)
+            slug_ = next((s for s in pending if s in tokens), None)
+            if not slug_ and len(pending) == 1:
+                slug_ = pending[0]
+            if not slug_ and len(pending) > 1:
+                ask_which_pack(pending, "发 <slug>")
+                continue
             if slug_:
                 handle_distribution(slug_)
             else:
@@ -502,7 +530,13 @@ def route_free_text(content, date):
         # distribute.py after a slug with no pack (unpublished article etc.).
         pendings = [p["slug"] for p in packs if p["status"] != "scheduled"]
         if slug not in pendings:
-            slug = pendings[-1] if pendings else ""
+            if len(pendings) == 1:
+                slug = pendings[0]
+            elif len(pendings) > 1:
+                ask_which_pack(pendings, "改发 <slug> 意见")
+                return True
+            else:
+                slug = ""
         if not slug:
             send("⚠️ 没有待发布的分发内容可改（都已排程或尚未生成）。")
             return True
