@@ -18,7 +18,7 @@ Anthropic 发言人 Amie Rotherham 对 TechCrunch 的回应是:这些分享链�
 
 ## "分享"到底做了什么
 
-按 [Anthropic 官方帮助文档](https://support.claude.com/en/articles/10593882-share-and-unshare-chats),点击分享按钮后,系统为当前对话生成一个快照页面,任何拿到链接的人都能查看;之后新增的消息不会同步,除非重新分享。撤销的入口在 Settings > Privacy > Shared chats,那里能看到自己所有分享过的对话。
+按 [Anthropic 官方帮助文档](https://support.claude.com/en/articles/10593882-share-and-unshare-chats),点击分享按钮后,系统为当前对话生成一个快照页面,任何拿到链接的人都能查看;之后新增的消息不会同步,要更新快照得先取消分享、再重新分享一次。撤销的入口在 Settings > Privacy > Shared chats,那里能看到自己所有分享过的对话。
 
 文档里有个细节值得对照:Team 和 Enterprise 版的分享只对同组织成员开放。企业客户的分享被当成权限问题处理,消费者版没有这一层。
 
@@ -26,9 +26,9 @@ Anthropic 发言人 Amie Rotherham 对 TechCrunch 的回应是:这些分享链�
 
 ## 从一次点击到 Google 结果,中间发生了什么
 
-链条第一环是"有链接才能看"这个模型本身。不可猜测的长 URL 在安全设计里叫 capability URL:链接即凭证,拿到就能访问。它成立的前提是链接不流动。但链接天然会流动——贴进 Reddit 帖子、群聊、邮件,被聊天软件抓去生成预览卡片,被存档服务收录。只要在任何公开角落出现过一次,搜索引擎的爬虫就能顺着找过来。
+链条第一环是"有链接才能看"这个模型本身。不可猜测的长 URL 在安全设计里叫 [capability URL](https://www.w3.org/TR/capability-urls/):链接即凭证,拿到就能访问。它成立的前提是链接不流动。但链接天然会流动——贴进 Reddit 帖子、群聊、邮件,被聊天软件抓去生成预览卡片,被存档服务收录。只要在任何公开角落出现过一次,搜索引擎的爬虫就能顺着找过来——[Google 自己的文档](https://developers.google.com/search/docs/fundamentals/how-search-works)写着,发现新网址的主要途径之一,就是从已知页面上提取指向新页面的链接。
 
-已证实的泄露通道,是用户自己把链接贴到了公开场合。但这里有一处未解的争议:去年 9 月的那次事故([Forbes](https://www.forbes.com/sites/iainmartin/2025/09/08/hundreds-of-anthropic-chatbot-transcripts-showed-up-in-google-search/),当时 Google 收录了近 600 条 Claude 对话,包括 Anthropic 自家团队的内部 prompt 和员工姓名邮箱)里,至少有一名用户告诉 Forbes,自己那条工作对话的链接从没在任何地方公开贴过。链接到底怎么泄露的,双方各执一词。
+Anthropic 给出的解释是,链接只有被用户自己贴到公开场合才会被搜索引擎发现,目前找到实例的泄露通道也确实是这一条。但要说这是唯一通道,并没有完全坐实:去年 9 月的那次事故([Forbes](https://www.forbes.com/sites/iainmartin/2025/09/08/hundreds-of-anthropic-chatbot-transcripts-showed-up-in-google-search/),当时 Google 收录了近 600 条 Claude 对话,包括 Anthropic 自家团队的内部 prompt 和员工姓名邮箱)里,至少有一名用户告诉 Forbes,自己那条工作对话的链接从没在任何地方公开贴过。链接到底怎么泄露的,双方各执一词。
 
 第二环出在防堵的手法上。要看懂这一步哪里出了错,得先把 Google 搜索的运作方式从头讲一遍,假设你完全没接触过这套机制。
 
@@ -43,9 +43,9 @@ Anthropic 发言人 Amie Rotherham 对 TechCrunch 的回应是:这些分享链�
 
 2025 年那次事故后,Anthropic 的补救是"不向搜索引擎提供分享对话的目录或 sitemap,并主动阻止爬虫抓取本站"(Forbes),也就是选了第一个工具:在门口贴告示。把上面两条放在一起,问题就出来了:告示把爬虫挡在门外,爬虫永远看不到屋里那张 noindex 纸条;而光靠门口的告示,又拦不住网址被登记进地址簿。想加一道防线,结果让真正管用的那道防线失效了。这不是我的推断,[Google 官方文档](https://developers.google.com/search/docs/crawling-indexing/block-indexing)专门警告过这种用法:想让 noindex 生效,页面就不能被 robots.txt 挡住。
 
-所以正确的修法是反过来:把门打开(允许爬虫抓取),同时在每个分享页面里写上 noindex 纸条。这两半我都亲自验证过。8 月 4 日写这篇文章时,我先抓取了 [claude.ai 当前的 robots.txt](https://claude.ai/robots.txt):/chat/、/settings 等路径都在"请勿入内"清单里,唯独 /share 不在,也就是说爬虫可以进分享页的门。接着我建了一条分享链接,抓取这个页面的源码,head 里写着 `<meta name="robots" content="noindex, nofollow">`,正是那张"请不要把本页登记进地址簿"的纸条。
+所以正确的修法是反过来:把门打开(允许爬虫抓取),同时在每个分享页面里写上 noindex 纸条。这两半我都亲自验证过。8 月 4 日写这篇文章时,我先抓取了 [claude.ai 当前的 robots.txt](https://claude.ai/robots.txt):/chat/、/settings 等路径都在"请勿入内"清单里,唯独 /share 不在,也就是说爬虫可以进分享页的门。接着我建了一条分享链接,抓取这个页面的源码,head 里写着 `<meta name="robots" content="noindex, nofollow">`,正是那张"请不要把本页登记进地址簿"的纸条。第三方报道和我的抓取结果对得上:据 [DigitalToday](https://www.digitaltoday.co.kr/en/view/85064/anthropic-claude-shared-chats-exposed-on-google-crypto-wallet-seed-phrases-also-revealed) 报道,这次事故的直接原因就是分享页缺 noindex 标签,Anthropic 于 7 月 26 日补上之后,Claude 分享链接开始从 Google 结果里消失。
 
-说成大白话:现在爬虫可以走进分享页这个房间,但一进门就会读到那张纸条,Google 读到就不会把这个网址登记进地址簿。所以截至 8 月 4 日,你新分享的 Claude 对话不会再出现在 Google 搜索结果里,挡收录的方式已经换成了 Google 文档说的正确做法。不过要说清楚,这挡住的只是搜索引擎的收录:分享链接本身仍是一个公开网页,任何拿到链接的人照样能打开,之前已经被第三方存档服务抓走的副本也收不回来。
+说成大白话:现在爬虫可以走进分享页这个房间,但一进门就会读到那张纸条,Google 读到就不会把这个网址登记进地址簿。所以截至 8 月 4 日,按 Google 的收录规则,新分享的 Claude 对话应该被排除在 Google 搜索结果之外——noindex 要等爬虫读到页面才生效,清理不会一夜之间完成,但挡收录的方式已经换成了 Google 文档说的正确做法。不过要说清楚,这挡住的只是搜索引擎的收录:分享链接本身仍是一个公开网页,任何拿到链接的人照样能打开,之前已经被第三方存档服务抓走的副本也收不回来。
 
 ## 第五次了
 
@@ -57,15 +57,15 @@ Anthropic 发言人 Amie Rotherham 对 TechCrunch 的回应是:这些分享链�
 
 2025 年 8 月,Grok。[Forbes](https://www.forbes.com/sites/iainmartin/2025/08/20/elon-musks-xai-published-hundreds-of-thousands-of-grok-chatbot-conversations/) 报道约 37 万条对话被 Google 收录:分享按钮直接生成公开页面,用户没有收到任何提示,泄露内容包括密码和用药咨询,连用户上传的图片和表格都能顺着分享页拿到。
 
-再加上 Claude 的 2025 年 9 月和这一次。四家公司,四种实现,从 Grok 的一声不吭到 ChatGPT 的明确勾选框,结果殊途同归。勾选框也没能救 ChatGPT,因为用户不知道"可被发现"意味着什么。Meta AI 的 Discover 信息流则是另一个变体:把公开直接做成了产品形态(Malwarebytes)。
+再加上 Claude 的 2025 年 9 月和这一次。四家公司,四种实现,从 Grok 的一声不吭到 ChatGPT 的明确勾选框,结果殊途同归。勾选框也没能救 ChatGPT,因为用户不知道"可被发现"意味着什么。Meta AI 的 Discover 信息流则是另一个变体:把公开直接做成了产品形态([Malwarebytes](https://www.malwarebytes.com/blog/news/2025/06/your-meta-ai-chats-might-be-public-and-its-not-a-bug))。
 
 ## 盲点在哪
 
-用户点分享时的心理模型是"把这个结果发给某个人看",产品实现是"生成一个永久公开的网页"。这中间差着一整个出版动作。普通网页是作者写给公众的;聊天记录不一样,人对着聊天框说的话接近自言自语,病史、财务、情绪都在里面。我在 7 月 23 日写过[《病历交给 ChatGPT 的那一刻,HIPAA 的保护就结束了》](/zh/chatgpt-health-hipaa-gap):数据交给聊天机器人,就离开了医疗隐私法的覆盖范围。这次的事故是同一件事的另一面,数据不但出了监管边界,还直接进了搜索索引。
+用户点分享时的心理模型是"把这个结果发给某个人看",产品实现是"生成一个公开网页,在你撤销分享之前一直有效"。这中间差着一整个出版动作。普通网页是作者写给公众的;聊天记录不一样,人对着聊天框说的话接近自言自语,病史、财务、情绪都在里面。我在 7 月 23 日写过[《病历交给 ChatGPT 的那一刻,HIPAA 的保护就结束了》](/zh/chatgpt-health-hipaa-gap):普通用户自己把健康数据输入消费级聊天应用时,这些数据通常不在 HIPAA 的保护范围内——这部法律约束的是医疗机构和替它们处理数据的服务商,不覆盖用户自己交出去的数据。这次的事故是同一件事的另一面,数据不但出了监管边界,还直接进了搜索索引。
 
 做信任与安全工作有一条老经验:用户不读文档,唯一有效的告知位置是动作发生的那一刻。分享弹窗里写不写"这是一个公开网页,可能被搜索引擎和存档服务收录",直接决定用户按不按下去。目前 Anthropic 连帮助文档里都没有这句话。
 
-还有一个多数人想不到的点:撤销分享只能阻止后续访问,撤不回已经被存档的副本。Anthropic 自己的声明也承认公开内容"可能被第三方服务存档"。archive 类服务抓走的快照,不归任何一家 AI 公司管。
+还有一个多数人想不到的点:撤销分享只能阻止后续访问,不会自动删除第三方已经存档的副本。Anthropic 自己的声明也承认公开内容"可能被第三方服务存档"。archive 类服务抓走的快照,不归任何一家 AI 公司管。
 
 ## 判断
 
@@ -77,21 +77,25 @@ Anthropic 发言人 Amie Rotherham 对 TechCrunch 的回应是:这些分享链�
 
 给做产品的人:阻止收录靠 noindex,别靠 robots.txt,两者的区别 Google 文档写了很多年;"公开网页、可能被搜索引擎收录"这句话应该放进分享弹窗,而不是藏在帮助中心;给用户一个集中管理已分享内容的页面,Anthropic 这一点做了,值得肯定。
 
-最后的判断:Anthropic 只是最新一家。同一个设计决定,把"分享"实现成"发布"却不把话说透,三年里第五次出事。只要分享按钮生成的还是永久公开 URL,而弹窗文案还停留在"有链接的人可以查看",下一次上新闻的只是换一个 logo。
+最后的判断:Anthropic 只是最新一家。同一个设计决定,把"分享"实现成"发布"却不把话说透,三年里第五次出事。只要分享按钮生成的还是默认公开、撤销前一直有效的 URL,而弹窗文案还停留在"有链接的人可以查看",我不认为这会是最后一次——下一次上新闻的只是换一个 logo。
 
 ## 参考来源
 
 - [404 Media: Tons of People's Claude Chats and Creations Are Exposed on Google](https://www.404media.co/tons-of-peoples-claude-chats-and-creations-are-exposed-on-google/) — 原始披露报道(正文有付费墙,事实经 TechCrunch、Malwarebytes 交叉核对)
 - [TechCrunch: PSA: Your Claude shared chats and Artifacts may have ended up on Google](https://techcrunch.com/2026/07/27/psa-your-claude-shared-chats-and-artifacts-may-have-ended-up-on-google/) — 时间线、曝光内容清单、Anthropic 发言人 Amie Rotherham 声明、Google 结果清除时间
 - [VentureBeat: Some Claude shared conversations and Artifacts appear to be indexed on Google Search](https://venturebeat.com/technology/uh-oh-some-claude-shared-conversations-and-artifacts-appear-to-be-indexed-and-publicly-accessible-on-google-search) — 7 月 25 日 Reddit 发现、收录规模"数以百计"
-- [Malwarebytes: Shared Claude chats were searchable on Google](https://www.malwarebytes.com/blog/privacy/2026/07/shared-claude-chats-were-searchable-on-google) — 曝光内容、Bing 残留(转述 Wired)、Meta AI 对比、用户自查路径
+- [Malwarebytes: Shared Claude chats were searchable on Google](https://www.malwarebytes.com/blog/privacy/2026/07/shared-claude-chats-were-searchable-on-google) — 曝光内容、Bing 残留(转述 Wired)、用户自查路径
+- [DigitalToday: Anthropic Claude shared chats exposed on Google](https://www.digitaltoday.co.kr/en/view/85064/anthropic-claude-shared-chats-exposed-on-google-crypto-wallet-seed-phrases-also-revealed) — 事故直接原因为缺 noindex 标签、Anthropic 7 月 26 日补上后 Google 结果开始清除
 - [Anthropic 帮助文档: Share and unshare chats](https://support.claude.com/en/articles/10593882-share-and-unshare-chats) — 分享功能机制、快照逻辑、撤销路径、Team/Enterprise 差异;已核实文档未提及搜索引擎
 - [Forbes (2025-09-08): Hundreds Of Anthropic Chatbot Transcripts Showed Up In Google Search](https://www.forbes.com/sites/iainmartin/2025/09/08/hundreds-of-anthropic-chatbot-transcripts-showed-up-in-google-search/) — 2025 年近 600 条收录事故、Anthropic robots.txt 说法、用户否认公开贴过链接
+- [W3C TAG: Good Practices for Capability URLs](https://www.w3.org/TR/capability-urls/) — capability URL 概念与安全模型
+- [Google Search Central: In-depth guide to how Google Search works](https://developers.google.com/search/docs/fundamentals/how-search-works) — 爬取、索引、呈现三环节及 URL 发现途径
 - [Google Search Central: Block Search indexing with noindex](https://developers.google.com/search/docs/crawling-indexing/block-indexing) — robots.txt 与 noindex 的互斥机制
 - [claude.ai/robots.txt](https://claude.ai/robots.txt) — 本人 2026-08-04 抓取,2026-08-05 复核,确认 /share 无屏蔽规则
 - [Gigazine: Bard shared conversations indexed by Google Search](https://gigazine.net/gsc_news/en/20230928-google-bard-share-conversations-index/) — Bard 2023 事故、Gagan Ghotra、Danny Sullivan 回应
 - [Tech Digest: OpenAI disables chat discoverability](https://www.techdigest.tv/2025/08/openai-disables-chat-discoverability-after-private-conversations-found-in-google-search.html) — ChatGPT 4500+ 条(Fast Company 统计)、"Make this chat discoverable"勾选框
 - [Malwarebytes (2025-08): OpenAI kills "short-lived experiment"](https://www.malwarebytes.com/blog/news/2025/08/openai-kills-short-lived-experiment-where-chatgpt-chats-could-be-found-on-google) — Dane Stuckey 声明原文、8 月 1 日下线时间
 - [Forbes (2025-08-20): Elon Musk's xAI Published Hundreds Of Thousands Of Grok Chatbot Conversations](https://www.forbes.com/sites/iainmartin/2025/08/20/elon-musks-xai-published-hundreds-of-thousands-of-grok-chatbot-conversations/) — Grok 约 37 万条、无提示发布、上传文件可访问
+- [Malwarebytes (2025-06): Your Meta AI chats might be public, and it's not a bug](https://www.malwarebytes.com/blog/news/2025/06/your-meta-ai-chats-might-be-public-and-its-not-a-bug) — Meta AI Discover 信息流公开分享机制
 
-<!-- 核查点(仅供 PR 审核,不渲染进正文):noindex 已于 2026-08-04(美西)验证。作者新建的分享链接 https://claude.ai/share/7a6dda9a-abb0-4d9f-81a8-6bd3f663587f,经代理取得未渲染的原始 HTML(HTTP 200),head 内含 <meta name="robots" content="noindex, nofollow">;并已确认抓到的是 Claude 应用页本身(资源加载自 assets-proxy.anthropic.com、og:description 为 "Shared via Claude"),而非 Cloudflare 拦截页(拦截页也带 noindex,故做了此项排除)。2026-08-05 复核:robots.txt 仍无 /share 屏蔽规则;分享页 noindex 以 8/4 的代理抓取结果为准(8/5 当前环境取不到原始 HTML,未重复抓取)。"不会再出现在 Google 搜索结果里"的表述以 noindex 对正规搜索引擎爬虫的约束为依据,已在正文注明不覆盖第三方存档副本。 -->
+<!-- 核查点(仅供 PR 审核,不渲染进正文):noindex 已于 2026-08-04(美西)验证。作者新建的分享链接 https://claude.ai/share/7a6dda9a-abb0-4d9f-81a8-6bd3f663587f,经代理取得未渲染的原始 HTML(HTTP 200),head 内含 <meta name="robots" content="noindex, nofollow">;并已确认抓到的是 Claude 应用页本身(资源加载自 assets-proxy.anthropic.com、og:description 为 "Shared via Claude"),而非 Cloudflare 拦截页(拦截页也带 noindex,故做了此项排除)。2026-08-05 复核:robots.txt 仍无 /share 屏蔽规则;分享页 noindex 以 8/4 的代理抓取结果为准(8/5 当前环境取不到原始 HTML,未重复抓取);另有 DigitalToday 第三方报道佐证 noindex 已补、Google 结果自 7/26 起清除。新增引用(W3C capability URLs、Google how-search-works、Malwarebytes 2025-06 Meta AI、DigitalToday)均已于 2026-08-05 经 WebFetch 逐一确认支持对应断言。文件本次未能写入(权限未放行),以本回复全文为准。 -->
