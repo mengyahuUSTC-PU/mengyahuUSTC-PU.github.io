@@ -30,7 +30,11 @@ Anthropic 发言人 Amie Rotherham 对 TechCrunch 的回应是:这些分享链�
 
 已证实的泄露通道,是用户自己把链接贴到了公开场合。但这里有一处未解的争议:去年 9 月的那次事故([Forbes](https://www.forbes.com/sites/iainmartin/2025/09/08/hundreds-of-anthropic-chatbot-transcripts-showed-up-in-google-search/),当时 Google 收录了近 600 条 Claude 对话,包括 Anthropic 自家团队的内部 prompt 和员工姓名邮箱)里,至少有一名用户告诉 Forbes,自己那条工作对话的链接从没在任何地方公开贴过。链接到底怎么泄露的,双方各执一词。
 
-第二环更技术,也更普遍地被误解。2025 年那次事故后,Anthropic 表示"不向搜索引擎提供分享对话的目录或 sitemap,并主动阻止爬虫抓取本站"(Forbes)。用 robots.txt 挡爬虫听起来是标准操作,但 [Google 官方文档](https://developers.google.com/search/docs/crawling-indexing/block-indexing)写得明明白白:robots.txt 挡的是抓取,不是收录。只要有外部链接指向某个页面,Google 不抓取也照样可以把这个 URL 收进索引。更拧巴的是,真正阻止收录的 noindex 标签,必须让爬虫抓到页面才读得到;robots.txt 一挡,爬虫看不见 noindex,这条路反而被堵死。
+第二环出在防堵的手法上。要看懂这里的问题,得先花一分钟弄清 Google 搜索的工作方式。Google 的搜索结果来自两个分开的步骤:第一步叫"抓取",Google 有一个叫爬虫的自动程序,顺着网页之间的链接一个个访问,把每个页面的内容读下来;第二步叫"收录"(也叫建立索引),Google 把网址登记进一份巨大的目录,你在搜索框里搜东西,查的就是这份目录。关键是,这两步是分开的:一个网址能不能进目录,不完全取决于爬虫有没有读过它的内容。
+
+网站如果不想被爬,可以在一个叫 robots.txt 的公开文件里声明"这些页面请勿抓取",正规爬虫会照办。2025 年那次事故后,Anthropic 走的就是这条路:"不向搜索引擎提供分享对话的目录或 sitemap,并主动阻止爬虫抓取本站"(Forbes)。听起来是标准操作,但 [Google 官方文档](https://developers.google.com/search/docs/crawling-indexing/block-indexing)写得明明白白:robots.txt 只挡第一步(抓取),挡不住第二步(收录)。只要别的公开网页上有链接指向某个页面,Google 即使从没读过这个页面的内容,也可以把这个网址登记进目录,搜索结果里照样能搜出这条链接。
+
+真正能阻止收录的是另一个工具:在页面代码里写一行 noindex 标记,意思是"搜索引擎读到这里,请不要把本页登记进目录"。但这行标记写在页面内部,爬虫必须先抓取页面才看得到它。拧巴的地方就在这:robots.txt 把门一锁,爬虫进不了门,自然也看不到门内那行 noindex。本想加一道防线,结果让真正管用的那道防线失效了。
 
 正确的修法是反过来:放开抓取,在页面上挂 noindex。我 8 月 4 日抓取了 [claude.ai 当前的 robots.txt](https://claude.ai/robots.txt):/chat/、/settings 等路径都在屏蔽清单里,唯独 /share 不在,对普通爬虫完全放行。这与"放开抓取、改挂 noindex"的修法一致。至于分享页面上是否真的加了 noindex 标签,我手头没有现成的分享链接可验证,列在文末核查点里。
 
