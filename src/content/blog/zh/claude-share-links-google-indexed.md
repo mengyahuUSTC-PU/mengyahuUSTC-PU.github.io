@@ -43,7 +43,9 @@ Anthropic 发言人 Amie Rotherham 对 TechCrunch 的回应是:这些分享链�
 
 2025 年那次事故后,Anthropic 的补救是"不向搜索引擎提供分享对话的目录或 sitemap,并主动阻止爬虫抓取本站"(Forbes),也就是选了第一个工具:在门口贴告示。把上面两条放在一起,问题就出来了:告示把爬虫挡在门外,爬虫永远看不到屋里那张 noindex 纸条;而光靠门口的告示,又拦不住网址被登记进地址簿。想加一道防线,结果让真正管用的那道防线失效了。这不是我的推断,[Google 官方文档](https://developers.google.com/search/docs/crawling-indexing/block-indexing)专门警告过这种用法:想让 noindex 生效,页面就不能被 robots.txt 挡住。
 
-所以正确的修法是反过来:把门打开(允许爬虫抓取),同时在每个分享页面里写上 noindex 纸条。我 8 月 4 日抓取了 [claude.ai 当前的 robots.txt](https://claude.ai/robots.txt):/chat/、/settings 等路径都在"请勿入内"清单里,唯独 /share 不在,爬虫可以进门。这和正确修法的前一半对得上。后一半,也就是分享页面里有没有那行 noindex,我手头本来没有现成的分享链接,于是当天自己新建了一条来验证:抓取这个分享页的源码,head 里确实写着 `<meta name="robots" content="noindex, nofollow">`。两半都对上了:截至 8 月 4 日,Claude 分享页挡收录的方式,已经是 Google 文档说的正确做法。
+所以正确的修法是反过来:把门打开(允许爬虫抓取),同时在每个分享页面里写上 noindex 纸条。这两半我都亲自验证过。8 月 4 日写这篇文章时,我先抓取了 [claude.ai 当前的 robots.txt](https://claude.ai/robots.txt):/chat/、/settings 等路径都在"请勿入内"清单里,唯独 /share 不在,也就是说爬虫可以进分享页的门。接着我建了一条分享链接,抓取这个页面的源码,head 里写着 `<meta name="robots" content="noindex, nofollow">`,正是那张"请不要把本页登记进地址簿"的纸条。
+
+说成大白话:现在爬虫可以走进分享页这个房间,但一进门就会读到那张纸条,Google 读到就不会把这个网址登记进地址簿。所以截至 8 月 4 日,你新分享的 Claude 对话不会再出现在 Google 搜索结果里,挡收录的方式已经换成了 Google 文档说的正确做法。不过要说清楚,这挡住的只是搜索引擎的收录:分享链接本身仍是一个公开网页,任何拿到链接的人照样能打开,之前已经被第三方存档服务抓走的副本也收不回来。
 
 ## 第五次了
 
@@ -86,10 +88,10 @@ Anthropic 发言人 Amie Rotherham 对 TechCrunch 的回应是:这些分享链�
 - [Anthropic 帮助文档: Share and unshare chats](https://support.claude.com/en/articles/10593882-share-and-unshare-chats) — 分享功能机制、快照逻辑、撤销路径、Team/Enterprise 差异;已核实文档未提及搜索引擎
 - [Forbes (2025-09-08): Hundreds Of Anthropic Chatbot Transcripts Showed Up In Google Search](https://www.forbes.com/sites/iainmartin/2025/09/08/hundreds-of-anthropic-chatbot-transcripts-showed-up-in-google-search/) — 2025 年近 600 条收录事故、Anthropic robots.txt 说法、用户否认公开贴过链接
 - [Google Search Central: Block Search indexing with noindex](https://developers.google.com/search/docs/crawling-indexing/block-indexing) — robots.txt 与 noindex 的互斥机制
-- [claude.ai/robots.txt](https://claude.ai/robots.txt) — 本人 2026-08-04 抓取,确认 /share 无屏蔽规则
+- [claude.ai/robots.txt](https://claude.ai/robots.txt) — 本人 2026-08-04 抓取,2026-08-05 复核,确认 /share 无屏蔽规则
 - [Gigazine: Bard shared conversations indexed by Google Search](https://gigazine.net/gsc_news/en/20230928-google-bard-share-conversations-index/) — Bard 2023 事故、Gagan Ghotra、Danny Sullivan 回应
 - [Tech Digest: OpenAI disables chat discoverability](https://www.techdigest.tv/2025/08/openai-disables-chat-discoverability-after-private-conversations-found-in-google-search.html) — ChatGPT 4500+ 条(Fast Company 统计)、"Make this chat discoverable"勾选框
 - [Malwarebytes (2025-08): OpenAI kills "short-lived experiment"](https://www.malwarebytes.com/blog/news/2025/08/openai-kills-short-lived-experiment-where-chatgpt-chats-could-be-found-on-google) — Dane Stuckey 声明原文、8 月 1 日下线时间
 - [Forbes (2025-08-20): Elon Musk's xAI Published Hundreds Of Thousands Of Grok Chatbot Conversations](https://www.forbes.com/sites/iainmartin/2025/08/20/elon-musks-xai-published-hundreds-of-thousands-of-grok-chatbot-conversations/) — Grok 约 37 万条、无提示发布、上传文件可访问
 
-<!-- 核查点(仅供 PR 审核,不渲染进正文):noindex 已于 2026-08-04(美西)验证。作者新建的分享链接 https://claude.ai/share/7a6dda9a-abb0-4d9f-81a8-6bd3f663587f,经代理取得未渲染的原始 HTML(HTTP 200),head 内含 <meta name="robots" content="noindex, nofollow">;并已确认抓到的是 Claude 应用页本身(资源加载自 assets-proxy.anthropic.com、og:description 为 "Shared via Claude"),而非 Cloudflare 拦截页(拦截页也带 noindex,故做了此项排除)。 -->
+<!-- 核查点(仅供 PR 审核,不渲染进正文):noindex 已于 2026-08-04(美西)验证。作者新建的分享链接 https://claude.ai/share/7a6dda9a-abb0-4d9f-81a8-6bd3f663587f,经代理取得未渲染的原始 HTML(HTTP 200),head 内含 <meta name="robots" content="noindex, nofollow">;并已确认抓到的是 Claude 应用页本身(资源加载自 assets-proxy.anthropic.com、og:description 为 "Shared via Claude"),而非 Cloudflare 拦截页(拦截页也带 noindex,故做了此项排除)。2026-08-05 复核:robots.txt 仍无 /share 屏蔽规则;分享页 noindex 以 8/4 的代理抓取结果为准(8/5 当前环境取不到原始 HTML,未重复抓取)。"不会再出现在 Google 搜索结果里"的表述以 noindex 对正规搜索引擎爬虫的约束为依据,已在正文注明不覆盖第三方存档副本。 -->
