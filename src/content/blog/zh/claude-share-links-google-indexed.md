@@ -30,13 +30,20 @@ Anthropic 发言人 Amie Rotherham 对 TechCrunch 的回应是:这些分享链�
 
 已证实的泄露通道,是用户自己把链接贴到了公开场合。但这里有一处未解的争议:去年 9 月的那次事故([Forbes](https://www.forbes.com/sites/iainmartin/2025/09/08/hundreds-of-anthropic-chatbot-transcripts-showed-up-in-google-search/),当时 Google 收录了近 600 条 Claude 对话,包括 Anthropic 自家团队的内部 prompt 和员工姓名邮箱)里,至少有一名用户告诉 Forbes,自己那条工作对话的链接从没在任何地方公开贴过。链接到底怎么泄露的,双方各执一词。
 
-第二环出在防堵的手法上。要看懂这里的问题,得先花一分钟弄清 Google 搜索的工作方式。Google 的搜索结果来自两个分开的步骤:第一步叫"抓取",Google 有一个叫爬虫的自动程序,顺着网页之间的链接一个个访问,把每个页面的内容读下来;第二步叫"收录"(也叫建立索引),Google 把网址登记进一份巨大的目录,你在搜索框里搜东西,查的就是这份目录。关键是,这两步是分开的:一个网址能不能进目录,不完全取决于爬虫有没有读过它的内容。
+第二环出在防堵的手法上。要看懂这一步哪里出了错,得先把 Google 搜索的运作方式从头讲一遍,假设你完全没接触过这套机制。
 
-网站如果不想被爬,可以在一个叫 robots.txt 的公开文件里声明"这些页面请勿抓取",正规爬虫会照办。2025 年那次事故后,Anthropic 走的就是这条路:"不向搜索引擎提供分享对话的目录或 sitemap,并主动阻止爬虫抓取本站"(Forbes)。听起来是标准操作,但 [Google 官方文档](https://developers.google.com/search/docs/crawling-indexing/block-indexing)写得明明白白:robots.txt 只挡第一步(抓取),挡不住第二步(收录)。只要别的公开网页上有链接指向某个页面,Google 即使从没读过这个页面的内容,也可以把这个网址登记进目录,搜索结果里照样能搜出这条链接。
+你在 Google 搜索时,Google 并不是当场跑遍全网找答案,而是在翻一本它提前编好的巨大地址簿:哪个网址是什么内容,提前登记在册,搜索就是查册。为了编这本地址簿,Google 派出一个自动程序(俗称"爬虫")在网上挨家挨户串门:顺着网页之间的链接访问一个个页面,把内容读下来。
 
-真正能阻止收录的是另一个工具:在页面代码里写一行 noindex 标记,意思是"搜索引擎读到这里,请不要把本页登记进目录"。但这行标记写在页面内部,爬虫必须先抓取页面才看得到它。拧巴的地方就在这:robots.txt 把门一锁,爬虫进不了门,自然也看不到门内那行 noindex。本想加一道防线,结果让真正管用的那道防线失效了。
+关键的一点是,"上门读过内容"和"被登记进地址簿"是两件事。只要某个网址在别的公开网页上被链接过,Google 就知道了它的存在,可以直接把这个网址登记进地址簿,哪怕爬虫从没读过这个页面。这时搜索结果里出现的是一条没有摘要的链接,但链接照样能点开。
 
-正确的修法是反过来:放开抓取,在页面上挂 noindex。我 8 月 4 日抓取了 [claude.ai 当前的 robots.txt](https://claude.ai/robots.txt):/chat/、/settings 等路径都在屏蔽清单里,唯独 /share 不在,对普通爬虫完全放行。这与"放开抓取、改挂 noindex"的修法一致。至于分享页面上是否真的加了 noindex 标签,我手头没有现成的分享链接可验证,列在文末核查点里。
+网站手里有两个工具,管的环节不一样:
+
+- robots.txt 是贴在大门口的告示,写着"爬虫请勿入内"。正规爬虫看到会照办,不进门读内容。但它管不了地址簿:Google 从别的网页知道了这个网址,照样可以登记。
+- noindex 是写在房间里面的纸条,意思是"请不要把本页登记进地址簿"。Google 读到这行字,才会把这个页面排除在搜索结果之外。而它写在页面内部,爬虫必须进门才看得到。
+
+2025 年那次事故后,Anthropic 的补救是"不向搜索引擎提供分享对话的目录或 sitemap,并主动阻止爬虫抓取本站"(Forbes),也就是选了第一个工具:在门口贴告示。把上面两条放在一起,问题就出来了:告示把爬虫挡在门外,爬虫永远看不到屋里那张 noindex 纸条;而光靠门口的告示,又拦不住网址被登记进地址簿。想加一道防线,结果让真正管用的那道防线失效了。这不是我的推断,[Google 官方文档](https://developers.google.com/search/docs/crawling-indexing/block-indexing)专门警告过这种用法:想让 noindex 生效,页面就不能被 robots.txt 挡住。
+
+所以正确的修法是反过来:把门打开(允许爬虫抓取),同时在每个分享页面里写上 noindex 纸条。我 8 月 4 日抓取了 [claude.ai 当前的 robots.txt](https://claude.ai/robots.txt):/chat/、/settings 等路径都在"请勿入内"清单里,唯独 /share 不在,爬虫可以进门。这和正确修法的前一半对得上;后一半,也就是分享页面里有没有那行 noindex,我手头没有现成的分享链接,没能验证。
 
 ## 第五次了
 
@@ -84,3 +91,5 @@ Anthropic 发言人 Amie Rotherham 对 TechCrunch 的回应是:这些分享链�
 - [Tech Digest: OpenAI disables chat discoverability](https://www.techdigest.tv/2025/08/openai-disables-chat-discoverability-after-private-conversations-found-in-google-search.html) — ChatGPT 4500+ 条(Fast Company 统计)、"Make this chat discoverable"勾选框
 - [Malwarebytes (2025-08): OpenAI kills "short-lived experiment"](https://www.malwarebytes.com/blog/news/2025/08/openai-kills-short-lived-experiment-where-chatgpt-chats-could-be-found-on-google) — Dane Stuckey 声明原文、8 月 1 日下线时间
 - [Forbes (2025-08-20): Elon Musk's xAI Published Hundreds Of Thousands Of Grok Chatbot Conversations](https://www.forbes.com/sites/iainmartin/2025/08/20/elon-musks-xai-published-hundreds-of-thousands-of-grok-chatbot-conversations/) — Grok 约 37 万条、无提示发布、上传文件可访问
+
+<!-- 核查点(仅供 PR 审核,不渲染进正文):claude.ai 分享页面的 HTML 中是否实际带有 noindex 标记未验证,需要一条现成的分享链接才能确认。 -->
