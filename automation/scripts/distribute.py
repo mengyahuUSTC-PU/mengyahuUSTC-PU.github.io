@@ -44,6 +44,29 @@ def claude_gen(prompt: str) -> str:
     return run.stdout
 
 
+def gen_sections(prompt: str, names: list[str], alias: dict | None = None) -> dict:
+    """Generate and parse ===NAME=== sections; on missing sections, retry once
+    with the failure fed back so the model can fix its own formatting.
+    A user-feedback note aimed at one part must never sink the whole run."""
+    alias = alias or {}
+    for attempt in (1, 2):
+        raw = claude_gen(prompt)
+        out = {}
+        for n in names:
+            out[n] = section(raw, n) or (section(raw, alias[n]) if n in alias else "")
+        missing = [n for n in names if not out[n]]
+        if not missing:
+            return out
+        if attempt == 1:
+            markers = " ".join(f"==={n}===" for n in names)
+            prompt = (prompt
+                      + "\n\n## 格式错误警告（第二次尝试）\n"
+                      + f"上一次输出缺少段标记：{', '.join(missing)}。"
+                      + f"最终回复必须且只包含全部段落（{markers}），"
+                      + "即使某段内容无需修改也必须完整输出该段，不要输出任何解说。")
+    sys.exit(f"error: generation missing sections after retry: {', '.join(missing)}")
+
+
 def section(text: str, name: str) -> str:
     m = re.search(rf"==={name}===\s*(.*?)(?====[A-Z_]+===|$)", text, re.S)
     return m.group(1).strip() if m else ""
@@ -64,36 +87,31 @@ def main():
 
     # --- EN social (thread + LinkedIn) ---
     fb = f"\n\n## 用户对上一版的修改意见（必须遵守）\n\n{feedback}" if feedback else ""
-    social_raw = claude_gen(
+    social = gen_sections(
         baseline + "\n\n" + (PROMPTS / "social-en.md").read_text() + fb
         + f"\n\n## X 帖 UTM 链接\n{utm(slug, 'en', 'twitter', 'post')}"
         + f"\n\n## LinkedIn 版 UTM 链接\n{utm(slug, 'en', 'linkedin', 'post')}"
-        + "\n\n## 文章全文\n\n" + en.read_text()
+        + "\n\n## 文章全文\n\n" + en.read_text(),
+        ["X", "LINKEDIN"], alias={"X": "THREAD"},
     )
-    thread = section(social_raw, "X") or section(social_raw, "THREAD")
-    linkedin = section(social_raw, "LINKEDIN")
-    if not thread or not linkedin:
-        sys.exit("error: social generation missing THREAD/LINKEDIN sections")
+    thread, linkedin = social["X"], social["LINKEDIN"]
 
     # --- Newsletter emails (zh + en), only when both language versions exist ---
     email = None
     zh = REPO_ROOT / "src" / "content" / "blog" / "zh" / f"{slug}.md"
     if zh.exists():
-        news_raw = claude_gen(
+        news = gen_sections(
             baseline + "\n\n" + (PROMPTS / "newsletter.md").read_text() + fb
             + f"\n\n## 中文版 UTM 链接\n{utm(slug, 'zh', 'newsletter', 'email')}"
             + f"\n\n## 英文版 UTM 链接\n{utm(slug, 'en', 'newsletter', 'email')}"
             + "\n\n## 中文版全文\n\n" + zh.read_text()
-            + "\n\n## 英文版全文\n\n" + en.read_text()
+            + "\n\n## 英文版全文\n\n" + en.read_text(),
+            ["SUBJECT_ZH", "HTML_ZH", "SUBJECT_EN", "HTML_EN"],
         )
         email = {
-            "zh": {"subject": section(news_raw, "SUBJECT_ZH"),
-                   "html": section(news_raw, "HTML_ZH")},
-            "en": {"subject": section(news_raw, "SUBJECT_EN"),
-                   "html": section(news_raw, "HTML_EN")},
+            "zh": {"subject": news["SUBJECT_ZH"], "html": news["HTML_ZH"]},
+            "en": {"subject": news["SUBJECT_EN"], "html": news["HTML_EN"]},
         }
-        if not all(email[l][k] for l in ("zh", "en") for k in ("subject", "html")):
-            sys.exit("error: newsletter generation missing SUBJECT/HTML sections")
 
     DIST.mkdir(parents=True, exist_ok=True)
     (DIST / f"{slug}.json").write_text(
