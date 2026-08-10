@@ -40,6 +40,34 @@ def sh(*cmd, timeout=300):
     ).stdout.strip()
 
 
+def _fm(text: str, key: str):
+    m = re.search(rf"^{key}:\s*(.+)$", text, re.M)
+    return m.group(1).strip() if m else None
+
+
+def _cjk_ratio(text: str) -> float:
+    body = text.split("---", 2)[-1]
+    if not body:
+        return 0.0
+    return sum(1 for ch in body if "\u4e00" <= ch <= "\u9fff") / max(len(body), 1)
+
+
+def revision_output_ok(rel: str, old: str, new: str) -> bool:
+    """Identity/language invariants for any LLM-rewritten article file.
+
+    A rewrite must never change lang/slug, and an en/ file must not come back
+    written in Chinese (or a zh/ file in English) — both have shipped once."""
+    for key in ("lang", "slug"):
+        if _fm(new, key) != _fm(old, key):
+            return False
+    r = _cjk_ratio(new)
+    if "/en/" in rel and r > 0.15:
+        return False
+    if "/zh/" in rel and r < 0.05:
+        return False
+    return True
+
+
 def counterpart_of(rel: str) -> str | None:
     if "/zh/" in rel:
         return rel.replace("/zh/", "/en/")
@@ -76,16 +104,11 @@ def sync_counterpart(branch: str, rel: str) -> bool:
     if not clean.strip().startswith("---") or clean.strip() == target.strip():
         return False
     # Invariant guard: the model must return the TARGET file, merged — never
-    # the reference wholesale. lang/slug must survive; a swapped lang once
-    # shipped zh content to the en path and duplicated the homepage entry.
-    def _fm(text, key):
-        m = re.search(rf"^{key}:\s*(.+)$", text, re.M)
-        return m.group(1).strip() if m else None
+    # the reference wholesale, and never in the wrong language.
     if clean.strip() == reference.strip():
         return False
-    for key in ("lang", "slug"):
-        if _fm(clean, key) != _fm(target, key):
-            return False
+    if not revision_output_ok(other, target, clean):
+        return False
     cur = sh("git", "rev-parse", "--abbrev-ref", "HEAD")
     if cur != branch:
         raise RuntimeError(f"sync refusing to commit: on '{cur}', expected '{branch}'")
