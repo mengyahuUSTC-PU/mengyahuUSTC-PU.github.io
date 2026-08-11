@@ -91,6 +91,7 @@ def main():
         baseline + "\n\n" + (PROMPTS / "social-en.md").read_text() + fb
         + f"\n\n## X 帖 UTM 链接\n{utm(slug, 'en', 'twitter', 'post')}"
         + f"\n\n## LinkedIn 版 UTM 链接\n{utm(slug, 'en', 'linkedin', 'post')}"
+        + f"\n\n## LinkedIn 中文段 UTM 链接\n{utm(slug, 'zh', 'linkedin', 'post')}"
         + "\n\n## 文章全文\n\n" + en.read_text(),
         ["X", "LINKEDIN"], alias={"X": "THREAD"},
     )
