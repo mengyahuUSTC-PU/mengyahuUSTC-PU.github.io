@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import SubscribeBox from '../../components/SubscribeBox.astro';
 import { t, type Lang } from '../../lib/i18n';
 
 export function getStaticPaths() {
@@ -47,6 +48,12 @@ const otherLang: Lang = lang === 'zh' ? 'en' : 'zh';
           </p>
           <p>每篇文章中英双语。</p>
           <p>
+            最近的代表作：
+            <a href="/zh/ai-jobs-data-reality-check/">「AI 失业潮」在数据里几乎看不到</a>、
+            <a href="/zh/chatgpt-health-hipaa-gap/">病历交给 ChatGPT 后 HIPAA 就不保护你了</a>、
+            <a href="/zh/kimi-k3-open-weight-audit-gap/">3 万亿参数开源了，安全评估还在路上</a>。
+          </p>
+          <p>
             找到我：<a href="https://www.linkedin.com/in/mengya-mia-hu/?locale=en-US">LinkedIn</a>
             {' · '}
             <a href="https://x.com/Mengya_Mia_Hu">X</a>
@@ -85,6 +92,12 @@ const otherLang: Lang = lang === 'zh' ? 'en' : 'zh';
           </p>
           <p>Every post is published in both English and Chinese.</p>
           <p>
+            Recent writing:
+            <a href="/en/ai-jobs-data-reality-check/">the AI layoff wave isn't in the data</a>,
+            <a href="/en/chatgpt-health-hipaa-gap/">what happens to HIPAA when your records meet ChatGPT</a>,
+            and <a href="/en/kimi-k3-open-weight-audit-gap/">the Kimi K3 audit gap</a>.
+          </p>
+          <p>
             Find me on <a href="https://www.linkedin.com/in/mengya-mia-hu/?locale=en-US">LinkedIn</a>
             {' and '}
             <a href="https://x.com/Mengya_Mia_Hu">X</a>.
@@ -94,4 +107,5 @@ const otherLang: Lang = lang === 'zh' ? 'en' : 'zh';
       )}
     </div>
   </article>
+  <SubscribeBox lang={lang} />
 </Base>
