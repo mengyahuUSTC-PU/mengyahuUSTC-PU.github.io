@@ -1,5 +1,5 @@
 ---
-title: "The Fix for AI-Doctored Listing Photos Isn't an AI Detector"
+title: "Can You Trust Apartment Listing Photos in the AI Era? NYC's Answer"
 description: "New York City wants AI-edited rental listings disclosed. Set against California's AB 723 and the EU AI Act, the enforceable mechanism isn't detecting AI — it's making the advertiser keep the original photo."
 pubDate: 2026-07-19
 tags: [ai-governance, disclosure, policy]

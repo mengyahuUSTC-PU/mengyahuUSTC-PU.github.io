@@ -133,7 +133,7 @@ def main():
         " + newsletter 发给订阅者" if email else "")
     send(
         f"⏸ 以上是 **{slug}** 的分发队列（未排程）。\n"
-        f"回复 `发 {slug}` → {steps}。不回复则不排程。"
+        f"回复 `定时发 {slug}`（推荐：高峰时段数据更好）或 `发 {slug}` 立即发 → {steps}。不回复则不排程。"
     )
     print(f"distribution pack ready for {slug}")
 

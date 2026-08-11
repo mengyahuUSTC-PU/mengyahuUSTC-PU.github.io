@@ -1,5 +1,5 @@
 ---
-title: "Open-Weighting a 3-Trillion-Parameter Model Doesn't Mean It's Been Audited"
+title: "Kimi K3 Is Open-Weight. Has Anyone Actually Audited It?"
 description: "Kimi K3 pushes open-weight models to 2.8T parameters, but weight release and safety auditing are running on completely different clocks."
 pubDate: 2026-07-18
 tags: [ai-safety, open-source-llm]
