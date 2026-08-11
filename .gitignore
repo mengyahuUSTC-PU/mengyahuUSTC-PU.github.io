@@ -36,3 +36,4 @@ automation/.venv/
 
 # Distribution runtime output (VM-local only)
 automation/xhs-drafts/
+__pycache__/
