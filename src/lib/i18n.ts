@@ -8,7 +8,6 @@ export const ui = {
     'nav.home': 'Home',
     'nav.writing': 'Writing',
     'nav.about': 'About',
-    'nav.projects': 'Projects',
     'home.tagline': 'First-hand notes on AI safety, industry shifts, and building with AI. Every post is bilingual; opinions are my own.',
     'home.latest': 'Latest writing',
     'home.deepDives': 'Deep dives',
@@ -20,13 +19,11 @@ export const ui = {
     'list.empty': 'No posts yet.',
     'footer.rss': 'RSS',
     'about.title': 'About',
-    'projects.title': 'Projects',
   },
   zh: {
     'nav.home': '首页',
     'nav.writing': '文章',
     'nav.about': '关于',
-    'nav.projects': '项目',
     'home.tagline': 'AI 安全、行业趋势与工程实践的第一手笔记。每篇中英双语，观点全属个人。',
     'home.latest': '最新文章',
     'home.deepDives': '深度文章',
@@ -38,7 +35,6 @@ export const ui = {
     'list.empty': '暂无文章。',
     'footer.rss': 'RSS 订阅',
     'about.title': '关于',
-    'projects.title': '项目',
   },
 } as const;
 
