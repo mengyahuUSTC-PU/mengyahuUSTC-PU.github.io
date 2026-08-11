@@ -195,3 +195,46 @@ h2 { font-size: 1.3rem; }
 .subscribe-form button:hover { filter: brightness(1.08); }
 .subscribe-form button:disabled { opacity: 0.6; cursor: wait; }
 .subscribe-note { color: var(--accent); font-size: 0.88rem; margin: 0.6rem 0 0; min-height: 1em; }
+
+/* ---------- engaged-reader slide-in subscribe ---------- */
+.slide-in-sub {
+  position: fixed;
+  right: 1.1rem;
+  bottom: 1.1rem;
+  z-index: 50;
+  max-width: 20rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 28px rgba(28, 26, 23, 0.14);
+  padding: 1.1rem 1.2rem;
+}
+.slide-in-sub[hidden] { display: none; }
+.sis-heading { font-family: var(--font-serif); font-weight: 600; font-size: 1rem; margin: 0 1.2rem 0 0; }
+.sis-blurb { color: var(--muted); font-size: 0.82rem; margin: 0.3rem 0 0.7rem; }
+.sis-form { display: flex; gap: 0.4rem; }
+.sis-form input[type='email'] {
+  flex: 1 1 auto; min-width: 0; font: inherit; font-size: 0.85rem;
+  color: var(--text); background: var(--bg);
+  border: 1px solid var(--border); border-radius: 999px; padding: 0.32rem 0.8rem;
+}
+.sis-form button {
+  font: inherit; font-size: 0.85rem; font-weight: 600; color: #fff;
+  background: var(--accent); border: none; border-radius: 999px;
+  padding: 0.32rem 0.95rem; cursor: pointer;
+}
+.sis-close {
+  position: absolute; top: 0.35rem; right: 0.55rem;
+  background: none; border: none; color: var(--muted);
+  font-size: 1.1rem; line-height: 1; cursor: pointer; padding: 0.2rem;
+}
+@media (max-width: 640px) {
+  .slide-in-sub { display: none; }  /* no popups on phones */
+}
+
+/* ---------- related posts ---------- */
+.related-posts { max-width: 40rem; margin: 2.4rem auto 0; }
+.related-posts ul { list-style: none; padding: 0; margin: 0; }
+.related-posts li { padding: 0.45rem 0; border-top: 1px solid var(--border); }
+.related-posts li a { color: var(--text); }
+.related-posts li a:hover { color: var(--accent); text-decoration: none; }
