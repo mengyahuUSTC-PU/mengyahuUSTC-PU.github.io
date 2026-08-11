@@ -82,7 +82,21 @@ def generate_en(slug: str) -> bool:
     except subprocess.CalledProcessError as exc:
         send(f"⚠️ 英文版 PR 创建失败（{slug}）：\n```{(exc.stderr or str(exc))[-400:]}```")
         return False
-    send(f"📬 英文版 PR 已开：{pr_url}\n（基于审计后的中文终稿原生重写）Merge 后自动生成分发内容。")
+    m = re.search(r"/pull/(\d+)", pr_url)
+    en_pr = m.group(1) if m else None
+    audit_clone = Path("/home/mia/site-audit")
+    if en_pr and audit_clone.exists():
+        # User decision 2026-08-11: EN is verified and merged automatically.
+        send(f"📬 英文版 PR 已开：{pr_url}\n核查中，通过后自动上线（无需操作），随后发分发预览。")
+        py = "/home/mia/site/automation/.venv/bin/python"
+        cmd = (f"nohup flock /tmp/audit-git.lock bash -c "
+               f"'cd {audit_clone} && git fetch -q origin && "
+               f"git checkout -q -B master origin/master && "
+               f"{py} automation/scripts/audit_and_continue.py {en_pr} {slug} en' "
+               f">> /home/mia/audit.log 2>&1 &")
+        subprocess.Popen(cmd, shell=True)
+    else:
+        send(f"📬 英文版 PR 已开：{pr_url}\n（基于审计后的中文终稿原生重写）Merge 后自动生成分发内容。")
     return True
 
 
