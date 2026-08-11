@@ -61,10 +61,15 @@ if [ -f .env ] && grep -q "^DISCORD_WEBHOOK_URL=" .env; then
   "$PY" "$SCRIPTS/discord_notify.py" --topics "$DATE"
   PR_URL=$("$PY" "$SCRIPTS/make_pr.py" "$DRAFTS/briefing-$DATE.zh.md" "$DRAFTS/briefing-$DATE.en.md" || true)
   PR_NUM=$(echo "$PR_URL" | grep -oE "[0-9]+$" || true)
-  # Audit BEFORE announcing: the first version the user sees is post-fix.
+  # Audit BEFORE publishing: what goes live is the post-fix version.
   [ -n "$PR_NUM" ] && "$PY" "$SCRIPTS/verify_draft.py" "$PR_NUM" || true
-  "$PY" "$SCRIPTS/discord_notify.py" "📰 **$DATE 快讯**（已三方核查并自动修正）PR：${PR_URL:-（PR 创建失败，见 VM 日志）}
-Merge = 发布上线。"
+  # User decision 2026-08-11: briefings publish without review.
+  if [ -n "$PR_NUM" ] && gh pr merge "$PR_NUM" --merge; then
+    "$PY" "$SCRIPTS/discord_notify.py" "📰 **$DATE 快讯**已三方核查并自动上线：https://mengyahuustc-pu.github.io/zh/briefing-$DATE/
+（免审直发；要改回「改简报 意见」即可）"
+  else
+    "$PY" "$SCRIPTS/discord_notify.py" "📰 **$DATE 快讯**自动合并失败，请手动处理 PR：${PR_URL:-（PR 创建失败，见 VM 日志）}"
+  fi
 fi
 
 echo "=== [$(date -u +%FT%TZ)] done ==="

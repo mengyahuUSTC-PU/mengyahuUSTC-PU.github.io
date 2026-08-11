@@ -444,7 +444,7 @@ def handle_selection(ranks, date):
                     [sys.executable, str(SCRIPTS / "make_pr.py"), str(draft)],
                     cwd=REPO_ROOT, check=True, capture_output=True, text=True, timeout=300,
                 ).stdout.strip()
-                send(f"📬 选题 {rank} 草稿已开 PR：{pr}\n随便迭代（PR 留言或「改」指令），满意后 Merge——**Merge 才触发三方核查**，核查通过后自动出英文版。")
+                send(f"📬 选题 {rank} 草稿已开 PR：{pr}\n随便迭代（PR 留言或「改」指令），满意后 Merge——之后核查、修正、英文版**全自动**，直接等英文版 PR 复审即可。")
             except subprocess.CalledProcessError as exc:
                 send(f"⚠️ 选题 {rank} 写稿失败：\n```{(exc.stderr or str(exc))[-500:]}```")
 
@@ -462,7 +462,7 @@ def handle_new_topic(topic: str):
             [sys.executable, str(SCRIPTS / "make_pr.py"), str(REPO_ROOT / draft_rel)],
             cwd=REPO_ROOT, check=True, capture_output=True, text=True, timeout=300,
         ).stdout.strip()
-        send(f"📬 手动选题草稿已开 PR：{pr}\n随便迭代（PR 留言或「改」指令），满意后 Merge——**Merge 才触发三方核查**，核查通过后自动出英文版。")
+        send(f"📬 手动选题草稿已开 PR：{pr}\n随便迭代（PR 留言或「改」指令），满意后 Merge——之后核查、修正、英文版**全自动**，直接等英文版 PR 复审即可。")
     except subprocess.CalledProcessError as exc:
         send(f"⚠️ 手动选题写稿失败：\n```{(exc.stderr or str(exc))[-500:]}```")
 

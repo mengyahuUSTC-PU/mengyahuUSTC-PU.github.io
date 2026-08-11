@@ -31,8 +31,17 @@ def main():
         return
     open_fix = sh("gh", "pr", "list", "--state", "open",
                   "--head", f"fix/pr{pr}-factcheck", "--json", "number").strip()
-    if json.loads(open_fix or "[]"):
-        send("核查发现问题，修正 PR 已开（见上方链接）。**Merge 修正后我再生成英文版。**")
+    fixes = json.loads(open_fix or "[]")
+    if fixes:
+        # User decision 2026-08-11: fact-check fixes merge automatically; the
+        # user reviews the EN version instead. poll_merged sees the fix merge
+        # and triggers EN generation (single, existing path).
+        num = str(fixes[0]["number"])
+        try:
+            sh("gh", "pr", "merge", num, "--merge")
+            send("核查发现问题，修正已自动并入。英文版随后自动生成——直接等英文版 PR 即可。")
+        except Exception as exc:
+            send(f"⚠️ 修正 PR 自动合并失败（#{num}），请手动 Merge：{str(exc)[:200]}")
     else:
         sh("git", "fetch", "-q", "origin")
         sh("git", "checkout", "-q", "-B", "master", "origin/master")

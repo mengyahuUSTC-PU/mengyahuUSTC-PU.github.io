@@ -73,11 +73,7 @@ def revise(pr_number: int, branch: str, rel: str, feedback: str) -> bool:
     if not revision_output_ok(rel, article, clean):
         # e.g. the model answered a zh-targeted comment by rewriting the en
         # file in Chinese — that once shipped and duplicated the homepage.
-        try:
-            from discord_notify import send
-            send(f"⚠️ PR #{pr_number} 改稿产出疑似写成了另一语言或改了 lang/slug，已拒绝写入 {rel}。请把评论点名到正确语言的文件后重试。")
-        except Exception:
-            pass
+        send(f"⚠️ PR #{pr_number} 改稿产出疑似写成了另一语言或改了 lang/slug，已拒绝写入 {rel}。请把评论点名到正确语言的文件后重试。")
         sh("git", "checkout", "-q", "master")
         return False
     if sh("git", "rev-parse", "--abbrev-ref", "HEAD") != branch:
