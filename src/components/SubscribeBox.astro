@@ -72,6 +72,7 @@ const copy =
         const data = await resp.json();
         if (data.status === 'failed' || !resp.ok) throw new Error('kit rejected');
         if (note) note.textContent = form.dataset.success ?? '';
+        localStorage.setItem('nl-subscribed', '1');
         form.reset();
       } catch {
         if (note) note.textContent = form.dataset.error ?? '';

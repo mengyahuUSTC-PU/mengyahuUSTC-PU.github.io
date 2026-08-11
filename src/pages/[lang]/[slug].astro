@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import SubscribeBox from '../../components/SubscribeBox.astro';
+import SlideInSubscribe from '../../components/SlideInSubscribe.astro';
 import { t, postUrl, type Lang } from '../../lib/i18n';
 
 export async function getStaticPaths() {
@@ -20,6 +21,13 @@ const altPath = post.data.translationOf
   : undefined;
 
 const { Content } = await render(post);
+
+const related = (await getCollection('blog', (p) =>
+  p.data.lang === lang && !p.data.tags.includes('briefing') &&
+  p.data.slug !== post.data.slug && p.data.slug !== 'hello-world'
+))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
 
 const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
   year: 'numeric',
@@ -60,5 +68,26 @@ const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
       <Content />
     </div>
   </article>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.data.title,
+    description: post.data.description,
+    datePublished: post.data.pubDate.toISOString().slice(0, 10),
+    inLanguage: lang === 'zh' ? 'zh-CN' : 'en',
+    author: { '@id': 'https://mengyahuustc-pu.github.io/#person' },
+    mainEntityOfPage: `https://mengyahuustc-pu.github.io${postUrl(lang, post.data.slug)}`,
+  })} />
+  {related.length > 0 && (
+    <nav class="related-posts">
+      <p class="section-label">{lang === 'zh' ? '接着读' : 'Keep reading'}</p>
+      <ul>
+        {related.map((r) => (
+          <li><a href={postUrl(lang, r.data.slug)}>{r.data.title}</a></li>
+        ))}
+      </ul>
+    </nav>
+  )}
   <SubscribeBox lang={lang} />
+  <SlideInSubscribe lang={lang} />
 </Base>

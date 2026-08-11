@@ -1,0 +1,87 @@
+---
+import type { Lang } from '../lib/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const KIT_FORM_ID = lang === 'zh' ? '9723986' : '9723996';
+const action = `https://app.kit.com/forms/${KIT_FORM_ID}/subscriptions`;
+
+const copy =
+  lang === 'zh'
+    ? {
+        heading: '读到这里，说明合你口味',
+        blurb: '订阅后新文章直接进邮箱。不发快讯，随时退订。',
+        placeholder: '你的邮箱',
+        button: '订阅',
+        success: '订阅成功。',
+        close: '关闭',
+      }
+    : {
+        heading: 'Still reading? Then this is for you',
+        blurb: 'New essays in your inbox. No briefings, unsubscribe anytime.',
+        placeholder: 'you@example.com',
+        button: 'Subscribe',
+        success: 'Subscribed.',
+        close: 'Close',
+      };
+---
+
+<aside class="slide-in-sub" id="slide-in-sub" hidden aria-live="polite">
+  <button class="sis-close" aria-label={copy.close}>&times;</button>
+  <p class="sis-heading">{copy.heading}</p>
+  <p class="sis-blurb">{copy.blurb}</p>
+  <form class="sis-form" action={action} method="post" data-success={copy.success}>
+    <input type="email" name="email_address" required placeholder={copy.placeholder} aria-label={copy.placeholder} autocomplete="email" />
+    <button type="submit">{copy.button}</button>
+  </form>
+</aside>
+
+<script>
+  // Engaged-reader invite: only after 60% scroll depth AND 40s dwell —
+  // the bottom-of-article box misses most readers (avg dwell 13-30s),
+  // and interrupting cold visitors converts worse than not asking.
+  const box = document.getElementById('slide-in-sub');
+  if (box) {
+    const DISMISS_KEY = 'nl-prompt-dismissed-at';
+    const dismissedAt = Number(localStorage.getItem(DISMISS_KEY) || 0);
+    const recentlyDismissed = Date.now() - dismissedAt < 30 * 24 * 3600 * 1000;
+    const subscribed = localStorage.getItem('nl-subscribed') === '1';
+    if (!subscribed && !recentlyDismissed) {
+      let deepEnough = false;
+      let longEnough = false;
+      const maybeShow = () => {
+        if (deepEnough && longEnough) box.hidden = false;
+      };
+      setTimeout(() => { longEnough = true; maybeShow(); }, 40_000);
+      addEventListener('scroll', () => {
+        const depth = (scrollY + innerHeight) / document.documentElement.scrollHeight;
+        if (depth > 0.6) { deepEnough = true; maybeShow(); }
+      }, { passive: true });
+    }
+    box.querySelector('.sis-close')?.addEventListener('click', () => {
+      box.hidden = true;
+      localStorage.setItem(DISMISS_KEY, String(Date.now()));
+    });
+    const form = box.querySelector('form');
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      try {
+        const resp = await fetch(form.action, {
+          method: 'POST',
+          body: new FormData(form),
+          headers: { Accept: 'application/json' },
+        });
+        const data = await resp.json();
+        if (data.status === 'failed' || !resp.ok) throw new Error('rejected');
+        localStorage.setItem('nl-subscribed', '1');
+        form.outerHTML = `<p class="sis-blurb">${form.dataset.success ?? ''}</p>`;
+        setTimeout(() => { box.hidden = true; }, 2500);
+      } catch {
+        /* leave the form; the reader can retry or use the bottom box */
+      }
+    });
+  }
+</script>
