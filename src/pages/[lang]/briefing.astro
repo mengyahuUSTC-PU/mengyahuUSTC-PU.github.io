@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import SubscribeBox from '../../components/SubscribeBox.astro';
 import { t, postUrl, type Lang } from '../../lib/i18n';
 
 export function getStaticPaths() {
@@ -43,4 +44,5 @@ const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
       </li>
     ))}
   </ul>
+  <SubscribeBox lang={lang} />
 </Base>
