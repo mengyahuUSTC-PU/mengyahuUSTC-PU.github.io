@@ -66,3 +66,9 @@ translationOf: black-box-warfare-human-in-the-loop
 - [Ryan Shandler 出版物页](https://sites.google.com/view/ryanshandler/publications) — 作者信息、复现数据链接（Harvard Dataverse doi:10.7910/DVN/EIBD8U）
 - [‘Lavender’: The AI machine directing Israel's bombing spree in Gaza（+972 Magazine, 2024-04）](https://www.972mag.com/lavender-ai-israeli-army-gaza/) — 「每目标约 20 秒」「盖章」「确认目标为男性」的情报人员证词
 - [40 万次点击「允许」之后：人工审批为什么拦不住 AI agent（本站, 2026-08-06）](/zh/human-approval-is-not-a-security-boundary) 及其引用的 [LLM Game 数据分析](https://scalex.dev/blog/ai-agent-permissions-stats/) — agent 审批漏检率、`npm run analyze` 64.7% 放行率
+
+<!--
+译法核查（2026-08-12，回应 inline 评论「人在回路这个翻译正宗吗」）：
+已检索核实，「人在回路」是 human-in-the-loop / man-in-the-loop 的通行中文译法，源自控制/制导领域的「回路」（control loop）术语，在军事语境（man-in-the-loop 制导）和 AI 语境下均为最常见写法；另有「人在环中」「人在环路」「人类参与」等变体，均不如「人在回路」通行，本文维持原译不改。
+参考：知乎「什么叫做人在回路?也就是man-in-the-loop?」https://www.zhihu.com/question/39457337 ；CSDN「【人工智能】人在回路Human-in-the-Loop」https://blog.csdn.net/qq_44810930/article/details/152222645 ；VibeHub AI 术语图解「人在回路（Human-in-the-loop）」https://vibe-hub.org/human-in-the-loop
+-->
