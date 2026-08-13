@@ -149,7 +149,7 @@ def main():
         if branch.startswith("post/briefing-"):
             date_part = branch.removeprefix("post/briefing-")
             send(f"✅ {date_part} 快讯已合并，网站部署中（约 2 分钟后上线）："
-                 f"https://mengyahuustc-pu.github.io/zh/briefing-{date_part}/")
+                 f"https://mengyahu.com/zh/briefing-{date_part}/")
             state["done"].append(number)
             continue
 

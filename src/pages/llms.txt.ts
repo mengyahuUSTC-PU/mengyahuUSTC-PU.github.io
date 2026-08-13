@@ -1,6 +1,6 @@
 import { getCollection } from 'astro:content';
 
-const SITE = 'https://mengyahuustc-pu.github.io';
+const SITE = 'https://mengyahu.com';
 
 export async function GET() {
   const posts = (await getCollection('blog')).sort(

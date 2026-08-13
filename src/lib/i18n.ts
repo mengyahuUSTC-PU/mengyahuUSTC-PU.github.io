@@ -1,7 +1,7 @@
 export type Lang = 'zh' | 'en';
 
 export const SITE_TITLE = 'Mengya (Mia) Hu';
-export const SITE_URL = 'https://mengyahuustc-pu.github.io';
+export const SITE_URL = 'https://mengyahu.com';
 
 export const ui = {
   en: {

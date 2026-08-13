@@ -20,7 +20,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS = REPO_ROOT / "automation" / "scripts"
 PROMPTS = REPO_ROOT / "automation" / "prompts"
 DIST = REPO_ROOT / "automation" / "data" / "dist"
-SITE = "https://mengyahuustc-pu.github.io"
+SITE = "https://mengyahu.com"
 
 sys.path.insert(0, str(SCRIPTS))
 from discord_notify import load_env, send  # noqa: E402

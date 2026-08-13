@@ -67,7 +67,7 @@ if [ -f .env ] && grep -q "^DISCORD_WEBHOOK_URL=" .env; then
   [ -n "$PR_NUM" ] && "$PY" "$SCRIPTS/verify_draft.py" "$PR_NUM" || true
   # User decision 2026-08-11: briefings publish without review.
   if [ -n "$PR_NUM" ] && gh pr merge "$PR_NUM" --merge; then
-    "$PY" "$SCRIPTS/discord_notify.py" "📰 **$DATE 快讯**已三方核查并自动上线：https://mengyahuustc-pu.github.io/zh/briefing-$DATE/
+    "$PY" "$SCRIPTS/discord_notify.py" "📰 **$DATE 快讯**已三方核查并自动上线：https://mengyahu.com/zh/briefing-$DATE/
 （免审直发；要改回「改简报 意见」即可）"
   else
     "$PY" "$SCRIPTS/discord_notify.py" "📰 **$DATE 快讯**自动合并失败，请手动处理 PR：${PR_URL:-（PR 创建失败，见 VM 日志）}"

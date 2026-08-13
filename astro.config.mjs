@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://mengyahuustc-pu.github.io',
+  site: 'https://mengyahu.com',
   integrations: [sitemap()],
   trailingSlash: 'ignore',
 });

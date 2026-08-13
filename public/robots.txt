@@ -10,4 +10,4 @@ Allow: /
 User-agent: PerplexityBot
 Allow: /
 
-Sitemap: https://mengyahuustc-pu.github.io/sitemap-index.xml
+Sitemap: https://mengyahu.com/sitemap-index.xml
