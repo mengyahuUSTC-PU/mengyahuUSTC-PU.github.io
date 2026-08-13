@@ -66,6 +66,38 @@ def gsc_query(tok, dims, start, end, limit=25):
     return resp.json().get("rows", [])
 
 
+def kit_stats():
+    """Subscriber growth + per-broadcast email performance for the report."""
+    key = os.environ.get("KIT_API_KEY")
+    if not key:
+        return {}
+    H = {"X-Kit-Api-Key": key}
+    try:
+        subs = requests.get("https://api.kit.com/v4/subscribers?status=all",
+                            headers=H, timeout=30).json().get("subscribers", [])
+        bcs = requests.get("https://api.kit.com/v4/broadcasts?per_page=15",
+                           headers=H, timeout=30).json().get("broadcasts", [])
+        emails = []
+        for b in bcs:
+            if not b.get("send_at"):
+                continue
+            st = requests.get(f"https://api.kit.com/v4/broadcasts/{b['id']}/stats",
+                              headers=H, timeout=20).json().get("broadcast", {}).get("stats", {})
+            emails.append({"date": b["send_at"][:10], "subject": b["subject"],
+                           "recipients": st.get("recipients"),
+                           "open_rate": st.get("open_rate"),
+                           "click_rate": st.get("click_rate")})
+        return {
+            "subscribers_total_active": sum(1 for x in subs if x.get("state") == "active"),
+            "subscribers_by_date": sorted(
+                [{"email_masked": x["email_address"][:3] + "***", "state": x["state"],
+                  "since": x["created_at"][:10]} for x in subs], key=lambda r: r["since"]),
+            "recent_emails": emails[:12],
+        }
+    except Exception as exc:
+        return {"error": str(exc)[:200]}
+
+
 def main():
     load_env()
     pid = os.environ["GA4_PROPERTY_ID"]
@@ -89,6 +121,7 @@ def main():
         "gsc_queries": gsc_query(tok, ["query"], gsc_start.isoformat(), gsc_end.isoformat()),
         "gsc_pages": gsc_query(tok, ["page"], gsc_start.isoformat(), gsc_end.isoformat()),
     }
+    out["newsletter"] = kit_stats()
     print(json.dumps(out, ensure_ascii=False, indent=2))
 
 
