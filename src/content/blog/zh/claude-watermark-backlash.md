@@ -1,5 +1,5 @@
 ---
-title: "水印抓不住想作弊的人，吓住的是不设防的人"
+title: "被水印吓到之前，先让老板和老师回答：到底什么算违规"
 description: "Anthropic 给 Claude 输出加隐形水印，用户在 Reddit 上炸了锅。拆解这类水印在技术上能检测什么、检测不了什么，以及「被抓」的恐慌为什么该由规则缺位的雇主和学校来回答。"
 pubDate: 2026-08-12
 tags: [ai-governance, watermarking, trust-and-safety]
