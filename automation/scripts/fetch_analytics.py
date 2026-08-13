@@ -20,7 +20,7 @@ from discord_notify import load_env  # noqa: E402
 
 import os  # noqa: E402
 
-SITE_URL = "https://mengyahuustc-pu.github.io/"
+SITE_URL = "sc-domain:mengyahu.com"
 
 
 def token():
