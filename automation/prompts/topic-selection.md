@@ -12,6 +12,17 @@
 5. **来源多样性**：briefing_items 中来自同一来源（尤其是聚合类博主如 Simon Willison）的条目不得超过 2 条；同一事件优先选一手来源的条目而非博主转述
 6. **读者数据校准（2026-08-11，基于 28 天 GA4/LinkedIn 实测）**：deep_dive_candidates 排序时，「AI 如何影响读者本人的工作/钱/健康/隐私数据」类选题显著跑赢纯理论安全概念——就业数据、医疗隐私、财务风险类文章的点击是抽象概念文（模型福利、思维链忠实度、自造指标类）的 5-10 倍且停留更长。排序偏好：①有切身利益角度且能给出具体数字的事件 ②有一手事故/实测数据的安全攻防 ③抽象概念/框架类仅当作者增量极强时入选，且 angle 必须落到「对从业者/普通人意味着什么」
 
+## 研究速递筛选（research_items，2026-08-12 起）
+
+从条目池中另筛**学术研究类**条目（主要来自 hf-daily-papers 源和 arXiv，也含重要 ML 会议动态/best paper 消息）。读者是 researcher 本人，方向不限于 responsible AI：LLM/基础模型、强化学习、AI for Science、AI for Finance、重要会议动态均可。
+
+**门槛要高，宁缺毋滥（0 条完全正常，上限 3 条）**，入选须满足至少一条：
+- 方法级创新或反直觉结论（不是又一个 benchmark/微调变体）
+- 社区信号强（HF 高赞，参考 ≥30；或出自重要实验室/会议）
+- 重要会议的 best paper / 奖项 / 争议性结果
+- AI for Science / Finance 中有实质突破的应用
+`why` 字段必须写清「一句话方法 + 为什么值得 researcher 花时间」，写不出来的不选。
+
 ## 输出格式（严格 JSON，不要输出其他文字）
 
 ```json
@@ -21,10 +32,14 @@
   ],
   "deep_dive_candidates": [
     {"rank": 1, "title": "", "url": "", "source": "", "one_liner": "", "why": "为何值得写深度：作者能提供什么增量视角", "angle": "建议的切入角度"}
+  ],
+  "research_items": [
+    {"title": "", "url": "", "source": "", "one_liner": "一句话讲清方法/发现", "why": "为什么值得 researcher 花时间"}
   ]
 }
 ```
 
 - `briefing_items`：5–10 条，进当日快讯
 - `deep_dive_candidates`：2–4 条，按值得写的程度排序，供用户挑选
+- `research_items`：0–3 条，高门槛（见上）
 - 全部为空时输出两个空数组，并可在 `note` 字段说明当日无可写内容

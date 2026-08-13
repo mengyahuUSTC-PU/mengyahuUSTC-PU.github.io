@@ -1,6 +1,10 @@
 # 任务：每日 AI 快讯写作
 
-你会收到选题筛选输出的 `briefing_items`。先阅读 editorial-baseline.md 的编辑方针，然后写当日快讯。
+你会收到选题筛选输出的 `briefing_items` 和 `research_items`。先阅读 editorial-baseline.md 的编辑方针，然后写当日快讯。
+
+## 研究速递板块
+
+`research_items` 非空时，在全部新闻条目之后加一节，中文版标题 `## 研究速递`、英文版 `## Research radar`。每条：论文/会议标题挂原始链接，正文 2-3 句——方法或发现是什么（讲机制，不抄摘要）、结果有多重要、什么样的 researcher 应该点进去。编辑方针照常适用：给判断，不做论文清单的搬运工。`research_items` 为空时整节省略，不要硬凑。
 
 ## 要求
 

@@ -79,6 +79,38 @@ def fetch_arxiv():
     return items
 
 
+def fetch_hf_papers():
+    """HuggingFace daily papers — community-curated research feed.
+
+    Research items for the briefing's 研究速递 section (user request
+    2026-08-12: LLM/FM, RL, AI4Science, AI4Finance, conference news).
+    Same-day papers haven't accumulated votes yet, so pull a multi-day
+    window and let upvotes (a decent quality proxy) rank it."""
+    resp = requests.get(
+        "https://huggingface.co/api/daily_papers?limit=60",
+        timeout=30, headers={"User-Agent": "Mozilla/5.0 (brand-pipeline)"})
+    resp.raise_for_status()
+    items = []
+    for it in resp.json():
+        paper = it.get("paper") or {}
+        aid = paper.get("id")
+        if not aid:
+            continue
+        upvotes = int(paper.get("upvotes") or 0)
+        items.append({
+            "source": "hf-daily-papers",
+            "title": (paper.get("title") or "").strip().replace("\n", " "),
+            "url": f"https://arxiv.org/abs/{aid}",
+            "summary": f"[HF 社区 {upvotes} 赞] " + clean(paper.get("summary") or ""),
+            "published": (it.get("publishedAt") or "")[:10],
+            "_upvotes": upvotes,
+        })
+    items.sort(key=lambda x: -x["_upvotes"])
+    for it in items:
+        it.pop("_upvotes", None)
+    return items[:12]
+
+
 def fetch_hackernews():
     top = requests.get(
         "https://hacker-news.firebaseio.com/v0/topstories.json", headers=UA, timeout=20
@@ -198,7 +230,7 @@ def main():
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     pool = {"fetched_at": NOW.isoformat(), "items": [], "failed_sources": []}
 
-    for fn in (fetch_arxiv, fetch_hackernews):
+    for fn in (fetch_arxiv, fetch_hackernews, fetch_hf_papers):
         try:
             pool["items"].extend(fn())
         except Exception as exc:

@@ -30,7 +30,7 @@ for f in sorted(glob.glob('$DATA/selection-*.json'))[-7:]:
     if '$DATE' in f: continue
     try:
         d = json.load(open(f))
-        for k in ('briefing_items', 'deep_dive_candidates'):
+        for k in ('briefing_items', 'deep_dive_candidates', 'research_items'):
             titles += [i.get('title', '') for i in d.get(k, [])]
     except Exception: pass
 print(chr(10).join('- ' + t for t in titles if t))
@@ -43,13 +43,15 @@ cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/t
   | "$PY" "$SCRIPTS/split_output.py" json > "$DATA/selection-$DATE.json"
 
 "$PY" -c "import json,sys; d=json.load(open('$DATA/selection-$DATE.json')); \
-print(f\"briefing items: {len(d.get('briefing_items',[]))}, deep-dive candidates: {len(d.get('deep_dive_candidates',[]))}\")"
+print(f\"briefing items: {len(d.get('briefing_items',[]))}, deep-dive candidates: {len(d.get('deep_dive_candidates',[]))}, research items: {len(d.get('research_items',[]))}\")"
 
 echo "=== briefing draft ==="
 cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/briefing.md" \
   <(echo "## 今日日期：$DATE") \
   <(echo "## briefing_items JSON") \
   <("$PY" -c "import json; print(json.dumps(json.load(open('$DATA/selection-$DATE.json'))['briefing_items'], ensure_ascii=False, indent=2))") \
+  <(echo "## research_items JSON") \
+  <("$PY" -c "import json; print(json.dumps(json.load(open('$DATA/selection-$DATE.json')).get('research_items', []), ensure_ascii=False, indent=2))") \
   | claude -p --output-format text --model fable --fallback-model opus --allowedTools "WebFetch" "WebSearch" \
   | "$PY" "$SCRIPTS/split_output.py" bilingual "$DRAFTS/briefing-$DATE"
 
