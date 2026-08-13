@@ -73,6 +73,7 @@ def send_broadcast(lang: str, subject: str, html: str, preview_text: str = "") -
         f"{API}/broadcasts",
         headers={**_headers(), "Content-Type": "application/json"},
         json={
+            "email_address": "mia@mengyahu.com",
             "subject": subject,
             "content": html,
             "description": f"auto: {subject}",
