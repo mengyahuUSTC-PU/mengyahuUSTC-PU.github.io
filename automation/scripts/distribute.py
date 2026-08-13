@@ -33,10 +33,10 @@ def utm(slug: str, lang: str, source: str, medium: str) -> str:
     )
 
 
-def claude_gen(prompt: str) -> str:
+def claude_gen(prompt: str, model: str = "fable") -> str:
     run = subprocess.run(
         ["claude", "-p", "--output-format", "text",
-         "--model", "fable", "--fallback-model", "opus"],
+         "--model", model] + (["--fallback-model", "opus"] if model == "fable" else []),
         input=prompt, cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
     )
     if run.returncode != 0:
@@ -136,6 +136,35 @@ def main():
         f"⏸ 以上是 **{slug}** 的分发队列（未排程）。\n"
         f"回复 `定时发 {slug}`（推荐：高峰时段数据更好）或 `发 {slug}` 立即发 → {steps}。不回复则不排程。"
     )
+    # --- HN suitability (non-blocking; user submits with her own account) ---
+    try:
+        import urllib.parse
+        hn_raw = claude_gen(
+            "你是 Hacker News 资深用户。判断下面这篇文章适不适合提交到 HN。\n"
+            "适合的特征：一手数据/实验、工程机制视角、反直觉且站得住的结论、对从业者可操作。\n"
+            "不适合：政策评论、纯观点分析、新闻转述、营销味。宁缺毋滥。\n"
+            "只输出严格 JSON：{\"suitable\": true/false, \"reason\": \"一句话中文理由\", "
+            "\"title\": \"HN 风格标题：平实、准确、无标题党，<=80 字符\"}\n\n"
+            "## 文章全文\n\n" + en.read_text(),
+            model="sonnet",
+        )
+        hn_clean = subprocess.run(
+            [sys.executable, str(SCRIPTS / "split_output.py"), "json"],
+            input=hn_raw, capture_output=True, text=True, check=True,
+        ).stdout
+        hn = json.loads(hn_clean)
+        if hn.get("suitable") and hn.get("title"):
+            url = f"https://mengyahu.com/en/{slug}/"
+            submit = ("https://news.ycombinator.com/submitlink?u="
+                      + urllib.parse.quote(url, safe="")
+                      + "&t=" + urllib.parse.quote(hn["title"], safe=""))
+            send(f"🟠 **这篇适合投 Hacker News**（{slug}）\n"
+                 f"理由：{hn.get('reason','')}\n建议标题:{hn['title']}\n"
+                 f"登录 miamengya 后点这里一键提交（干净链接，无 UTM——HN 社区反感跟踪参数）：{submit}\n"
+                 f"最佳提交时机：美东工作日上午（西雅图 6-9 点）。中签后记得去评论区回复。")
+    except Exception:
+        pass  # HN assessment must never break distribution
+
     print(f"distribution pack ready for {slug}")
 
 
