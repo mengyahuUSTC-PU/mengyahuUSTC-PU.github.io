@@ -1,6 +1,6 @@
 ---
 title: "公司里把 ChatGPT 用得最凶的，为什么是最资浅的员工？"
-description: "OpenAI 首次公开 ChatGPT Enterprise 后台数据：九个月 token 消耗涨七倍，一半增长来自老客户；采用集中在本就领先的公司；而公司内部用得最狠的是新人，不是高管。"
+description: "OpenAI 公开 ChatGPT Enterprise 后台数据：九个月 token 消耗涨七倍，一半增长来自老客户；采用集中在本就领先的公司；而公司内部用得最狠的是新人，不是高管。"
 pubDate: 2026-08-13
 tags: [enterprise-ai, ai-adoption, openai]
 lang: zh
@@ -10,7 +10,7 @@ translationOf: how-organizations-use-chatgpt
 
 如果让你猜一家公司里谁用 AI 用得最多，多数人会猜写代码的工程师。
 
-8 月 12 日，OpenAI 首席经济学家 Aaron Chatterji 和 David Holtz 等人挂出一篇 working paper《[How Organizations Use AI: Evidence from ChatGPT](https://arxiv.org/abs/2608.12236)》（[官方 PDF](https://cdn.openai.com/pdf/how-organizations-use-chatgpt.pdf)），第一次把 ChatGPT Enterprise 的后台使用数据和员工职位、任务分类、上市公司财务数据连起来分析。答案只对了一半：按人头算，工程师确实是最大的一群活跃用户；但按人均消息量算，同一家公司里发消息最多的是刚入职的新人和实习生，每周比公司内平均活跃用户多发八到九条消息。高管低于平均，资历越深发得越少。
+8 月 12 日，OpenAI [首席经济学家](https://openai.com/global-affairs/openai-chief-economist-announcement/) Aaron Chatterji 和 David Holtz 等人挂出一篇 working paper《[How Organizations Use AI: Evidence from ChatGPT](https://arxiv.org/abs/2608.12236)》（[官方 PDF](https://cdn.openai.com/pdf/how-organizations-use-chatgpt.pdf)），把 ChatGPT Enterprise 的后台使用数据和员工职位、任务分类、上市公司财务数据连起来分析。答案只对了一半：按人头算，工程师确实是最大的一群活跃用户；但按人均消息量算，同一家公司里发消息最多的是刚入职的新人和实习生，每周比公司内平均活跃用户多发八到九条消息。高管低于平均，资历越深发得越少。
 
 我把论文过了一遍，把关键数字逐条对回了原文。先交代数据底细，再说三个我认为真正有信息量的模式。
 
@@ -24,7 +24,7 @@ translationOf: how-organizations-use-chatgpt
 
 2025 年 6 月到 2026 年 3 月，ChatGPT Enterprise 客户消耗的输出 token（模型生成回复的文字量，衡量用量的粗指标）总量涨了七倍。拆开看，2025 年 6 月之前就已经采用的那批公司，同期用量涨了大约四倍。整体增长里约一半发生在已采用的公司内部，而非来自新客户。
 
-这个拆分比七倍这个数字本身重要。如果增长全靠新客户，那可能只是销售团队的成绩；一半增长来自存量客户，说明企业买了之后没有沦为吃灰的年度订阅，用量在持续加深。
+这个拆分比七倍这个数字本身重要。如果增长全靠新客户，那可能只是销售团队的成绩；一半增长来自存量客户，说明先买单的这批公司合计用量还在往上走。要注意论文给的是这批公司加总的曲线，没有拆到单个客户：是普遍越用越深，还是少数公司在猛用、另一些席位闲置，从这份数据里看不出来。
 
 不过 token 这个口径本身要打个问号：输出 token 涨七倍，不能直接读成"人用得多了七倍"。总量里至少混着三股力量——发消息的人和消息条数在涨、模型单条回复可能在变长（这段时间推理类模型铺开，同样一问，生成的文字更多）、一次任务背后可能串着多步工具调用。论文没有给出消息条数的同口径增长曲线，也没拆每条消息的 token 变化，这三股力量各占多少，从公开数据里分不出来。论文只澄清了一点：企业客户的 token 输出绝大部分来自 ChatGPT 本体和非 agent 类工具，Codex 这类 agent 产品目前不是大头。所以"调用链条变复杂撑大了数字"的成分应该有限，但"模型话变多"的成分排除不了。另外，token 用量不等于产出价值，论文也明说了它测不了生产率，只能测使用。
 
@@ -34,7 +34,7 @@ translationOf: how-organizations-use-chatgpt
 
 规模大的公司更容易采用，这不意外。有意思的是控制规模之后哪些变量还能预测采用：人均研发存量、人均资本化软件都是正的，而其中关联最强的是人均 SG&A 存量。SG&A 是财报里的销售、总务和管理费用，覆盖销售体系、行政、管理这类运营开支，论文拿它的多年累积值当"组织资本"的代理变量，也就是一家公司在流程、管理、销售网络这些看不见摸不着的能力上的积累。反过来，人均厂房设备这类有形资产，在控制规模后与采用负相关。
 
-这个结果和经济学界研究上一轮 IT 革命的老结论对得上：Brynjolfsson 和 Hitt 在 2000 年就[指出](https://www.aeaweb.org/articles?id=10.1257/jep.14.4.23)，IT 投资的价值大头取决于配套的组织投资，光买机器不改组织，生产率不会动。如果 AI 也遵循这个规律，那么短期内它放大的是既有强者的优势：本来就有组织能力的公司先采用、先加深。要提醒一句，这是相关不是因果，强的公司先买单，本身就是选择效应。
+这个结果和经济学界研究上一轮 IT 革命的老结论对得上：Brynjolfsson 和 Hitt 在 2000 年就[指出](https://www.aeaweb.org/articles?id=10.1257/jep.14.4.23)，IT 投资能创造多少价值，很大程度取决于配套的组织投资有没有跟上。如果 AI 也遵循这个规律，那么短期内它放大的是既有强者的优势：本来就有组织能力的公司先采用、先加深。要提醒一句，这是相关不是因果，强的公司先买单，本身就是选择效应。
 
 ## 模式三：公司内部的使用强度是倒挂的
 
@@ -44,21 +44,22 @@ translationOf: how-organizations-use-chatgpt
 
 任务内容印证了这个解释。高管的消息相对更集中在要主题概览、查事实数字、法务监管和财税这类"了解情况"的任务上；新人和一线员工的消息集中在产出型任务上：写文档、写代码、起草消息。ChatGPT 眼下是个生产工具，谁在一线生产，谁就有 prompt 可发。
 
-把这个发现和另一条线索放在一起看会更复杂。Stanford 数字经济实验室去年的 ["Canaries in the Coal Mine"](https://digitaleconomy.stanford.edu/publication/canaries-in-the-coal-mine-six-facts-about-the-recent-employment-effects-of-artificial-intelligence/) 用 ADP 工资单数据发现，生成式 AI 普及以来，AI 暴露度最高的职业里 22 到 25 岁员工的就业相对下滑了约 13%。用得最凶的人群，恰好是入门岗位收缩最狠的人群。这有两种读法。乐观的一种是 AI 把新人的能力边界往外推了：过去要攒几年经验才接得住的分析、独立写不出来的代码，现在借着模型能出手，等于把一部分"经验"变成了随取随用的工具，真正强的新人越过资深同事的速度会比以前快得多。悲观的一种是新人干的活最容易被 AI 接管，所以他们最先被要求重度使用，也最先可招可不招。OpenAI 这篇论文自己也点了这层关联，但使用数据分不出是哪种，我也给不出裁决，只能说两种机制可以同时为真。
+把这个发现和另一条线索放在一起看会更复杂。Stanford 数字经济实验室的 ["Canaries in the Coal Mine"](https://digitaleconomy.stanford.edu/publication/canaries-in-the-coal-mine-six-facts-about-the-recent-employment-effects-of-artificial-intelligence/) 用 ADP 工资单数据发现，生成式 AI 普及以来，AI 暴露度最高的职业里 22 到 25 岁员工的就业相对落后了约 19%。这项研究 2025 年 8 月的初版给出的数字是 13%；2026 年 8 月 12 日的修订版把数据延到 2026 年 6 月，差距扩大到 19%，而且主要发生在招聘端：公司少招了年轻人，不是裁掉了在职的。用得最凶的人群，恰好是入门岗位收缩最狠的人群。这有两种读法。乐观的一种是 AI 把新人的能力边界往外推了：过去要攒几年经验才接得住的分析、独立写不出来的代码，现在借着模型能出手，等于把一部分"经验"变成了随取随用的工具，真正强的新人越过资深同事的速度会比以前快得多。悲观的一种是新人干的活最容易被 AI 接管，所以他们最先被要求重度使用，也最先可招可不招。OpenAI 这篇论文自己也点了这层关联，但使用数据分不出是哪种，我也给不出裁决，只能说两种机制可以同时为真。
 
 ## 几个可操作的判断
 
-给在公司里推 AI 落地的人：这份数据支持的扩散路径不是自上而下，而是自下而上。按高管的用例设计 rollout、搞几场领导站台的启动会，和实际的使用结构是错位的。真正的着陆点是横切所有部门的任务：超过一半活跃用户干过文档和技术写作，跨行业看，消息量都集中在文档、技术工作、沟通这几类核心任务上，行业差异主要体现在"哪些人碰过哪些任务"的边缘，而非消息集中在哪。先把横切任务铺开，岗位专属的深度用例是第二层。
+给在公司里推 AI 落地的人：论文没有比较不同推广策略的效果，也看不到用量在组织内实际怎么扩散，但使用结构摆在这里：发消息多的是一线产出岗和新人，高管用得少。按高管的用例设计 rollout、搞几场领导站台的启动会，和这个使用结构是错位的。真正的着陆点是横切所有部门的任务：超过一半活跃用户干过文档和技术写作，跨行业看，消息量都集中在文档、技术工作、沟通这几类核心任务上，行业差异主要体现在"哪些人碰过哪些任务"的边缘，而非消息集中在哪。先把横切任务铺开，岗位专属的深度用例是第二层。
 
-给观察行业的人：采用最强的预测变量是公司既有的组织资本。这意味着"AI 拉平大小公司差距"的叙事至少在企业采用这一环还没有出现，现在的数据更像马太效应。但记住这是 OpenAI 单一产品的视角，小公司完全可能在用更便宜的替代品。
+给观察行业的人：采用最强的预测变量是公司既有的组织资本。这意味着"AI 拉平大小公司差距"的叙事至少在企业采用这一环还没有出现：先用上、用得深的是本来就强的公司。至于这会不会进一步拉大公司之间的差距，论文没有测量，只提示了这种可能。也要记住这是 OpenAI 单一产品的视角，小公司完全可能在用更便宜的替代品。
 
 给个人，尤其是资历浅的从业者：重度使用和入门岗收缩正在同时发生。工具本身不会替你选哪种机制成真，能做的是让使用往"补经验、上台阶"的方向走，而非停在被动完成产出配额。这句话说起来轻巧，我承认它执行起来没有标准答案。
 
-这份报告最值得记住的数字不是七倍增长，而是那一半来自存量客户的增长，加上 SG&A 对采用的预测力。两者指向同一件事：企业用 AI 不是买工具，是改组织。改得动的公司在加速，改不动的公司还没出现在这份数据里。
+这份报告最值得记住的数字不是七倍增长，而是那一半来自存量客户的增长，加上 SG&A 对采用的预测力。两者指向同一个方向：企业能不能把 AI 用起来，和它既有的组织能力绑得很紧。这一轮的回报是否也像上一轮 IT 革命那样取决于配套的组织改造，这份数据测不了；眼下能确认的是，先跑起来的都是组织资本厚的公司。
 
 ## 参考来源
 
 - [How Organizations Use AI: Evidence from ChatGPT (arXiv:2608.12236)](https://arxiv.org/abs/2608.12236) — 全部核心数据：样本构成、七倍/四倍增长、token 主要来自非 agent 工具的说明、采用者与未采用者财务对比、SG&A 回归结果、职能与资历的使用强度、任务分布、局限性说明
 - [官方 PDF（OpenAI CDN）](https://cdn.openai.com/pdf/how-organizations-use-chatgpt.pdf) — 同一论文的官方发布版本
+- [Dr. Ronnie Chatterji named OpenAI's first Chief Economist (OpenAI)](https://openai.com/global-affairs/openai-chief-economist-announcement/) — Chatterji 首席经济学家身份的官方来源
 - [Brynjolfsson & Hitt, "Beyond Computation" (JEP 2000)](https://www.aeaweb.org/articles?id=10.1257/jep.14.4.23) — IT 投资与组织资本互补的经典结论，用于机制对照
-- [Canaries in the Coal Mine? (Stanford Digital Economy Lab)](https://digitaleconomy.stanford.edu/publication/canaries-in-the-coal-mine-six-facts-about-the-recent-employment-effects-of-artificial-intelligence/) — 早期职业员工在 AI 暴露度高职业中就业相对下滑约 13% 的来源
+- [Canaries in the Coal Mine? (Stanford Digital Economy Lab)](https://digitaleconomy.stanford.edu/publication/canaries-in-the-coal-mine-six-facts-about-the-recent-employment-effects-of-artificial-intelligence/) — 早期职业员工在 AI 暴露度高职业中就业相对落后约 19% 的来源（2026 年 8 月 12 日修订版，数据至 2026 年 6 月；2025 年 8 月初版数字为 13%）
