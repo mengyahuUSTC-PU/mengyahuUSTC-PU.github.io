@@ -12,6 +12,7 @@ repo root. Discord messages are capped at 2000 chars; long messages are split.
 import json
 import os
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -45,8 +46,19 @@ def send(text: str):
             buf = f"{buf}\n\n{para}" if buf else para
     chunks.append(buf)
     for chunk in chunks:
-        resp = requests.post(url, json={"content": chunk}, timeout=20)
-        resp.raise_for_status()
+        # A transient Discord timeout once crashed a poll run mid-action and
+        # dropped an already-consumed user instruction. Retry, then give up on
+        # the notification alone — never let messaging kill the work itself.
+        for attempt in range(3):
+            try:
+                resp = requests.post(url, json={"content": chunk}, timeout=20)
+                resp.raise_for_status()
+                break
+            except Exception:
+                if attempt == 2:
+                    print("warning: discord send failed after 3 attempts", file=sys.stderr)
+                else:
+                    time.sleep(5 * (attempt + 1))()
 
 
 def topics_message(date: str) -> str:
