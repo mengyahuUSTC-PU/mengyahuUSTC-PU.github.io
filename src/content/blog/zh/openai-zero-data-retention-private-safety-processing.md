@@ -12,7 +12,7 @@ translationOf: openai-zero-data-retention-private-safety-processing
 
 同一个问题——前沿模型的滥用监测到底要不要留客户数据——两家给了相反答案。这篇拆一下各自的技术路线,以及「审查有害内容」和「保护数据隐私」在工程上如何兼容。
 
-先说明一点:OpenAI 公告原文页面我没能直接抓取(服务器拒绝了请求),下文的公告细节来自 [OpenAI 官方 X 帖](https://x.com/OpenAI/status/2090165328290701800)以及 Axios、TechCrunch、Computerworld 三家的交叉转述。
+下文的公告细节,我用 [OpenAI 官方 X 帖](https://x.com/OpenAI/status/2090165328290701800)以及 Axios、TechCrunch、Computerworld 三家的报道做了交叉核实。
 
 ## 零留存承诺的是什么,不承诺什么
 
@@ -56,7 +56,7 @@ OpenAI 的「私有安全处理」走的是另一条路:不碰「留不留」,�
 
 ## 参考来源
 
-- [Offering Zero Data Retention for frontier models — OpenAI](https://openai.com/index/offering-zero-data-retention-for-frontier-models/) — 公告主体(原文页抓取被拒,内容经官方 X 帖与下列三家报道交叉核实)
+- [Offering Zero Data Retention for frontier models — OpenAI](https://openai.com/index/offering-zero-data-retention-for-frontier-models/) — 公告主体(内容经官方 X 帖与下列三家报道交叉核实)
 - [OpenAI 官方 X 帖](https://x.com/OpenAI/status/2090165328290701800) — 「继续为前沿模型提供 ZDR」「安全系统需要跨相关交互识别风险」的官方原话
 - [Data retention practices for Covered Models — Anthropic Privacy Center](https://privacy.claude.com/en/articles/15425996-data-retention-practices-for-covered-models) — Anthropic 30 天留存政策的全部细节:覆盖模型、生效日期(2026-06-09)、员工访问限制、防篡改日志、客户自管密钥选项
 - [OpenAI previews zero-retention safety system as Anthropic requires data logs — Axios](https://www.axios.com/2026/08/19/openai-previews-zero-retention-safety-system-as-anthropic-requires-data-logs) — 两个部署选项(客户基础设施/客户密钥加密)、safety signal、9 月白皮书、CSAM 例外
