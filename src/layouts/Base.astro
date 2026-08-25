@@ -95,6 +95,7 @@ const canonical = new URL(path, SITE_URL).href;
           <div class="nav-links">
             <a href={`/${lang}/`}>{t(lang, 'nav.writing')}</a>
             <a href={`/${lang}/briefing/`}>{t(lang, 'home.briefings')}</a>
+            <a href={`/${lang}/projects/`}>{t(lang, 'nav.projects')}</a>
             <a href={`/${lang}/about/`}>{t(lang, 'nav.about')}</a>
             <a class="lang-switch" href={altPath ?? `/${otherLang}/`} rel="alternate">
               {lang === 'zh' ? 'EN' : '中文'}
