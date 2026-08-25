@@ -9,7 +9,9 @@ export function getStaticPaths() {
 const lang = Astro.params.lang as Lang;
 const otherLang: Lang = lang === 'zh' ? 'en' : 'zh';
 
-const APP_URL = 'https://repeatclip.mengyahu.com';
+const APP_URL = lang === 'zh'
+  ? 'https://repeatclip.mengyahu.com/zh/'
+  : 'https://repeatclip.mengyahu.com';
 const REPO_URL = 'https://github.com/mengyahuUSTC-PU/repeatclip';
 ---
 
