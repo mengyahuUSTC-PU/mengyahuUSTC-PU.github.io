@@ -190,22 +190,53 @@ def handle_distribution(slug: str, when: str = "now"):
     dist_file.write_text(json.dumps(pack, ensure_ascii=False, indent=2))
 
     # Newsletter: same approval gate as Typefully ("发" = user reviewed the pack).
+    # A failure here must never read as success — the social posts going out
+    # while the email silently dies is exactly what happened on 2026-08-25.
+    newsletter_status = "未生成"
     if pack.get("email"):
-        from kit_client import send_broadcast
-        counts = {}
-        for lang in ("zh", "en"):
-            part = pack["email"].get(lang) or {}
-            if not (part.get("subject") and part.get("html")):
-                continue
-            try:
-                counts[lang] = send_broadcast(lang, part["subject"], part["html"])
-            except Exception as exc:
-                send(f"⚠️ Newsletter（{lang}）发送失败：{str(exc)[:300]}")
-        sent = [f"{l} → {n} 人" for l, n in counts.items() if n]
-        if sent:
-            send(f"📧 Newsletter 已排入 Kit（2 分钟后发出）：{' · '.join(sent)}")
-        elif counts:
-            send("📧 Newsletter 跳过：目前还没有订阅者。")
+        from kit_client import KitPermissionError, can_send_broadcasts, send_broadcast
+        counts, failures = {}, []
+        allowed, plan_note = can_send_broadcasts()
+        if not allowed:
+            failures.append(plan_note)
+        else:
+            for lang in ("zh", "en"):
+                part = pack["email"].get(lang) or {}
+                if not (part.get("subject") and part.get("html")):
+                    continue
+                try:
+                    counts[lang] = send_broadcast(lang, part["subject"], part["html"])
+                except KitPermissionError as exc:
+                    failures.append(f"{lang}: {exc}")
+                except Exception as exc:
+                    failures.append(f"{lang}: {str(exc)[:200]}")
+        if failures:
+            # Keep the rendered email so nothing has to be regenerated: the user
+            # can paste it into Kit's dashboard, or resend once Kit is fixed.
+            outbox = REPO_ROOT / "automation" / "data" / "newsletter-unsent"
+            outbox.mkdir(parents=True, exist_ok=True)
+            saved = []
+            for lang in ("zh", "en"):
+                part = pack["email"].get(lang) or {}
+                if not (part.get("subject") and part.get("html")):
+                    continue
+                path = outbox / f"{slug}.{lang}.html"
+                path.write_text(f"<!-- subject: {part['subject']} -->\n{part['html']}")
+                saved.append(str(path))
+            newsletter_status = "❌ 未发出"
+            send("🚨 **Newsletter 没有发出去**（{}）\n原因：{}\n"
+                 "邮件正文已存好，不用重新生成：\n{}\n"
+                 "怎么办：① 升级 Kit 套餐后我重发 ② 你在 Kit 后台手动粘贴发送 "
+                 "③ 换成 VM 直接用 Gmail SMTP 发（订阅者一共 6 人，我可以改）".format(
+                     slug, " · ".join(failures)[:400], "\n".join(saved)))
+        else:
+            sent = [f"{l} → {n} 人" for l, n in counts.items() if n]
+            if sent:
+                newsletter_status = "✅ " + " · ".join(sent)
+                send(f"📧 Newsletter 已排入 Kit（2 分钟后发出）：{' · '.join(sent)}")
+            elif counts:
+                newsletter_status = "⏭ 无订阅者"
+                send("📧 Newsletter 跳过：目前还没有订阅者。")
     if when == "peak":
         from zoneinfo import ZoneInfo
         def pt(s):
@@ -214,6 +245,10 @@ def handle_distribution(slug: str, when: str = "now"):
         send(f"⏰ {slug} 已排进高峰时段（西雅图时间）：X → {pt(x_when)} · LinkedIn → {pt(li_when)}。")
     else:
         send(f"🚀 {slug} 的 X 帖 + LinkedIn 帖已排程，2 分钟后自动发出（X 政策不允许 API 带链接直发，走排程通道效果相同）。")
+
+    # One closing line that states every channel, so a partial failure can never
+    # be mistaken for a clean send.
+    send(f"📋 **{slug} 分发结果**：X ✅ · LinkedIn ✅ · Newsletter {newsletter_status}")
 
 
 HELP_TEXT = ("🤔 没听懂。可用指令：\n"

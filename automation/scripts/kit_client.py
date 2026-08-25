@@ -13,6 +13,15 @@ import requests
 API = "https://api.kit.com/v4"
 
 
+class KitPermissionError(RuntimeError):
+    """Kit refused the call because of the account plan, not the request.
+
+    Free-plan accounts cannot create broadcasts through the API (Kit answers
+    403 "insufficient permissions"). This is not retryable and not a bug in the
+    payload, so the caller has to tell the user instead of silently failing.
+    """
+
+
 def _headers():
     return {"X-Kit-Api-Key": os.environ["KIT_API_KEY"]}
 
@@ -87,5 +96,21 @@ def send_broadcast(lang: str, subject: str, html: str, preview_text: str = "") -
         },
         timeout=30,
     )
+    if resp.status_code == 403:
+        raise KitPermissionError(
+            "Kit 拒绝创建 broadcast（403）。免费档不支持用 API 发送，"
+            "需要升级 Kit 套餐，或改用别的发信方式。原文：" + resp.text[:200]
+        )
     resp.raise_for_status()
     return count
+
+
+def can_send_broadcasts() -> tuple[bool, str]:
+    """Cheap preflight so a send never half-succeeds silently."""
+    resp = requests.get(f"{API}/account", headers=_headers(), timeout=30)
+    resp.raise_for_status()
+    plan = (resp.json().get("account") or {}).get("plan") or {}
+    kind = plan.get("plan_type", "unknown")
+    if kind == "free" and not plan.get("on_trial"):
+        return False, "Kit 账号是免费档，API 发 broadcast 已被拒绝（403）"
+    return True, kind
