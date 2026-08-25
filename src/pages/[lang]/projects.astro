@@ -1,0 +1,97 @@
+---
+import Base from '../../layouts/Base.astro';
+import { t, type Lang } from '../../lib/i18n';
+
+export function getStaticPaths() {
+  return [{ params: { lang: 'zh' } }, { params: { lang: 'en' } }];
+}
+
+const lang = Astro.params.lang as Lang;
+const otherLang: Lang = lang === 'zh' ? 'en' : 'zh';
+
+const APP_URL = 'https://repeatclip.mengyahu.com';
+const REPO_URL = 'https://github.com/mengyahuUSTC-PU/repeatclip';
+---
+
+<Base
+  title={t(lang, 'projects.title')}
+  description={
+    lang === 'zh'
+      ? '我为自己的真实需求做的小工具，第一个是 RepeatClip：循环播放 YouTube 视频的任意片段。'
+      : 'Small tools I build for real problems in my own life. First up: RepeatClip, a YouTube section looper.'
+  }
+  lang={lang}
+  path={`/${lang}/projects/`}
+  altPath={`/${otherLang}/projects/`}
+>
+  <h1>{t(lang, 'projects.title')}</h1>
+
+  <div class="project-intro">
+    {lang === 'zh' ? (
+      <p>
+        我为自己的真实需求做的小工具。做出来能用就行，也顺手分享给需要的人。
+      </p>
+    ) : (
+      <p>
+        Small tools I build for real problems in my own life. They only need to work for me,
+        but if they are useful to someone else, they are here.
+      </p>
+    )}
+  </div>
+
+  <ul class="post-list">
+    <li class="post-card wide">
+      <p class="post-meta">{lang === 'zh' ? '2026 · 已上线' : '2026 · Live'}</p>
+      <h3><a href={APP_URL}>RepeatClip</a></h3>
+      {lang === 'zh' ? (
+        <p>循环播放 YouTube 视频的任意片段，调慢速度，反复练习。</p>
+      ) : (
+        <p>Loop any part of a YouTube video and practice it at your own speed.</p>
+      )}
+
+      <div class="project-story">
+        {lang === 'zh' ? (
+          <>
+            <p>我平时跳舞。学一段编舞的时候，我想把其中一小段单独抠出来反复放，先放慢，练顺了再一点点加快。市面上应该有做这件事的产品，但我懒得去找、去比、去装。</p>
+            <p>于是我把需求跟 coding agent 讲了一遍，三分钟后就有了一个我自己喜欢的版本：粘贴链接、填好起止时间、选速度，剩下的它自己循环。它有独立网址，链接里带着片段的起止时间，我可以直接发给一起跳舞的姐妹们，她们打开就是我练的那十秒。</p>
+          </>
+        ) : (
+          <>
+            <p>
+              I dance. When I am learning choreography I want one short section on repeat, slowed down
+              first, then a little faster once it starts to stick. There are probably products that do
+              this. I did not feel like hunting for one, comparing them, installing anything.
+            </p>
+            <p>
+              So I described what I wanted to a coding agent and had a version I actually liked about
+              three minutes later: paste a link, type the start and end times, pick a speed, and it loops. It has
+              its own address, and the share link carries the start and end times, so I can send my
+              dance friends the exact ten seconds I have been drilling.
+            </p>
+          </>
+        )}
+      </div>
+
+      <p class="project-links">
+        <a class="project-cta" href={APP_URL}>{lang === 'zh' ? '打开 RepeatClip →' : 'Open RepeatClip →'}</a>
+        <a href={REPO_URL}>{lang === 'zh' ? '在 GitHub 查看源码' : 'View source on GitHub'}</a>
+      </p>
+
+      <div class="tags">
+        {(lang === 'zh'
+          ? ['视频练习', 'YouTube', '中英双语']
+          : ['Video practice', 'YouTube', 'Bilingual']
+        ).map((tag) => <span class="tag">{tag}</span>)}
+      </div>
+    </li>
+  </ul>
+</Base>
+
+<style>
+  .project-intro { max-width: 40rem; margin: -0.4rem 0 1.6rem; }
+  .project-intro p { color: var(--muted); line-height: 1.8; margin: 0; }
+  .project-story { max-width: 40rem; }
+  .project-story p { margin-top: 0.9rem; }
+  .project-links { display: flex; flex-wrap: wrap; gap: 1.2rem; align-items: baseline; margin-top: 1.1rem; font-size: 0.9rem; }
+  .project-cta { font-weight: 700; }
+</style>
