@@ -296,7 +296,7 @@ def handle_newsletter_resend(slug: str):
 HELP_TEXT = ("🤔 没听懂。可用指令：\n"
              "`1 3` 选题 · `写 话题或链接` 手动选题 · `改文章 [slug] 意见` · `改简报 意见` · "
              "`改L 意见`（LinkedIn）· `改X 意见`（thread）· `发 [slug]` 排程 · "
-             "`补发 [slug]` 重发 newsletter")
+             "`补发 [slug]` 重发 newsletter · `退订 <邮箱>`")
 
 
 def latest_briefing_slug():
@@ -433,6 +433,14 @@ def main():
                 handle_distribution(slug_)
             else:
                 send("ℹ️ 没有待排程的分发内容（都已排程或尚未生成）。")
+            continue
+
+        # "退订 <email>": honour an opt-out that arrived as a reply.
+        m = re.fullmatch(r"退订\s*[:：]?\s*(\S+@\S+)", content)
+        if m:
+            from resend_client import unsubscribe
+            address = m.group(1).strip("<>")
+            send(f"✅ {address} {unsubscribe(address)}")
             continue
 
         # "补发 [slug]": resend a newsletter whose delivery failed earlier.

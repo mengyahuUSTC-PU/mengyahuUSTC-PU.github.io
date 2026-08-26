@@ -11,6 +11,7 @@ Docs: https://resend.com/docs/api-reference/emails/send-batch-emails
 
 import os
 from html import escape
+from pathlib import Path
 
 import requests
 
@@ -24,13 +25,54 @@ class ResendError(RuntimeError):
     """Resend refused the send. Carries the response body, which says why."""
 
 
+SUPPRESSION = Path(__file__).resolve().parents[1] / "data" / "unsubscribed.txt"
+
+
+def suppressed() -> set[str]:
+    """Addresses that must never be mailed again, kept locally.
+
+    Kit is the list of record but the unsubscribe link in the email is a mailto
+    the human actions by hand, so this file is the durable record: whatever
+    happens in Kit, an address in here is never sent to.
+    """
+    if not SUPPRESSION.exists():
+        return set()
+    return {line.strip().lower() for line in SUPPRESSION.read_text().splitlines()
+            if line.strip() and not line.startswith("#")}
+
+
+def unsubscribe(email: str) -> str:
+    """Honour an opt-out in both places: Kit, and the local suppression list."""
+    email = email.strip().lower()
+    SUPPRESSION.parent.mkdir(parents=True, exist_ok=True)
+    if email not in suppressed():
+        with SUPPRESSION.open("a") as fh:
+            fh.write(email + "\n")
+
+    from kit_client import _headers
+    note = "已加入永久屏蔽名单"
+    try:
+        q = requests.get("https://api.kit.com/v4/subscribers", headers=_headers(),
+                         params={"email_address": email}, timeout=30).json()
+        for sub in q.get("subscribers", []):
+            r = requests.post(f"https://api.kit.com/v4/subscribers/{sub['id']}/unsubscribe",
+                              headers=_headers(), timeout=30)
+            note += f"，Kit 退订 {r.status_code}"
+    except Exception as exc:
+        note += f"，Kit 那边失败（{str(exc)[:80]}），但本地屏蔽已生效"
+    return note
+
+
 def recipients(lang: str) -> list[str]:
-    """Active subscribers carrying the language tag, read from Kit."""
+    """Active subscribers carrying the language tag, minus anyone suppressed."""
     from kit_client import _headers, _paged, _ids  # reuse the existing client
 
     _, tag_id = _ids(lang)
     subs = _paged(f"/tags/{tag_id}/subscribers", "subscribers")
-    return sorted({s["email_address"] for s in subs if s.get("state") == "active"})
+    blocked = suppressed()
+    return sorted({s["email_address"] for s in subs
+                   if s.get("state") == "active"
+                   and s["email_address"].lower() not in blocked})
 
 
 def _footer(lang: str, subject: str) -> str:
