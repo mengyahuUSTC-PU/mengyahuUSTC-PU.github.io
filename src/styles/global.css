@@ -238,3 +238,7 @@ h2 { font-size: 1.3rem; }
 .related-posts li { padding: 0.45rem 0; border-top: 1px solid var(--border); }
 .related-posts li a { color: var(--text); }
 .related-posts li a:hover { color: var(--accent); text-decoration: none; }
+
+/* Honeypot field in the subscribe forms: off-screen for people, present in the
+   DOM for bots that fill every input they find. */
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
