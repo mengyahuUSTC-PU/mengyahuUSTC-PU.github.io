@@ -6,8 +6,8 @@ interface Props {
 }
 
 const { lang } = Astro.props;
-const KIT_FORM_ID = lang === 'zh' ? '9723986' : '9723996';
-const action = `https://app.kit.com/forms/${KIT_FORM_ID}/subscriptions`;
+// Our own endpoint on the VM: it double-opts-in and writes to Resend.
+const action = 'https://api.mengyahu.com/subscribe';
 
 const copy =
   lang === 'zh'
@@ -16,7 +16,7 @@ const copy =
         blurb: '订阅后新文章直接进邮箱。不发快讯，随时退订。',
         placeholder: '你的邮箱',
         button: '订阅',
-        success: '订阅成功。',
+        success: '确认邮件已发出，点一下里面的链接。',
         close: '关闭',
       }
     : {
@@ -24,7 +24,7 @@ const copy =
         blurb: 'New essays in your inbox. No briefings, unsubscribe anytime.',
         placeholder: 'you@example.com',
         button: 'Subscribe',
-        success: 'Subscribed.',
+        success: 'Check your inbox to confirm.',
         close: 'Close',
       };
 ---
@@ -34,7 +34,9 @@ const copy =
   <p class="sis-heading">{copy.heading}</p>
   <p class="sis-blurb">{copy.blurb}</p>
   <form class="sis-form" action={action} method="post" data-success={copy.success}>
-    <input type="email" name="email_address" required placeholder={copy.placeholder} aria-label={copy.placeholder} autocomplete="email" />
+    <input type="email" name="email" required placeholder={copy.placeholder} aria-label={copy.placeholder} autocomplete="email" />
+    <input type="hidden" name="lang" value={lang} />
+    <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp" />
     <button type="submit">{copy.button}</button>
   </form>
 </aside>
@@ -75,7 +77,7 @@ const copy =
           headers: { Accept: 'application/json' },
         });
         const data = await resp.json();
-        if (data.status === 'failed' || !resp.ok) throw new Error('rejected');
+        if (!resp.ok || data.ok === false) throw new Error('rejected');
         localStorage.setItem('nl-subscribed', '1');
         form.outerHTML = `<p class="sis-blurb">${form.dataset.success ?? ''}</p>`;
         setTimeout(() => { box.hidden = true; }, 2500);

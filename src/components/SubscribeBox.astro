@@ -7,10 +7,9 @@ interface Props {
 
 const { lang } = Astro.props;
 
-// Kit (ConvertKit) embed forms; IDs are public (they appear in the form URL).
-// zh subscribers get zh broadcasts, en subscribers get en broadcasts.
-const KIT_FORM_ID = lang === 'zh' ? '9723986' : '9723996';
-const action = `https://app.kit.com/forms/${KIT_FORM_ID}/subscriptions`;
+// Our own endpoint on the VM: it double-opts-in and writes to Resend.
+// No API key is involved here, so this is safe in a static page.
+const action = 'https://api.mengyahu.com/subscribe';
 
 const copy =
   lang === 'zh'
@@ -19,7 +18,7 @@ const copy =
         blurb: '新的深度文章发布时发送到你的邮箱。不发快讯，随时可退订。',
         placeholder: '你的邮箱',
         button: '订阅',
-        success: '订阅成功，新文章发布时会发到你的邮箱。',
+        success: '确认邮件已发出，点开里面的链接就算订阅成功。',
         error: '提交失败了，请稍后再试。',
       }
     : {
@@ -27,7 +26,7 @@ const copy =
         blurb: 'New essays, straight to your inbox. No daily briefings, unsubscribe anytime.',
         placeholder: 'you@example.com',
         button: 'Subscribe',
-        success: 'Subscribed! You’ll get new essays by email.',
+        success: 'Check your inbox and click the confirmation link.',
         error: 'Something went wrong. Please try again.',
       };
 ---
@@ -44,12 +43,15 @@ const copy =
   >
     <input
       type="email"
-      name="email_address"
+      name="email"
       required
       placeholder={copy.placeholder}
       aria-label={copy.placeholder}
       autocomplete="email"
     />
+    <input type="hidden" name="lang" value={lang} />
+    <!-- Honeypot: hidden from people, irresistible to bots. -->
+    <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hp" />
     <button type="submit">{copy.button}</button>
   </form>
   <p class="subscribe-note" role="status" aria-live="polite"></p>
@@ -70,7 +72,7 @@ const copy =
           headers: { Accept: 'application/json' },
         });
         const data = await resp.json();
-        if (data.status === 'failed' || !resp.ok) throw new Error('kit rejected');
+        if (!resp.ok || data.ok === false) throw new Error('rejected');
         if (note) note.textContent = form.dataset.success ?? '';
         localStorage.setItem('nl-subscribed', '1');
         form.reset();
