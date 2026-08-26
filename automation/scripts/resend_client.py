@@ -94,6 +94,10 @@ def preflight() -> tuple[bool, str]:
     if not key:
         return False, "RESEND_API_KEY 未设置"
     resp = requests.get(f"{API}/domains", headers={"Authorization": f"Bearer {key}"}, timeout=30)
+    if resp.status_code == 401 and "restricted" in resp.text:
+        # A sending-only key cannot list domains. That is fine for sending, so
+        # let the send itself be the test rather than blocking on the check.
+        return True, "sending-only key（跳过域名检查）"
     if resp.status_code >= 300:
         return False, f"Resend {resp.status_code}: {resp.text[:200]}"
     domains = resp.json().get("data") or []
