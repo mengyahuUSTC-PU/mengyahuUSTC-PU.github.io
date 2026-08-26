@@ -66,33 +66,85 @@ def gsc_query(tok, dims, start, end, limit=25):
     return resp.json().get("rows", [])
 
 
-def kit_stats():
-    """Subscriber growth + per-broadcast email performance for the report."""
-    key = os.environ.get("KIT_API_KEY")
+def newsletter_stats():
+    """Subscriber growth + per-issue email performance, from Resend.
+
+    Two sources: the signup database on this box knows when each address
+    confirmed or unsubscribed (growth), and Resend knows what happened to each
+    message (delivery and opens). Shape is unchanged from the Kit era so the
+    weekly-report prompt keeps working.
+    """
+    import sqlite3
+    from collections import defaultdict
+
+    key = os.environ.get("RESEND_API_KEY")
     if not key:
         return {}
-    H = {"X-Kit-Api-Key": key}
+    H = {"Authorization": f"Bearer {key}"}
     try:
-        subs = requests.get("https://api.kit.com/v4/subscribers?status=all",
-                            headers=H, timeout=30).json().get("subscribers", [])
-        bcs = requests.get("https://api.kit.com/v4/broadcasts?per_page=15",
-                           headers=H, timeout=30).json().get("broadcasts", [])
-        emails = []
-        for b in bcs:
-            if not b.get("send_at"):
+        contacts = []
+        for lang in ("zh", "en"):
+            aud = os.environ.get(f"RESEND_{lang.upper()}_AUDIENCE")
+            if not aud:
                 continue
-            st = requests.get(f"https://api.kit.com/v4/broadcasts/{b['id']}/stats",
-                              headers=H, timeout=20).json().get("broadcast", {}).get("stats", {})
-            emails.append({"date": b["send_at"][:10], "subject": b["subject"],
-                           "recipients": st.get("recipients"),
-                           "open_rate": st.get("open_rate"),
-                           "click_rate": st.get("click_rate")})
+            data = requests.get(f"https://api.resend.com/audiences/{aud}/contacts",
+                                headers=H, timeout=30).json().get("data", [])
+            for c in data:
+                contacts.append({**c, "lang": lang})
+
+        # Per-issue performance: group the individual sends by subject.
+        sent = requests.get("https://api.resend.com/emails", headers=H,
+                            timeout=30).json().get("data", [])
+        by_subject = defaultdict(lambda: {"recipients": 0, "delivered": 0, "opened": 0,
+                                          "clicked": 0, "date": ""})
+        for e in sent:
+            row = by_subject[e.get("subject", "")]
+            row["recipients"] += 1
+            row["date"] = (e.get("created_at") or "")[:10]
+            if e.get("last_event") in ("delivered", "opened", "clicked"):
+                row["delivered"] += 1
+            if e.get("last_event") == "opened":
+                row["opened"] += 1
+            if e.get("last_event") == "clicked":
+                row["clicked"] += 1
+        # Open/click tracking is deliberately off: it needs a tracking subdomain
+        # and works by embedding an invisible pixel in every email. Report None
+        # rather than 0.0, so a missing measurement is never read as "nobody
+        # opened it".
+        tracking = requests.get("https://api.resend.com/domains", headers=H, timeout=30).json()
+        tracked = any(d.get("open_tracking") for d in tracking.get("data", []))
+        emails = [{"date": v["date"], "subject": k, "recipients": v["recipients"],
+                   "delivered": v["delivered"],
+                   "open_rate": (round(v["opened"] / v["recipients"], 3)
+                                 if tracked and v["recipients"] else None),
+                   "click_rate": (round(v["clicked"] / v["recipients"], 3)
+                                  if tracked and v["recipients"] else None)}
+                  for k, v in by_subject.items()]
+        emails.sort(key=lambda r: r["date"], reverse=True)
+
+        states = {}
+        db = Path("/home/mia/subscribe/subscribe.db")
+        if db.exists():
+            conn = sqlite3.connect(db)
+            for email, lang, state, confirmed in conn.execute(
+                    "SELECT email, lang, state, confirmed FROM subscribers"):
+                states[(email, lang)] = (state, confirmed)
+            conn.close()
+
+        active = [c for c in contacts if not c.get("unsubscribed")]
         return {
-            "subscribers_total_active": sum(1 for x in subs if x.get("state") == "active"),
+            "subscribers_total_active": len(active),
             "subscribers_by_date": sorted(
-                [{"email_masked": x["email_address"][:3] + "***", "state": x["state"],
-                  "since": x["created_at"][:10]} for x in subs], key=lambda r: r["since"]),
+                [{"email_masked": c["email"][:3] + "***", "lang": c["lang"],
+                  "state": "unsubscribed" if c.get("unsubscribed") else "active",
+                  "since": (c.get("created_at") or "")[:10]} for c in contacts],
+                key=lambda r: r["since"]),
+            "unsubscribed_total": sum(1 for s, _ in states.values() if s == "unsubscribed"),
+            "pending_unconfirmed": sum(1 for s, _ in states.values() if s == "pending"),
             "recent_emails": emails[:12],
+            "open_tracking": tracked,
+            "tracking_note": ("开信率未追踪（Resend 开信追踪需要隐形像素，已按隐私取向关闭）；"
+                              "邮件效果只看送达数，读者行为看 GA4 的 newsletter UTM"),
         }
     except Exception as exc:
         return {"error": str(exc)[:200]}
@@ -121,7 +173,7 @@ def main():
         "gsc_queries": gsc_query(tok, ["query"], gsc_start.isoformat(), gsc_end.isoformat()),
         "gsc_pages": gsc_query(tok, ["page"], gsc_start.isoformat(), gsc_end.isoformat()),
     }
-    out["newsletter"] = kit_stats()
+    out["newsletter"] = newsletter_stats()
     print(json.dumps(out, ensure_ascii=False, indent=2))
 
 
