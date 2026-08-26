@@ -9,9 +9,12 @@ Env (repo .env): RESEND_API_KEY, plus the existing KIT_* ids.
 Docs: https://resend.com/docs/api-reference/emails/send-batch-emails
 """
 
+import hmac
 import os
+from hashlib import sha256
 from html import escape
 from pathlib import Path
+from urllib.parse import quote
 
 import requests
 
@@ -42,56 +45,61 @@ def suppressed() -> set[str]:
 
 
 def unsubscribe(email: str) -> str:
-    """Honour an opt-out in both places: Kit, and the local suppression list."""
+    """Honour an opt-out everywhere: suppression file first, then Resend."""
     email = email.strip().lower()
     SUPPRESSION.parent.mkdir(parents=True, exist_ok=True)
     if email not in suppressed():
         with SUPPRESSION.open("a") as fh:
             fh.write(email + "\n")
 
-    from kit_client import _headers
-    note = "已加入永久屏蔽名单"
-    try:
-        q = requests.get("https://api.kit.com/v4/subscribers", headers=_headers(),
-                         params={"email_address": email}, timeout=30).json()
-        for sub in q.get("subscribers", []):
-            r = requests.post(f"https://api.kit.com/v4/subscribers/{sub['id']}/unsubscribe",
-                              headers=_headers(), timeout=30)
-            note += f"，Kit 退订 {r.status_code}"
-    except Exception as exc:
-        note += f"，Kit 那边失败（{str(exc)[:80]}），但本地屏蔽已生效"
-    return note
+    key = os.environ["RESEND_API_KEY"]
+    notes = []
+    for lang in ("zh", "en"):
+        aud = os.environ.get(f"RESEND_{lang.upper()}_AUDIENCE")
+        if not aud:
+            continue
+        r = requests.patch(f"{API}/audiences/{aud}/contacts/{quote(email)}",
+                           headers={"Authorization": f"Bearer {key}",
+                                    "Content-Type": "application/json"},
+                           json={"unsubscribed": True}, timeout=30)
+        notes.append(f"{lang} {r.status_code}")
+    return "已加入永久屏蔽名单，Resend " + " / ".join(notes)
 
 
 def recipients(lang: str) -> list[str]:
-    """Active subscribers of that language's form, minus anyone suppressed.
+    """Subscribed contacts of that language's Resend audience, minus suppressions.
 
-    Read the FORM, not the tag. Tags only existed because Kit broadcasts can
-    only target tags, which meant a sync step had to copy form -> tag before
-    every send; reading the tag without that sync silently drops anyone who
-    subscribed since the last sync (it dropped a 2026-08-25 subscriber).
-    Resend has no such constraint, so the form is the list.
+    Resend is the list of record now: the signup endpoint at api.mengyahu.com
+    writes confirmed addresses here, and the unsubscribe link flips the same
+    contact to unsubscribed. The local suppression file stays as a backstop.
     """
-    from kit_client import _paged, _ids
-
-    form_id, _ = _ids(lang)
-    subs = _paged(f"/forms/{form_id}/subscribers", "subscribers")
+    aud = os.environ[f"RESEND_{lang.upper()}_AUDIENCE"]
+    key = os.environ["RESEND_API_KEY"]
+    resp = requests.get(f"{API}/audiences/{aud}/contacts",
+                        headers={"Authorization": f"Bearer {key}"}, timeout=30)
+    resp.raise_for_status()
     blocked = suppressed()
-    return sorted({s["email_address"] for s in subs
-                   if s.get("state") == "active"
-                   and s["email_address"].lower() not in blocked})
+    return sorted({c["email"] for c in resp.json().get("data", [])
+                   if not c.get("unsubscribed")
+                   and c["email"].lower() not in blocked})
 
 
-def _footer(lang: str, subject: str) -> str:
-    """Every email needs a working opt-out. At this list size that is a reply
-    the human handles, so the mailto has to be real and the wording plain."""
-    mailto = f"mailto:{REPLY_TO}?subject={escape('unsubscribe: ' + subject)}"
+def _unsubscribe_url(email: str, lang: str) -> str:
+    """Signed so the link works without a lookup and cannot be forged."""
+    secret = os.environ["SUBSCRIBE_SECRET"].encode()
+    sig = hmac.new(secret, f"{email}|{lang}".encode(), sha256).hexdigest()[:32]
+    return f"https://api.mengyahu.com/unsubscribe?e={quote(email)}&l={lang}&s={sig}"
+
+
+def _footer(lang: str, email: str) -> str:
+    """One click, no human in the loop."""
+    url = _unsubscribe_url(email, lang)
     style = 'font-size:12px;color:#888'
     if lang == "zh":
         return (f'<hr><p style="{style}">订阅自 mengyahu.com · '
-                f'<a href="{mailto}" style="color:#888">退订</a></p>')
+                f'<a href="{url}" style="color:#888">退订</a></p>')
     return (f'<hr><p style="{style}">Subscribed at mengyahu.com · '
-            f'<a href="{mailto}" style="color:#888">Unsubscribe</a></p>')
+            f'<a href="{url}" style="color:#888">Unsubscribe</a></p>')
 
 
 def send_newsletter(lang: str, subject: str, html: str) -> int:
@@ -108,17 +116,16 @@ def send_newsletter(lang: str, subject: str, html: str) -> int:
     if not key:
         raise ResendError("RESEND_API_KEY 没有设置（VM ~/site/.env）")
 
-    body = html + _footer(lang, subject)
-    unsubscribe = f"<mailto:{REPLY_TO}?subject=unsubscribe>"
-    # One message per person: no shared To: header, so nobody sees the list.
+    # One message per person: no shared To: header, and each carries its own
+    # signed unsubscribe link in both the body and the header.
     messages = [{
         "from": FROM,
         "to": [address],
         "reply_to": REPLY_TO,
         "subject": subject,
-        "html": body,
+        "html": html + _footer(lang, address),
         "headers": {
-            "List-Unsubscribe": unsubscribe,
+            "List-Unsubscribe": f"<{_unsubscribe_url(address, lang)}>",
             "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
         },
     } for address in to]
