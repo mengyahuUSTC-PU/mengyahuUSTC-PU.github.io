@@ -37,13 +37,12 @@ def _footer(lang: str, subject: str) -> str:
     """Every email needs a working opt-out. At this list size that is a reply
     the human handles, so the mailto has to be real and the wording plain."""
     mailto = f"mailto:{REPLY_TO}?subject={escape('unsubscribe: ' + subject)}"
+    style = 'font-size:12px;color:#888'
     if lang == "zh":
-        return (f'<hr><p style="font-size:13px;color:#666">'
-                f'你收到这封信是因为你在 mengyahu.com 订阅了更新。'
-                f'不想再收到，<a href="{mailto}">点这里回一封信</a>，我手动把你移出名单。</p>')
-    return (f'<hr><p style="font-size:13px;color:#666">'
-            f'You are getting this because you subscribed at mengyahu.com. '
-            f'To stop, <a href="{mailto}">reply here</a> and I will remove you by hand.</p>')
+        return (f'<hr><p style="{style}">订阅自 mengyahu.com · '
+                f'<a href="{mailto}" style="color:#888">退订</a></p>')
+    return (f'<hr><p style="{style}">Subscribed at mengyahu.com · '
+            f'<a href="{mailto}" style="color:#888">Unsubscribe</a></p>')
 
 
 def send_newsletter(lang: str, subject: str, html: str) -> int:
