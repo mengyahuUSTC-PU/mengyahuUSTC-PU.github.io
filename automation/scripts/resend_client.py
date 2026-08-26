@@ -64,11 +64,18 @@ def unsubscribe(email: str) -> str:
 
 
 def recipients(lang: str) -> list[str]:
-    """Active subscribers carrying the language tag, minus anyone suppressed."""
-    from kit_client import _headers, _paged, _ids  # reuse the existing client
+    """Active subscribers of that language's form, minus anyone suppressed.
 
-    _, tag_id = _ids(lang)
-    subs = _paged(f"/tags/{tag_id}/subscribers", "subscribers")
+    Read the FORM, not the tag. Tags only existed because Kit broadcasts can
+    only target tags, which meant a sync step had to copy form -> tag before
+    every send; reading the tag without that sync silently drops anyone who
+    subscribed since the last sync (it dropped a 2026-08-25 subscriber).
+    Resend has no such constraint, so the form is the list.
+    """
+    from kit_client import _paged, _ids
+
+    form_id, _ = _ids(lang)
+    subs = _paged(f"/forms/{form_id}/subscribers", "subscribers")
     blocked = suppressed()
     return sorted({s["email_address"] for s in subs
                    if s.get("state") == "active"
