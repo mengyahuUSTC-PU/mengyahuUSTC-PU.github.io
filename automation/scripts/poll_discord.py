@@ -194,19 +194,21 @@ def handle_distribution(slug: str, when: str = "now"):
     # while the email silently dies is exactly what happened on 2026-08-25.
     newsletter_status = "未生成"
     if pack.get("email"):
-        from kit_client import KitPermissionError, can_send_broadcasts, send_broadcast
+        # Kit's free plan blocks POST /broadcasts, so Kit is only the signup form
+        # and the list of record now; Resend does the sending.
+        from resend_client import ResendError, preflight, send_newsletter
         counts, failures = {}, []
-        allowed, plan_note = can_send_broadcasts()
+        allowed, note = preflight()
         if not allowed:
-            failures.append(plan_note)
+            failures.append(f"Resend 预检未通过：{note}")
         else:
             for lang in ("zh", "en"):
                 part = pack["email"].get(lang) or {}
                 if not (part.get("subject") and part.get("html")):
                     continue
                 try:
-                    counts[lang] = send_broadcast(lang, part["subject"], part["html"])
-                except KitPermissionError as exc:
+                    counts[lang] = send_newsletter(lang, part["subject"], part["html"])
+                except ResendError as exc:
                     failures.append(f"{lang}: {exc}")
                 except Exception as exc:
                     failures.append(f"{lang}: {str(exc)[:200]}")
@@ -226,14 +228,13 @@ def handle_distribution(slug: str, when: str = "now"):
             newsletter_status = "❌ 未发出"
             send("🚨 **Newsletter 没有发出去**（{}）\n原因：{}\n"
                  "邮件正文已存好，不用重新生成：\n{}\n"
-                 "怎么办：① 升级 Kit 套餐后我重发 ② 你在 Kit 后台手动粘贴发送 "
-                 "③ 换成 VM 直接用 Gmail SMTP 发（订阅者一共 6 人，我可以改）".format(
-                     slug, " · ".join(failures)[:400], "\n".join(saved)))
+                 "邮件没丢，修好后回一句「补发 {}」就行。".format(slug, 
+                     " · ".join(failures)[:400], "\n".join(saved), slug))
         else:
             sent = [f"{l} → {n} 人" for l, n in counts.items() if n]
             if sent:
                 newsletter_status = "✅ " + " · ".join(sent)
-                send(f"📧 Newsletter 已排入 Kit（2 分钟后发出）：{' · '.join(sent)}")
+                send(f"📧 Newsletter 已发出（Resend）：{' · '.join(sent)}")
             elif counts:
                 newsletter_status = "⏭ 无订阅者"
                 send("📧 Newsletter 跳过：目前还没有订阅者。")
@@ -251,9 +252,51 @@ def handle_distribution(slug: str, when: str = "now"):
     send(f"📋 **{slug} 分发结果**：X ✅ · LinkedIn ✅ · Newsletter {newsletter_status}")
 
 
+def handle_newsletter_resend(slug: str):
+    """"补发 <slug>": send the newsletter for an already-distributed pack.
+
+    Used after a send failed (bad key, unverified domain, provider outage). The
+    social posts are untouched — this only pushes the email.
+    """
+    dist_file = DATA / "dist" / f"{slug}.json"
+    if not dist_file.exists():
+        send(f"⚠️ 找不到 {slug} 的分发包。")
+        return
+    pack = json.loads(dist_file.read_text())
+    email = pack.get("email") or {}
+    if not email:
+        send(f"⚠️ {slug} 没有 newsletter 内容。")
+        return
+
+    from resend_client import ResendError, preflight, send_newsletter
+    allowed, note = preflight()
+    if not allowed:
+        send(f"⚠️ 还是发不了：{note}")
+        return
+
+    counts, failures = {}, []
+    for lang in ("zh", "en"):
+        part = email.get(lang) or {}
+        if not (part.get("subject") and part.get("html")):
+            continue
+        try:
+            counts[lang] = send_newsletter(lang, part["subject"], part["html"])
+        except ResendError as exc:
+            failures.append(f"{lang}: {exc}")
+        except Exception as exc:
+            failures.append(f"{lang}: {str(exc)[:200]}")
+
+    if failures:
+        send(f"🚨 补发失败（{slug}）：{' · '.join(failures)[:400]}")
+        return
+    sent = " · ".join(f"{l} → {n} 人" for l, n in counts.items() if n)
+    send(f"📧 {slug} 的 newsletter 已补发：{sent or '没有订阅者'}")
+
+
 HELP_TEXT = ("🤔 没听懂。可用指令：\n"
              "`1 3` 选题 · `写 话题或链接` 手动选题 · `改文章 [slug] 意见` · `改简报 意见` · "
-             "`改L 意见`（LinkedIn）· `改X 意见`（thread）· `发 [slug]` 排程")
+             "`改L 意见`（LinkedIn）· `改X 意见`（thread）· `发 [slug]` 排程 · "
+             "`补发 [slug]` 重发 newsletter")
 
 
 def latest_briefing_slug():
@@ -390,6 +433,16 @@ def main():
                 handle_distribution(slug_)
             else:
                 send("ℹ️ 没有待排程的分发内容（都已排程或尚未生成）。")
+            continue
+
+        # "补发 [slug]": resend a newsletter whose delivery failed earlier.
+        m = re.fullmatch(r"补发\s*([A-Za-z0-9\-]*)", content)
+        if m:
+            slug_ = m.group(1) or latest_article_slug()
+            if slug_:
+                handle_newsletter_resend(slug_)
+            else:
+                send("⚠️ 不知道补发哪一篇，带上 slug：`补发 <slug>`")
             continue
 
         # "改简报 [date] <feedback>": revise the latest (or dated) briefing.
