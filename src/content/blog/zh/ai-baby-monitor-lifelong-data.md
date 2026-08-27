@@ -28,7 +28,7 @@ Nanit 自称有 100 万日活用户、年收入超过 1 亿美元（《纽约时
 
 关于家长：姓名、邮箱、电话、支付信息、IP 地址，还有你家 WiFi 网络的名称。关于孩子：姓名、头像、性别、出生日期，以及家长手动记录的照护日志。关于婴儿房：视频和音频录制、温度、湿度，并用计算机视觉分析睡眠中的呼吸动作。
 
-数据用途一栏里，除了提供服务，还有一句标准但值得逐字读的表述：基于「正当利益」开展「直接营销、研究与开发」，包括「custom audiences 广告和跨设备追踪」。这两个词需要翻译一下。custom audiences（自定义受众）是广告行业的通行工具：广告主把手里的用户名单（邮箱、电话）上传给广告平台，平台在自己的用户库里匹配出同一批人，再向他们精准投放——[Meta 的官方文档](https://www.facebook.com/business/help/112061095610075)对这套匹配流程有完整描述。跨设备追踪则是把你在手机、平板、电脑上的行为拼成同一个人的画像。Nanit 的政策没有写明合作的是哪家平台，但这两类做法都白纸黑字列在了数据用途里。也就是说，一个哄睡工具的用户数据，同样进入了定向广告的链路。
+数据用途一栏里，除了提供服务，还有一句标准但值得逐字读的表述：基于「正当利益」开展「直接营销、研究与开发」，包括「custom audiences 广告和跨设备追踪」。这两个词需要翻译一下。custom audiences（自定义受众）是广告行业的通行工具：广告主把手里的用户名单（邮箱、电话）上传给广告平台，平台在自己的用户库里匹配出同一批人，再向他们精准投放——[Meta 的官方文档](https://www.facebook.com/business/help/112061095610075)对这套匹配流程有完整描述。跨设备追踪则是把你在手机、平板、电脑上的行为拼成同一个人的画像。Nanit 的政策没有写明合作的是哪家平台，但这两类做法都白纸黑字列在了数据用途里。把范围说准：政策并没有说视频或睡眠测量数据本身被用于广告投放；它确凿写明的是，一个哄睡工具收集的个人信息，进入了定向广告的链路。
 
 「我们不出售个人信息」这句 Nanit 说了，但要读全。政策原文的表述是：按加州消费者隐私法（CCPA，美国最早的综合性州级隐私法之一）的定义不构成「出售」，但同时承认，它使用的第三方分析工具「可能被解释为出售」。CCPA 对「出售」的[法定定义](https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=CIV&sectionNum=1798.140)比日常语义宽：为「金钱或其他有价值的对价」向第三方转移个人信息都算，不一定要收钱。所以这句免责声明的准确读法是：Nanit 主张自己的做法够不上 CCPA 定义的「出售」，但它同时承认，数据确实在向第三方分析和广告服务商流动。
 
@@ -36,7 +36,7 @@ Nanit 自称有 100 万日活用户、年收入超过 1 亿美元（《纽约时
 
 ## 安全做得不差，但安全不等于隐私
 
-要说公道话：Nanit 的[安全页](https://www.nanit.com/pages/privacy-security)列的措施在消费级产品里算认真的。视频流用 256 位 AES 加密；视频只能从摄像头单向推送到你的设备，外部无法直接从摄像头拉流；多因素认证（MFA，登录时除密码外还需第二重验证）是强制的；公司声明普通员工无权访问用户视频流；云端存储录像需要用户主动订阅 Insights 计划才开启。
+要说公道话：Nanit 的[安全页](https://www.nanit.com/pages/privacy-security)列的措施在消费级产品里算认真的。视频流用 256 位 AES 加密；视频流是单向推送——由 Nanit 的服务器推送到你的设备，外部无法直接从摄像头拉流；两步验证（登录时除密码外还需第二重验证）是强制的，不是可选项；公司声明普通员工无权访问用户视频流；云端存储录像需要用户主动订阅 Insights 计划才开启。
 
 但这些措施回答的问题是「外人能不能偷看」。隐私的核心问题是另一个：公司自己拿这些数据做什么。加密挡得住黑客，挡不住商业模式。这两个问题经常被产品页混在一起说，家长评估时得拆开。
 
@@ -46,35 +46,37 @@ Nanit 自称有 100 万日活用户、年收入超过 1 亿美元（《纽约时
 
 美国现有的隐私法框架，对这类产品几乎是空转的，原因值得拆开看。
 
-HIPAA（美国医疗隐私法）管的是[「涵盖实体」](https://www.hhs.gov/hipaa/for-professionals/covered-entities/index.html)：医疗保险计划、医院诊所这类医疗服务提供者、医疗信息交换机构。Nanit 采集呼吸、睡眠这些高度类医疗的数据，但它是消费电子公司，不在 HIPAA 管辖范围内。同样的数据，从医院设备里出来受 HIPAA 严格保护，从婴儿床上方的摄像头里出来，剩下的约束就是公司自己的隐私政策，加上 FTC 的一般性消费者保护规则和各州隐私法——保护强度差了一个量级。
+HIPAA（美国医疗隐私法）管的是[「涵盖实体」](https://www.hhs.gov/hipaa/for-professionals/covered-entities/index.html)：医疗保险计划、医院诊所这类医疗服务提供者、医疗信息交换机构，以及它们的业务伙伴。Nanit 采集呼吸、睡眠这些高度类医疗的数据，但它是消费电子公司，不在 HIPAA 管辖范围内。触发条件看的是数据在谁手里，不是数据本身是什么：同样的测量数据在医院手里受 HIPAA 严格保护，从婴儿床上方的摄像头里出来，剩下的约束就是公司自己的隐私政策，加上 [FTC 对不公平或欺骗性数据行为的执法权](https://www.ftc.gov/news-events/topics/protecting-consumer-privacy-security/privacy-security-enforcement)和各州隐私法拼成的补丁网——保护强度差了一个量级。
 
-COPPA（儿童在线隐私保护法）看起来对口，实际也接不住。它的核心机制是「可验证的家长同意」——防的是公司绕开家长、在线向孩子本人偷偷收集数据。但按 [FTC 的官方解释](https://www.ftc.gov/business-guidance/resources/complying-coppa-frequently-asked-questions)，COPPA 只覆盖从儿童本人在线收集的信息，成年人主动提供的关于孩子的信息不在覆盖范围内。婴儿监视器的场景里，买摄像头、装摄像头、录入孩子生日的都是家长，法律根本没有被触发。COPPA 设计时假设家长是孩子隐私的守门人，没有预想到「家长主动把数据交出去」这种结构。而数据的真正主体——那个婴儿——要到成年才能自己行使这些权利；如果摄像头一直用下去，等他能表达意见时，档案已经积累了十八年。
+COPPA（儿童在线隐私保护法）看起来对口，实际也接不住。它的核心机制是「可验证的家长同意」——防的是公司绕开家长、在线向孩子本人偷偷收集数据。但按 [FTC 的官方解释](https://www.ftc.gov/business-guidance/resources/complying-coppa-frequently-asked-questions)，COPPA 只覆盖从儿童本人在线收集的信息，成年人主动提供的关于孩子的信息不在覆盖范围内。婴儿监视器的场景里，买摄像头、装摄像头、录入孩子生日的都是家长，按 FTC 的口径这属于成年人主动提供的信息。至于摄像头自动录下的内容本身能不能落入 COPPA，取决于服务是否算「面向儿童」等具体事实认定，我不假装能在这里给出定论。可以确定的是：COPPA 设计时假设家长是孩子隐私的守门人，没有预想到「家长主动把数据交出去」这种结构。而数据的真正主体——那个婴儿——无法亲自主张任何权利：在之后的许多年里，各州隐私法赋予的权利都由家长代为行使，而家长正是装摄像头的那个人。如果摄像头一直用下去，等孩子大到能表达反对时，档案可能已经积累了整个童年。
 
 ## 家长可以问的三个问题
 
 落到可操作的层面，评估这类产品，我认为要问三个问题。
 
-一，数据在哪里处理。只在设备本地分析、不上传，和上云存储分析，是两种风险等级。Nanit 的模式是云端；市面上也有[不联网的本地监视器](https://www.eufy.com/collections/non-wifi-baby-monitor)——比如 eufy 的 SpaceView 系列，摄像头和家长端屏幕直连，画面不经过互联网。买之前先弄清这一点。
+一，数据在哪里处理。只在设备本地分析、不上传，和上云存储分析，是两种风险等级。Nanit 的模式是云端；市面上也有[不联网的本地监视器](https://www.eufy.com/collections/non-wifi-baby-monitor)——比如 eufy 就有这类产品，摄像头和家长端屏幕直连，画面不经过互联网。买之前先弄清这一点。
 
 二，公司靠什么赚钱。硬件加订阅费是一种模式，数据变现是另一种。判断依据不听宣传，看隐私政策里有没有营销、广告、第三方共享条款——上面拆过，Nanit 的政策里这些都有。
 
-三，退出成本多高。能不能删除数据（Nanit 提供删除请求通道 privacy@nanit.com，政策写明会在收到请求后最迟 45 天内给出回应）；隐私政策写明公司可自行决定随时修订，今天的承诺不约束明天的版本；公司将来被合并、收购或出售资产时，数据可能作为资产一并转移——这一条不用推测，Nanit 的政策里就有对应条款。评估任何一家创业公司的数据承诺时，都该把这两条计入。
+三，退出成本多高。能不能删除数据？（Nanit 提供删除请求通道 privacy@nanit.com。那句「45 天」要细读：政策承诺的是，如果拒绝执行你的请求，会在 45 天内告知你——而不是所有删除都在 45 天内完成。）隐私政策写明公司可自行决定随时修订，今天的承诺不约束明天的版本；公司将来被合并、收购或出售资产时，数据可能作为资产一并转移——这一条不用推测，Nanit 的政策里就有对应条款。评估任何一家创业公司的数据承诺时，都该把这两条计入。
 
-还有一条通用的读法：把功能清单当成采集清单读。产品页上每多一项「洞察」——呼吸监测、语言发展、情绪趋势——背后通常就多一条数据管道。除非厂商明确说明新功能只用既有数据、只在设备本地运算，功能升级就是采集升级。
+还有一条通用的读法：把功能清单当成采集清单读。产品页上每多一项「洞察」——呼吸监测、语言发展、情绪趋势——背后可能就需要一条新的数据流支撑；是否真的如此，要对照厂商的文档和隐私政策逐项核实。除非厂商明确说明新功能只用既有数据、只在设备本地运算，否则应把功能升级当作潜在的采集升级看待。
 
-婴儿数据和成人数据有两点本质不同：当事人无法同意，以及不可重置。密码泄露可以改密码，一个人从出生第一天起的呼吸模式、睡眠曲线、语言发展轨迹没有「重置」一说，一旦泄露，能做的补救非常有限。当 Nanit 的 CEO 说「从出生到 100 岁」时，她描述的与其说是产品愿景，不如说是融资故事的核心——那 50 亿小时的睡眠数据，就摆在 5000 万美元融资新闻稿的显眼位置。摄像头本身不是问题，问题是 Nanit 这样的头部产品已经把「从第 0 天开始建档、由别人代为同意」做成了默认设置——而默认设置，从来是最难被重新谈判的东西。
+婴儿数据和成人数据有两点本质不同：当事人无法同意，以及不可重置。密码泄露可以改密码——用 [NIST 谈生物特征时的说法](https://www.nist.gov/blogs/taking-measure/facing-facts-keep-our-biometrics-secure)，「改掉泄露的密码很容易，但改掉你的生物特征信息不行」。一个人从出生第一天起的呼吸模式、睡眠曲线、语言发展轨迹属于同一类：没有「重置」一说，一旦泄露，能做的补救非常有限。当 Nanit 的 CEO 说「从出生到 100 岁」时，她描述的既是产品愿景，也同样是融资故事的核心——那 50 亿小时的睡眠数据，就摆在 5000 万美元融资新闻稿的显眼位置。摄像头本身不是问题，问题是 Nanit 这样的头部产品已经把「从第 0 天开始建档、由别人代为同意」做成了默认设置——而默认设置，从来是最难被重新谈判的东西。
 
 ## 参考来源
 
 - [Aw, It's Baby's First A.I. Surveillance System（《纽约时报》，2026-08-02，Sapna Maheshwari；via Techmeme](https://www.techmeme.com/260803/p8) — 核心特写事实：0–100 睡眠分数、睁闭眼记录、100 万日活与 1 亿美元收入的公司口径、品牌咨询公司引语、误报细节、Diamond 医生引语
 - [Spyware for Babies — Schneier on Security](https://www.schneier.com/blog/archives/2026/08/spyware-for-babies.html) — 选题来源，正文仅引用其标题
-- [Nanit Privacy Policy](https://www.nanit.com/policies/privacy-policy) — 采集清单、数据用途、CCPA「出售」表述、保留期限、DNT、删除请求与 45 天回应、政策修订与并购转移条款
-- [Nanit Privacy & Security](https://www.nanit.com/pages/privacy-security) — 加密、单向视频流、MFA、员工访问限制、Insights 订阅与云存储的关系
+- [Nanit Privacy Policy](https://www.nanit.com/policies/privacy-policy) — 采集清单、数据用途、CCPA「出售」表述、保留期限、DNT、删除请求与「45 天内告知拒绝」表述、政策修订与并购转移条款
+- [Nanit Privacy & Security](https://www.nanit.com/pages/privacy-security) — 加密、单向视频推送、强制两步验证、员工访问限制、Insights 订阅与云存储的关系
 - [Nanit Raises $50M…（PR Newswire 官方新闻稿，2025-12）](https://www.prnewswire.com/news-releases/nanit-raises-50m-to-expand-its-ai-powered-systems-giving-parents-real-time-insights-into-infant-health-and-development-302643439.html) — 融资细节、Parenting Intelligence System、50 亿小时数据、70% 活跃用户在 4 岁后继续使用、CEO 引语
-- [HHS：HIPAA 涵盖实体](https://www.hhs.gov/hipaa/for-professionals/covered-entities/index.html) — HIPAA 适用范围（医疗保险计划、医疗服务提供者、医疗信息交换机构）
+- [HHS：HIPAA 涵盖实体](https://www.hhs.gov/hipaa/for-professionals/covered-entities/index.html) — HIPAA 适用范围（医疗保险计划、医疗服务提供者、医疗信息交换机构及其业务伙伴）
+- [FTC：Privacy and Security Enforcement](https://www.ftc.gov/news-events/topics/protecting-consumer-privacy-security/privacy-security-enforcement) — FTC 对涉及消费者个人数据的不公平或欺骗性行为的执法权
 - [FTC：Complying with COPPA FAQ](https://www.ftc.gov/business-guidance/resources/complying-coppa-frequently-asked-questions) — COPPA 只覆盖从儿童本人在线收集的信息、可验证家长同意机制
 - [加州民法典 §1798.140（CCPA/CPRA）](https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=CIV&sectionNum=1798.140) — 「出售」的法定定义（金钱或其他有价值的对价）
 - [Meta Business Help Center：About Hashing Customer Information](https://www.facebook.com/business/help/112061095610075) — custom audiences 名单上传与匹配机制
+- [NIST：Facing the Facts to Keep Our Biometrics Secure](https://www.nist.gov/blogs/taking-measure/facing-facts-keep-our-biometrics-secure) — 与密码不同，生物特征信息一旦泄露无法更换
 - [Slate：Zenith's Radio Nurse Was the World's First Baby Monitor](https://slate.com/human-interest/2013/02/zeniths-radio-nurse-designed-by-isamu-noguchi-was-the-worlds-first-baby-monitor.html) — 婴儿监视器品类起点（1937 年，单向音频传输）
 - [eufy：Non-WiFi Baby Monitors](https://www.eufy.com/collections/non-wifi-baby-monitor) — 不联网本地监视器的产品实例
 - [Democratic Underground 论坛转录](https://www.democraticunderground.com/100221417047) — 用于逐字核对《纽约时报》原文引语（品牌咨询、误报、Diamond 引语）
