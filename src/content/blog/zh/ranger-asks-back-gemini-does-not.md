@@ -32,7 +32,7 @@ Mount Shasta 官方雪崩中心（由 USFS Shasta-Trinity 国家森林与国家�
 
 **第二，网上的用时数字来自不能代表你的人。** 会把登山用时写上网的，多半是常爬山、爬得快的人；攻略和游记里的「一天往返」，默认读者也是这类人。模型从这些文本里学来数字，但它不知道提问的你属于哪一档。Gemini 当时怎么得出 8 小时的，无法回放；可查的是它的原料长什么样——官方描述里「强者一天、多数人两三天」的分布，压缩成一个数字时，留下来的往往是前者。Google Maps 那个 5 小时 13 分是同一族错误的更纯粹版本：一个按平地步速算路的引擎，根本不知道山是什么。
 
-这种「不知道你是谁」，我自己今年也撞上过一次，只是代价小得多。5 月底到 6 月初我去阿拉斯加玩了一周：出发前一周才定下来，行程直接让 ChatGPT 排了开车、不开车两个版本，我看着合适，两小时内敲定不开车那版，跟同伴接着订机票、酒店、火车。订完才发现，它推荐的住宿多是 Lodge 一类，对我这种习惯订快捷酒店的年轻人来说价格偏高；懒得再改行程，照单订了。到了当地，一路遇到的八成是退休的白人老爷爷老奶奶，几乎看不到年轻人，顶多是大人带着很小的孩子的家庭。是那段时间本就以退休游客为主，还是这条线路照着他们的画像排的，我分不清。但方向和登山用时是同一个：模型给出的默认方案对应某一档典型用户，未必是提问的你。我的错配停在酒店账单上，Shasta 这三个人的错配，走进了两天一夜的救援里。
+这种「不知道你是谁」，我自己今年也撞上过一次，只是代价小得多。5 月底到 6 月初我去阿拉斯加玩了一周：出发前一周才定下来，行程直接让 ChatGPT 排了开车、不开车两个版本，我看着合适，两小时内敲定不开车那版，跟同伴接着订机票、酒店、火车。订完才发现，它推荐的住宿多是 Lodge 一类，对我这种习惯订快捷酒店的年轻人来说价格偏高；懒得再改行程，照单订了。到了当地，一路遇到的八成是退休的老爷爷老奶奶，几乎看不到年轻人，顶多是大人带着很小的孩子的家庭。写这篇文章时我查了查公开数据，这大体是季节和目的地本身的属性：阿拉斯加的游客整体偏年长，[州访客统计项目 2011 年夏季报告里的平均年龄是 50.7 岁](https://www.frontiersman.com/state-releases-2011-summer-visitor-numbers/)，[Anchorage 的这个数字到 2016 年涨到 54 岁](https://www.anchorage.net/articles/post/anchorage-visitor-snapshot/)；而 5 月底 6 月初学校还没放假，[带孩子的家庭很少在这个时段出行](https://www.alaska.org/advice/best-time-to-cruise-alaska)，留下的自然多是退休游客。所以满眼银发不能算 ChatGPT 的错，但住宿那个错配仍然成立：模型给出的默认方案对应的是某一档典型用户，在阿拉斯加这条线上就是有 Lodge 预算的年长游客，未必是提问的你。我的错配停在酒店账单上，Shasta 这三个人的错配，走进了两天一夜的救援里。
 
 **第三，也是最关键的：安全规划要的不是准确估计，是带边际的估计。** 多背两升水的代价是包重一点；少带两升的代价可能是命。损失两头不对称的时候，正确的做法是按坏情况备——护林站的建议听起来总是啰嗦保守，因为搜救队见过每一次失败，这次警长办公室发声明提醒公众，本身就是那个反馈回路在运转。模型没有这个回路。它输出一个居中的、自信的答案，不会自动加安全边际，除非你明确要求。在订餐厅、排行程这类低风险场景，居中的答案叫好用；在雪山上，同一种行为叫危险。
 
@@ -57,4 +57,7 @@ Mount Shasta 官方雪崩中心（由 USFS Shasta-Trinity 国家森林与国家�
 - [Mount Shasta Avalanche Center：Clear Creek 路线描述](https://www.shastaavalanche.org/general-route-description/clear-creek) — 「强者一天、多数人两到三天」、晚季碎石路况、8,600 英尺泉水；USFS 与 NWS 合作运营
 - [USGS：Mount Shasta 地质页](https://www.usgs.gov/volcanoes/mount-shasta/science/geology-and-history-mount-shasta) — 海拔 14,162 英尺
 - [The Narwhal：BC 省徒步别用 Google Maps](https://thenarwhal.ca/bc-hiking-avoid-google-maps/) — Lions Bay SAR 案例（5 小时 13 分 vs 实际 8–14 小时）、Masiar 引语、Google 回应
+- [Frontiersman：州政府发布 2011 年夏季访客数据](https://www.frontiersman.com/state-releases-2011-summer-visitor-numbers/) — 阿拉斯加访客统计项目（AVSP）2011 年夏季平均年龄 50.7 岁
+- [Visit Anchorage：访客画像快照](https://www.anchorage.net/articles/post/anchorage-visitor-snapshot/) — Anchorage 访客平均年龄 2016 年达 54 岁
+- [ALASKA.ORG：什么时候去阿拉斯加坐邮轮](https://www.alaska.org/advice/best-time-to-cruise-alaska) — 5 月、9 月家庭游客少，原因是学校日历
 - [我此前的文章：AI 理财建议赢了谁](/zh/ai-financial-advice-right-questions) — 「模型不追问、按给定 context 作答」机制的前一个案例
