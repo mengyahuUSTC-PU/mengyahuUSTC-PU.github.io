@@ -45,7 +45,9 @@ Mount Shasta 官方雪崩中心（由 USFS Shasta-Trinity 国家森林与国家�
 3. **硬规则不从对话里来。** 正午折返这类规则是历次事故换来的，它的存在就是为了在你状态最差、最想赌一把的时刻替你做决定。任何聊天输出都不该覆盖它。
 4. **数字找权威源头对一遍。** 用时、水源、路况，打给护林站或查管理方页面。AI 的输出当草稿用，草稿的作用是让你带着问题去打那个电话，而不是替你省掉它。
 
-最后一个判断。这次事故和 AI 理财建议的失败，是同一个特点、同一个原因、同一个源头：关键信息不全，模型不坚持问全就作答，损失不对称，输出却照样自信。理财场景里这个组合造成的是慢性损失，雪山上是急性的。认出这个组合，比记住「别用 AI 规划徒步」有用——下一次它出现的地方，多半不在山上。
+这四条之外，还有一个更朴素的道理：用 AI 做规划，和用其他任何工具没有本质区别——多方查证，随机应变，不能照单全信。地图导航发展了这么多年，跟着导航犯低级错误的新闻也没断过：2016 年安大略一位驾驶人跟着 GPS [把车开下船台、直接开进了 Tobermory 港湾](https://www.cbc.ca/news/canada/kitchener-waterloo/kitchener-woman-gps-drives-off-tobermory-boat-launch-1.3580930)，摇下车窗游回岸边；今年 6 月，西雅图一位驾驶人[跟着 GPS 把 SUV 开上了轻轨高架轨道](https://www.axios.com/local/seattle/2026/06/03/seattle-driver-gps-mount-baker-station-light-rail-delay)，沿轨道开出约 400 米，轻轨停运约两小时。这两个场景里工具都错了，但眼前明明是水面、是轨道，最后一脚油门是人踩的。AI 也一样：它能给出一份看起来完整的计划，关键时刻的判断必须是你自己的。
+
+最后一个判断。这次事故和 AI 理财建议的失败，出自同一个组合：关键信息不全，模型不坚持问全就作答，损失不对称，输出却照样自信。理财场景里这个组合造成的是慢性损失，雪山上是急性的。认出这个组合，比记住「别用 AI 规划徒步」有用——下一次它出现的地方，多半不在山上。
 
 ## 参考来源
 
@@ -57,4 +59,6 @@ Mount Shasta 官方雪崩中心（由 USFS Shasta-Trinity 国家森林与国家�
 - [Mount Shasta Avalanche Center：Clear Creek 路线描述](https://www.shastaavalanche.org/general-route-description/clear-creek) — 「强者一天、多数人两到三天」、晚季碎石路况、8,600 英尺泉水；USFS 与 NWS 合作运营
 - [USGS：Mount Shasta 地质页](https://www.usgs.gov/volcanoes/mount-shasta/science/geology-and-history-mount-shasta) — 海拔 14,162 英尺
 - [The Narwhal：BC 省徒步别用 Google Maps](https://thenarwhal.ca/bc-hiking-avoid-google-maps/) — Lions Bay SAR 案例（5 小时 13 分 vs 实际 8–14 小时）、Masiar 引语、Google 回应
+- [Axios Seattle：驾驶人跟着 GPS 开上 Mount Baker 站轻轨轨道](https://www.axios.com/local/seattle/2026/06/03/seattle-driver-gps-mount-baker-station-light-rail-delay) — 2026 年 6 月 2 日案例：沿高架轨道开出约四分之一英里、1 Line 停运约两小时
+- [CBC News：Kitchener 女子跟着 GPS 开进 Tobermory 港湾](https://www.cbc.ca/news/canada/kitchener-waterloo/kitchener-woman-gps-drives-off-tobermory-boat-launch-1.3580930) — 2016 年 5 月案例：雨夜沿船台开进水中，驾驶人自行游回岸边
 - [我此前的文章：AI 理财建议赢了谁](/zh/ai-financial-advice-right-questions) — 「模型不追问、按给定 context 作答」机制的前一个案例
