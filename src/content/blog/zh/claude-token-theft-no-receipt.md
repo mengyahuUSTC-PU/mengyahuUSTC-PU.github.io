@@ -22,15 +22,15 @@ translationOf: claude-token-theft-no-receipt
 
 infostealer（信息窃取类恶意软件）干的事，就是潜入你的电脑，把浏览器里存的手环整个复制走。攻击者拿到手环后，不需要你的密码，也不需要过两步验证，因为在网站看来，他就是「已经登录的你」。安全行业管这叫会话劫持（session hijacking）：拿到有效的会话 cookie，就能完整冒充这个用户（[OWASP](https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/06-Session_Management_Testing/09-Testing_for_Session_Hijacking)）。这就是为什么此类攻击能绕过 2FA：2FA 守的是大门，而攻击者是直接从你口袋里摸走了手环。根据 Anthropic 发给用户的邮件，这次涉及的都是安全圈的老面孔：Windows 上的 Vidar、LummaC2、StealC、RedLine、Acreed，以及少量 Mac 用户中招的 Atomic Stealer（[Search Engine Journal](https://www.searchenginejournal.com/anthropic-warns-hackers-are-stealing-claude-sessions-to-hijack-accounts/587566/)）。感染途径也是老一套：Reddit 上有受害者承认，中招前下过盗版游戏（[Search Engine Journal](https://www.searchenginejournal.com/anthropic-warns-hackers-are-stealing-claude-sessions-to-hijack-accounts/587566/)）。
 
-攻击链还有关键一步。据 TechCrunch 报道，被盗的 Claude 会话密钥被用来「铸造未经授权的 Claude Code OAuth token」。翻译一下：攻击者拿着浏览器会话，去给 Claude Code（Anthropic 的编程 agent 工具）签发了程序化访问凭证，也就是一把可以写进脚本里用的钥匙，让盗刷不必有人守着浏览器窗口。两种凭证各自的有效期和权限范围，公开报道没有披露。12 分钟烧掉 49% 额度这种速度，我的推断是手动聊天聊不出来，更像脚本化跑 agent 任务的消耗节奏；报道没有取证攻击者具体跑了什么负载，这一点是推断，不是坐实的事实。
+攻击链还有关键一步。据 TechCrunch 报道，被盗的 Claude 会话密钥被用来「铸造未经授权的 Claude Code OAuth token」。翻译一下：攻击者拿着浏览器会话，去给 Claude Code（Anthropic 的编程 agent 工具，[官方文档](https://code.claude.com/docs/en/overview)）签发了程序化访问凭证，也就是一把可以写进脚本里用的钥匙，让盗刷不必有人守着浏览器窗口。两种凭证各自的有效期和权限范围，公开报道没有披露。12 分钟烧掉 49% 额度这种速度，我的推断是手动聊天聊不出来，更像脚本化跑 agent 任务的消耗节奏；报道没有取证攻击者具体跑了什么负载，这一点是推断，不是坐实的事实。
 
 ## 为什么受害者几乎不可能自己发现
 
 把这次盗刷和传统信用卡盗刷对比，差别立刻出来。
 
-信用卡被盗刷，你有三层保护：银行风控会标记异常交易；月底账单上每一笔消费都有商户名和金额；发现未授权扣费还能发起争议（chargeback），核实属实后这笔钱必须从账单上撤掉（[CFPB](https://www.consumerfinance.gov/ask-cfpb/how-do-i-dispute-a-charge-on-my-credit-card-bill-en-61/)）。这套体系是几十年欺诈损失堆出来的。
+信用卡被盗刷，你有三层保护：银行风控会标记异常交易；月底账单上每一笔消费都有商户名和金额，监管机构提醒消费者盯紧账单，正是因为盗刷会在这里现形（[CFPB](https://www.consumerfinance.gov/consumer-tools/bank-accounts/watch-accounts-closely-when-card-data-is-hacked/)）；发现未授权扣费还能发起争议（chargeback），核实属实后这笔钱必须从账单上撤掉（[CFPB](https://www.consumerfinance.gov/ask-cfpb/how-do-i-dispute-a-charge-on-my-credit-card-bill-en-61/)）。这套体系是几十年欺诈损失堆出来的。
 
-订阅制 AI 额度被盗刷，三层几乎全部失效。第一，攻击者通常不产生新的扣费。钱你早就付了，他消耗的是预付额度，银行侧看不到新增交易，风控无从谈起。例外是前面那位账户被擅自升级的用户，确实被多扣了钱，但那笔扣费在银行看来也只是 Anthropic 的一笔正常订阅扣款，同样触发不了风控。第二，没有明细。Claude 订阅用户能看到的只有一根用量百分比条，看不到「几点几分、哪个会话、跑了什么任务、烧了多少」。De Swardt 之所以发现，纯粹因为他碰巧在没干活的时候盯了一眼用量条；一个每天把额度用到七八成的重度用户，被人蹭走两三成额度，未必察觉得到。他对 TechCrunch 说得直白：没有逐项的用量明细，「这些人没有办法保护自己」。第三，没有制度化的追回机制。算力是即时消费品，token 烧掉就是烧掉了；De Swardt 拿到的 44.49 英镑退款是 Anthropic 的个案处置，不是用户可以像信用卡拒付那样主张的权利。
+订阅制 AI 额度被盗刷，三层几乎全部失效。第一，攻击者通常不产生新的扣费。钱你早就付了，他消耗的是预付额度；套餐内的用量根本不走你的卡，只有单独购买的用量积分（usage credits）才会产生额外扣费（[Claude Help Center](https://support.claude.com/en/articles/12429409-manage-usage-credits-for-paid-claude-plans)）。银行侧看不到新增交易，风控无从谈起。例外是前面那位账户被擅自升级的用户，确实被多扣了钱，但那笔扣费在银行看来也只是 Anthropic 的一笔正常订阅扣款，同样触发不了风控。第二，没有逐任务的明细。Claude 设置里确实有一个用量页面，能看到整体消耗和历史（[Claude Help Center](https://support.claude.com/en/articles/12429409-manage-usage-credits-for-paid-claude-plans)），但订阅用户拿到的只是汇总数字：没有逐会话的列表，看不到跑了什么任务、每次烧了多少。De Swardt 之所以发现，纯粹因为他碰巧在没干活的时候盯了一眼用量条；一个每天把额度用到七八成的重度用户，被人蹭走两三成额度，未必察觉得到。他对 TechCrunch 说得直白：Anthropic 没有给用户提供「能看到是什么在消耗 token 的工具」，没有逐项明细，订阅用户就没有办法保护自己。第三，没有制度化的追回机制。算力是即时消费品，token 烧掉就是烧掉了；De Swardt 拿到的 44.49 英镑退款是 Anthropic 的个案处置——官方支持页面也只说团队可以「核查退款资格」（[Anthropic Help Center](https://support.claude.com/en/articles/9015913-how-to-get-support)），不是用户可以像信用卡拒付那样主张的成文争议流程。
 
 Anthropic 的检测倒是起了作用：是它主动发现异常、登出用户、发的邮件。但当 TechCrunch 问及用户自己该怎么识别滥用时，Anthropic 拒绝置评。平台看得到的，用户看不到。这个信息差就是当前订阅制 AI 产品安全模型的最大缺口。
 
@@ -46,13 +46,13 @@ Anthropic 的检测倒是起了作用：是它主动发现异常、登出用户�
 
 **检查活跃会话。** Claude 设置里可以查看所有已登录的设备、浏览器和大致位置（[官方指引](https://support.claude.com/en/articles/13124001-managing-your-active-sessions)），看到不认识的位置或设备，立即终止。
 
-**盯用量条的两个异常信号。** Anthropic 邮件里给出的典型症状是：额度看起来「回满了，然后在你没用的时候掉下去」。另一个信号是你明明没干活、用量却在涨。养成偶尔在空闲时瞄一眼的习惯。在平台给出逐项明细之前，用户侧的检测手段就是这根用量条，加上前一条说的活跃会话列表，没有更多了。
+**盯用量条的两个异常信号。** Anthropic 邮件里给出的典型症状是：额度看起来「回满了，然后在你没用的时候掉下去」。另一个信号是你明明没干活、用量却在涨。养成偶尔在空闲时瞄一眼的习惯。在平台给出逐项明细之前，用户侧的检测手段就是这根用量条、设置里的汇总用量页，加上前一条说的活跃会话列表，没有更多了。
 
-**把邮箱当成同等重要的阵地。** 你的 Claude 账户挂在邮箱上，攻击者一旦拿下邮箱，就可能顺着找回密码的流程接管挂在这个邮箱上的各种账户。改邮箱密码、登出其他设备、开启两步验证。Anthropic 这次替受影响用户移除了保存的支付方式；Malwarebytes 提醒，要等上面的清理步骤全部做完、确认电脑干净之后，再把支付方式加回去。发现持续异常可以联系 usersafety@anthropic.com。
+**把邮箱当成同等重要的阵地。** 你的 Claude 账户挂在邮箱上，攻击者一旦拿下邮箱，就可能顺着找回密码的流程接管挂在这个邮箱上的各种账户（[NCSC](https://www.ncsc.gov.uk/guidance/recovering-a-hacked-account)）。改邮箱密码、登出其他设备、开启两步验证。Anthropic 这次替受影响用户移除了保存的支付方式；Malwarebytes 提醒，要等上面的清理步骤全部做完、确认电脑干净之后，再把支付方式加回去。发现持续异常可以联系 usersafety@anthropic.com。
 
-**别碰盗版和破解工具。** 这轮受害者里已确认的一例感染源是盗版游戏。盗版和破解软件一直是 infostealer 常见的分发渠道。
+**别碰盗版和破解工具。** 这轮受害者里，公开追溯到感染源的那一例，起点是一款盗版游戏。盗版和破解软件一直是 infostealer 的标准分发渠道；微软对 Lumma Stealer 的分析就描述了把正版应用的破解版和恶意软件打包、经文件分享平台传播的手法（[Microsoft](https://www.microsoft.com/en-us/security/blog/2025/05/21/lumma-stealer-breaking-down-the-delivery-techniques-and-capabilities-of-a-prolific-infostealer/)）。
 
-最后说个判断。订阅制 AI 额度正在变成一种真实的、可被盗窃的资产类别，但围绕它的安全基础设施还停留在「一根百分比条」的水平。信用卡体系用几十年学会了给用户逐笔明细和拒付权，我判断 AI 订阅平台迟早也要走到这一步：逐会话的用量日志、异常消耗告警、可撤销的细粒度凭证。在那之前，用户侧能做的只有上面这些，而平台侧欠的账，De Swardt 那句「这些人没有办法保护自己」已经说清了。他后来换去了 Cursor。在我看来，赶走用户的未必是安全事故本身，而是出了事之后什么都看不到。
+最后说个判断。订阅制 AI 额度正在变成一种真实的、可被盗窃的资产类别，但围绕它的安全基础设施还停留在「一根百分比条」的水平。信用卡体系用几十年学会了给用户逐笔明细和拒付权，我判断 AI 订阅平台迟早也要走到这一步：逐会话的用量日志、异常消耗告警、可撤销的细粒度凭证。在那之前，用户侧能做的只有上面这些，而平台侧欠的账，De Swardt 已经点明了：订阅用户没有办法保护自己。他后来换去了 Cursor。在我看来，赶走用户的未必是安全事故本身，而是出了事之后什么都看不到。
 
 ## 参考来源
 
@@ -60,8 +60,13 @@ Anthropic 的检测倒是起了作用：是它主动发现异常、登出用户�
 - [Anthropic warns infostealer malware is hijacking Claude sessions to drain usage — BleepingComputer](https://www.bleepingcomputer.com/news/artificial-intelligence/anthropic-warns-infostealer-malware-is-hijacking-claude-sessions-to-drain-usage/) — Anthropic 邮件原文引语、恶意软件家族名单、官方处置措施（登出、移除支付方式、退款）
 - [Infostealers are hijacking Claude accounts at users' expense — Malwarebytes](https://www.malwarebytes.com/blog/news/2026/09/infostealers-are-hijacking-claude-accounts-at-users-expense/) — 用户防护步骤顺序（先杀毒再改密码）、清理完成后再重新绑定支付方式的建议、usersafety@anthropic.com 联系渠道
 - [Anthropic Warns Hackers Are Stealing Claude Sessions To Hijack Accounts — Search Engine Journal](https://www.searchenginejournal.com/anthropic-warns-hackers-are-stealing-claude-sessions-to-hijack-accounts/587566/) — 确认 Anthropic 声明出自发给用户的邮件（经 Reddit 流出）而非公开公告、恶意软件家族名单交叉印证、盗版游戏感染源案例
+- [Claude Code overview — Anthropic docs](https://code.claude.com/docs/en/overview) — Claude Code 作为 Anthropic 的编程 agent 工具，支持脚本化与自动化使用
 - [Managing your active sessions — Claude Help Center](https://support.claude.com/en/articles/13124001-managing-your-active-sessions) — 活跃会话管理的官方指引
+- [Manage usage credits for paid Claude plans — Claude Help Center](https://support.claude.com/en/articles/12429409-manage-usage-credits-for-paid-claude-plans) — 套餐内用量与单独计费的用量积分的区别、设置里的用量页面
+- [How to get support — Anthropic Help Center](https://support.claude.com/en/articles/9015913-how-to-get-support) — 支持团队逐案核查退款资格
 - [Session Management Cheat Sheet — OWASP](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html) 与 [Testing for Session Hijacking — OWASP](https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/06-Session_Management_Testing/09-Testing_for_Session_Hijacking) — 会话 cookie 维持登录状态、被盗会话可完整冒充用户的机制说明
-- [How do I dispute a charge on my credit card bill? — CFPB](https://www.consumerfinance.gov/ask-cfpb/how-do-i-dispute-a-charge-on-my-credit-card-bill-en-61/) — 信用卡账单争议与未授权扣费撤销机制
+- [Watch accounts closely when card data is hacked — CFPB](https://www.consumerfinance.gov/consumer-tools/bank-accounts/watch-accounts-closely-when-card-data-is-hacked/) 与 [How do I dispute a charge on my credit card bill? — CFPB](https://www.consumerfinance.gov/ask-cfpb/how-do-i-dispute-a-charge-on-my-credit-card-bill-en-61/) — 账单监控建议、信用卡账单争议与未授权扣费撤销机制
+- [Recovering a hacked account — NCSC](https://www.ncsc.gov.uk/guidance/recovering-a-hacked-account) — 邮箱失守为何会波及挂在它名下的各种账户
 - [Over 100K compromised ChatGPT accounts found on dark web marketplaces — Group-IB](https://www.group-ib.com/media-center/press-releases/stealers-chatgpt-credentials/) — 被盗 AI 账号在暗网市场流通的先例
 - [Stealer Logs & Corporate Access — Flare](https://flare.io/learn/resources/blog/stealer-logs-and-corporate-access/) — stealer logs 在暗网市场与 Telegram 频道按包批量交易的研究
+- [Lumma Stealer: breaking down the delivery techniques of a prolific infostealer — Microsoft](https://www.microsoft.com/en-us/security/blog/2025/05/21/lumma-stealer-breaking-down-the-delivery-techniques-and-capabilities-of-a-prolific-infostealer/) — 破解/盗版软件作为 infostealer 分发渠道
