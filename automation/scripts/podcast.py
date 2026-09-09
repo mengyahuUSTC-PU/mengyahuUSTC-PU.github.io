@@ -15,15 +15,16 @@ import json
 import re
 import subprocess
 import sys
+from pathlib import Path
 import time
 from datetime import datetime, timezone
 from email.utils import format_datetime
-from pathlib import Path
-
 import numpy as np
 import soundfile as sf
 
-sys.path.insert(0, "/home/mia/tts")
+# Text preparation and phonemization live with the pipeline; only the model
+# weights stay outside the repo.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tts"))
 import prep      # noqa: E402  markdown -> text meant to be heard
 import speech    # noqa: E402  text -> Kokoro phonemes, Chinese with English in it
 
