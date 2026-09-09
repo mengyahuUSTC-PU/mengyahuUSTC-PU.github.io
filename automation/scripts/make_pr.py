@@ -120,6 +120,24 @@ def main():
         if not pr_url:
             raise
     sh("git", "checkout", "-q", "master")
+
+    # Reading the drafts is the slow step in this pipeline, so every Chinese
+    # deep dive also becomes a podcast episode. Synthesis takes about as long
+    # as the article does to listen to, so it runs detached: the PR is never
+    # held up by it, and Discord announces the episode when it lands.
+    zh_draft = next((d for (fm, _, _), d in zip(parsed, drafts)
+                     if fm.get("lang", "zh") == "zh"), None)
+    if zh_draft and not slug.startswith("briefing-"):
+        pr_number = pr_url.rstrip("/").rsplit("/", 1)[-1]
+        subprocess.Popen(
+            ["/home/mia/tts/.venv/bin/python",
+             str(Path(__file__).with_name("podcast.py")),
+             str(zh_draft), "--pr", pr_number, "--url", pr_url],
+            stdout=open("/home/mia/podcast-render.log", "a"),
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+
     print(pr_url)
 
 
