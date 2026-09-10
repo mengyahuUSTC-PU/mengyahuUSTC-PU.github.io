@@ -37,3 +37,7 @@ automation/.venv/
 # Distribution runtime output (VM-local only)
 automation/xhs-drafts/
 __pycache__/
+automation/G2PWModel/
+.env.*
+.env.bak-*
+G2PWModel/

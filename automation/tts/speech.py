@@ -56,11 +56,18 @@ def _load_overrides() -> tuple:
     return tuple(sorted(data.items(), key=lambda kv: -len(kv[0])))
 
 
+# g2pW downloads its weights into the current working directory unless told
+# otherwise, which dropped a 100MB model into the repo. Pin it next to the
+# other model files instead.
+G2PW_MODEL_DIR = "/home/mia/tts/G2PWModel"
+
+
 def _g2p():
     global _converter
     if _converter is None:
         from g2pw import G2PWConverter
-        _converter = G2PWConverter(style="pinyin", enable_non_tradional_chinese=True)
+        _converter = G2PWConverter(model_dir=G2PW_MODEL_DIR, style="pinyin",
+                                   enable_non_tradional_chinese=True)
     return _converter
 
 
