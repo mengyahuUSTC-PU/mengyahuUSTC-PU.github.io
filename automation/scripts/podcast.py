@@ -185,11 +185,18 @@ def main():
     print(f"{slug}: {minutes:.1f} min audio, synthesized in {(time.time()-started)/60:.1f} min")
 
     if not args.quiet:
-        sys.path.insert(0, "/home/mia/site/automation/scripts")
-        from discord_notify import send
-        where = f"（PR #{args.pr}）" if args.pr else ""
-        send(f"🎧 **朗读版已就绪**{where}：{title}\n"
-             f"约 {minutes:.0f} 分钟 · 打开播客 App 刷新一下就能听")
+        # The episode is already published at this point. A notification that
+        # cannot be delivered is worth reporting, never worth failing the job
+        # over — that once made a finished render look like a failure and got
+        # it re-rendered.
+        try:
+            sys.path.insert(0, "/home/mia/site/automation/scripts")
+            from discord_notify import send
+            where = f"（PR #{args.pr}）" if args.pr else ""
+            send(f"🎧 **朗读版已就绪**{where}：{title}\n"
+                 f"约 {minutes:.0f} 分钟 · 打开播客 App 刷新一下就能听")
+        except Exception as exc:
+            print(f"episode published; Discord notice failed: {exc}")
 
 
 if __name__ == "__main__":

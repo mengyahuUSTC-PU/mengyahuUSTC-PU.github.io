@@ -12,6 +12,7 @@ is retried a few times and then parked with its error rather than vanishing.
 """
 
 import json
+import os
 import subprocess
 import sys
 import time
@@ -51,7 +52,21 @@ def run(job: dict) -> subprocess.CompletedProcess:
     return result
 
 
+def load_env(path=Path("/home/mia/site/.env")):
+    """cron has none of the pipeline's environment, so the render would run
+    without the Discord webhook and the Resend key."""
+    if not path.exists():
+        return
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
 def main():
+    load_env()
     QUEUE.mkdir(parents=True, exist_ok=True)
     FAILED.mkdir(parents=True, exist_ok=True)
 
