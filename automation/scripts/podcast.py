@@ -19,22 +19,15 @@ from pathlib import Path
 import time
 from datetime import datetime, timezone
 from email.utils import format_datetime
-import numpy as np
-import soundfile as sf
-
 # Text preparation and phonemization live with the pipeline; only the model
 # weights stay outside the repo.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tts"))
-import prep      # noqa: E402  markdown -> text meant to be heard
-import speech    # noqa: E402  text -> Kokoro phonemes, Chinese with English in it
+import azure_tts  # noqa: E402  text -> speech
+import prep       # noqa: E402  markdown -> text meant to be heard
 
 PODCAST_DIR = Path("/home/mia/podcast")
 EPISODE_DIR = PODCAST_DIR / "episodes"
 STATE_FILE = PODCAST_DIR / "episodes.json"
-MODEL = "/home/mia/tts/kokoro-v1.0.onnx"
-VOICES = "/home/mia/tts/voices-v1.0.bin"
-VOICE = "zf_xiaoxiao"
-RATE = 24000
 KEEP = 60  # episodes retained; a phone only ever needs the recent ones
 
 FEED_TITLE = "Mengya 的草稿朗读"
@@ -59,38 +52,18 @@ def frontmatter(markdown: str) -> dict:
     return out
 
 
-def synthesize(text: str, out_wav: Path) -> float:
-    """Speak the article. Returns audio length in seconds."""
-    from kokoro_onnx import Kokoro
-
-    kokoro = Kokoro(MODEL, VOICES)
-    pieces = prep.chunks(text)
-    gap = np.zeros(int(RATE * 0.25), dtype=np.float32)
-    para_gap = np.zeros(int(RATE * 0.6), dtype=np.float32)
-
-    segments = []
-    for piece in pieces:
-        phonemes = speech.mixed_phonemes(piece)
-        if not phonemes.strip():
-            continue
-        samples, _ = kokoro.create(phonemes, voice=VOICE, speed=1.0, is_phonemes=True)
-        segments.append(samples)
-        segments.append(para_gap if piece.endswith(("。", "！", "？")) else gap)
-
-    audio = np.concatenate(segments) if segments else np.zeros(1, dtype=np.float32)
-    sf.write(out_wav, audio, RATE)
-    return len(audio) / RATE
-
-
-def encode(wav: Path, mp3: Path, title: str):
+def render(text: str, out_mp3: Path, title: str) -> float:
+    """Speak the article and tag the file. Returns its length in seconds."""
+    seconds = azure_tts.synthesize(text, out_mp3)
+    tagged = out_mp3.with_suffix(".tagged.mp3")
     subprocess.run(
-        ["ffmpeg", "-y", "-loglevel", "error", "-i", str(wav),
-         "-codec:a", "libmp3lame", "-b:a", "64k", "-ac", "1",
+        ["ffmpeg", "-y", "-loglevel", "error", "-i", str(out_mp3),
+         "-codec", "copy",
          "-metadata", f"title={title}", "-metadata", "artist=Mengya (Mia) Hu",
-         "-metadata", f"album={FEED_TITLE}", str(mp3)],
-        check=True,
-    )
-    wav.unlink(missing_ok=True)
+         "-metadata", f"album={FEED_TITLE}", str(tagged)],
+        check=True)
+    tagged.replace(out_mp3)
+    return seconds
 
 
 def load_state() -> list:
@@ -161,10 +134,8 @@ def main():
 
     started = time.time()
     text = prep.speech_text(markdown)
-    wav = EPISODE_DIR / f"{slug}.wav"
-    seconds = synthesize(text, wav)
     mp3 = EPISODE_DIR / f"{slug}.mp3"
-    encode(wav, mp3, title)
+    seconds = render(text, mp3, title)
 
     episodes = [ep for ep in load_state() if ep["slug"] != slug]
     episodes.insert(0, {
@@ -182,7 +153,7 @@ def main():
     prune(episodes)
 
     minutes = seconds / 60
-    print(f"{slug}: {minutes:.1f} min audio, synthesized in {(time.time()-started)/60:.1f} min")
+    print(f"{slug}: {minutes:.1f} min audio, synthesized in {time.time()-started:.0f}s")
 
     if not args.quiet:
         # The episode is already published at this point. A notification that
