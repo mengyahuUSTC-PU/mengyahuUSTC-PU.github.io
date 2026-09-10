@@ -12,9 +12,11 @@ Requires: git identity + gh auth configured on this machine.
 Prints the PR URL on success.
 """
 
+import json
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -122,21 +124,25 @@ def main():
     sh("git", "checkout", "-q", "master")
 
     # Reading the drafts is the slow step in this pipeline, so every Chinese
-    # deep dive also becomes a podcast episode. Synthesis takes about as long
-    # as the article does to listen to, so it runs detached: the PR is never
-    # held up by it, and Discord announces the episode when it lands.
+    # deep dive also becomes a podcast episode. Rendering peaks near 1.6GB and
+    # this box has 3.9GB, so PR creation only *queues* the work: a single
+    # worker drains the queue one job at a time. Spawning a render per PR
+    # wedged the whole machine the day three PRs landed together.
     zh_draft = next((d for (fm, _, _), d in zip(parsed, drafts)
                      if fm.get("lang", "zh") == "zh"), None)
     if zh_draft and not slug.startswith("briefing-"):
-        pr_number = pr_url.rstrip("/").rsplit("/", 1)[-1]
-        subprocess.Popen(
-            ["/home/mia/tts/.venv/bin/python",
-             str(Path(__file__).with_name("podcast.py")),
-             str(zh_draft), "--pr", pr_number, "--url", pr_url],
-            stdout=open("/home/mia/podcast-render.log", "a"),
-            stderr=subprocess.STDOUT,
-            start_new_session=True,
-        )
+        queue = Path("/home/mia/podcast/queue")
+        queue.mkdir(parents=True, exist_ok=True)
+        # Copy the draft: the job may run long after this branch moves on.
+        source = queue / f"{slug}.md"
+        source.write_text(Path(zh_draft).read_text())
+        (queue / f"{slug}.json").write_text(json.dumps({
+            "slug": slug,
+            "markdown": str(source),
+            "pr": pr_url.rstrip("/").rsplit("/", 1)[-1],
+            "url": pr_url,
+            "queued_at": time.time(),
+        }, ensure_ascii=False, indent=2))
 
     print(pr_url)
 
