@@ -8,7 +8,7 @@ slug: can-researchers-trust-openai-with-unpublished-math
 translationOf: can-researchers-trust-openai-with-unpublished-math
 ---
 
-9 月 9 日，[德累斯顿工业大学的群论学家 Andreas Thom](https://tu-dresden.de/mn/math/geometrie/thom) 在 [Mathstodon 上公开](https://mathstodon.xyz/@andreasthom/117240535270608201)了他与 OpenAI 研究员的通信。8 月初，[OpenAI 宣布](https://openai.com/index/ten-advances-in-mathematics/)其内部模型解决了十个数学开放问题，其中一个的证明核心恰好建立在 Thom 与 Gábor Kun 的工作之上。Thom 给 OpenAI 的研究员发邮件，问了两个问题：我过去几个月和 ChatGPT 讨论这些数学时的对话，有没有进入训练数据？产出证明的系统，能不能访问到这些对话？
+9 月 9 日，[德累斯顿工业大学的群论学家 Andreas Thom](https://tu-dresden.de/mn/math/geometrie/thom) 在 [Mathstodon 上公开](https://mathstodon.xyz/@andreasthom/117240535270608201)了他与 OpenAI 研究员的通信。8 月初，[OpenAI 宣布](https://openai.com/index/ten-advances-in-mathematics/)其内部模型解决了十个数学与理论计算机科学的开放问题，其中一个的证明核心恰好建立在 Thom 与 Gábor Kun 的工作之上。Thom 给 OpenAI 的研究员发邮件，问了两个问题：我过去几个月和 ChatGPT 讨论这些数学时的对话，有没有进入训练数据？产出证明的系统，能不能访问到这些对话？
 
 研究员 Mark Sellke 的回复只有一句：「至于你和 ChatGPT 的那些对话：那件事没有发生。」
 
@@ -18,15 +18,15 @@ Thom 是一周之内第二位公开向 OpenAI 要说法的数学家。先看第�
 
 ## 一周，两位数学家
 
-Navier-Stokes 方程描述流体如何运动，对应的千禧年大奖问题问的是：从光滑的初始状态出发，方程的解会不会在有限时间内「爆破」，也就是流速在某一刻变成无穷大、方程失去物理意义。[Clay 研究所的官方题面](https://www.claymath.org/wp-content/uploads/2022/06/navierstokes.pdf)给了四个可选命题，证出任何一个都算解决；其中两个「爆破」版本允许在方程里加一个光滑的外力项。
+Navier-Stokes 方程描述流体如何运动，对应的[千禧年大奖问题（2000 年提出）](https://www.claymath.org/millennium-problems/)问的是：从光滑的初始状态出发，方程的解会不会在有限时间内「爆破」，也就是解失去题目要求的光滑性、方程不再能描述这股流动。[Clay 研究所的官方题面](https://www.claymath.org/wp-content/uploads/2022/06/navierstokes.pdf)给了四个可选命题，证出任何一个都算解决；其中两个「爆破」版本允许在方程里加一个光滑的外力项。
 
-纽约大学的 Tristan Buckmaster 和 Anthropic 的数学家 Levent Alpöge 以个人身份合作，花了近一年时间用 AI 模型（Claude、OpenAI 的 Codex 等）追打这条爆破路线。路线的基本思想来自 Diego Córdoba 和 Luis Martínez-Zoroa 两位数学家多年经营的带外力爆破纲领；Buckmaster 在[公开的四页声明](https://cims.nyu.edu/~tristanb/statement.pdf)里说，据他所知这条路几乎没有其他人在走，而两人整个项目的全部草稿都放在 Codex 会话里。声明记录的时间线是（另见 [TechCrunch 报道](https://techcrunch.com/2026/09/08/openai-fought-dirty-on-career-making-math-problem-says-nyu-mathematician/)）：9 月 3 日，他把项目进展告诉了 OpenAI 的一位数学家，说明这是与两家公司都无关的个人项目；三天后，OpenAI 研究员 Sébastien Bubeck 在通话中告知他，内部模型已经产出一份带外力 Navier-Stokes 有限时间爆破的约百页证明，走的正是同一条路线。声明还指控 OpenAI 提议让他以独著形式发表、把任职于 Anthropic 的 Alpöge 从署名中去掉，并称他在表示要公开此事时被问「你为什么要毁掉自己的职业生涯？」。Bubeck 否认了署名指控，并公开承认两人工作的优先权。
+纽约大学的 Tristan Buckmaster 和 Anthropic 的数学家 Levent Alpöge 以个人身份合作，花了近一年时间用 AI 模型（Claude、OpenAI 的 Codex 等）追打这条爆破路线。路线的基本思想来自 Diego Córdoba 和 Luis Martínez-Zoroa 两位数学家多年经营的带外力爆破纲领；Buckmaster 在[公开的四页声明](https://cims.nyu.edu/~tristanb/statement.pdf)里说，据他所知这条路几乎没有其他人在走，而两人整个项目的全部草稿都放在 Codex 会话里。声明记录的时间线是（另见 [TechCrunch 报道](https://techcrunch.com/2026/09/08/openai-fought-dirty-on-career-making-math-problem-says-nyu-mathematician/)）：9 月 3 日，他把项目进展告诉了 OpenAI 的一位数学家，说明这是与两家公司都无关的个人项目；三天后，OpenAI 研究员 Sébastien Bubeck 在通话中告知他，内部模型已经产出一份带外力 Navier-Stokes 有限时间爆破的约百页证明，走的正是同一条路线。声明还指控 OpenAI 提议让他以独著形式发表、把任职于 Anthropic 的 Alpöge 从署名中去掉，并称他在表示要公开此事时被问「你为什么要毁掉自己的职业生涯？」。Bubeck [否认了署名指控，并公开承认两人工作的优先权](https://the-decoder.com/openai-researcher-allegedly-pressured-mathematician-to-drop-anthropic-co-author-from-math-breakthrough-paper/)。
 
 9 月 7 日，两人赶在 OpenAI 之前公开了三个相邻方程（不可压缩多孔介质方程、二维 Boussinesq 方程、三维不可压缩 Euler 方程）带光滑外力的有限时间爆破证明；按声明的说法，这是把 Córdoba 与 Martínez-Zoroa 原本在粗糙外力下的爆破构造，借助 LLM 推进到光滑外力、并推广到 Euler 等方程。Terence Tao [当天在博客里](https://terrytao.wordpress.com/2026/09/07/finite-time-blowup-with-smooth-forcing-term-for-the-incompressible-porous-medium-boussinesq-and-incompressible-euler-equations/)介绍了这组工作，指出论证大量借助了 AI，且方法很有希望推广到 Navier-Stokes 本身。OpenAI 随后照样[宣布解决了带外力的 Navier-Stokes 爆破](https://www.cnbc.com/2026/09/09/openai-navier-stokes-math-problem-solved.html)，并表示不申领 100 万美元奖金。Alpöge 对 OpenAI 那句「无法排除」的[回应](https://x.com/__alpoge__/status/2097383870773748190)带着挖苦：这算他们爽快认账了。
 
-Thom 的故事线更早。1999 年，Gromov 提出一个问题：是否每个群（描述对称性的代数结构）都能被有限的置换很好地近似？能被近似的群后来称作 [sofic 群](https://mathworld.wolfram.com/SoficGroup.html)，27 年间没人造出反例。OpenAI 8 月 1 日公布的十个成果里就有第一个 non-sofic 群的构造，其证明的关键一步直接建立在 [Kun 2016 年的定理](https://arxiv.org/abs/1606.04471)和 [Kun–Thom 2019 年的论文](https://arxiv.org/abs/1901.03963)之上；据 [Northeast Times 报道](https://northeasttimes.com/2026/09/10/two-mathematicians-demand-answers-from-openai-on-training-data/)，最初的成果介绍没有提到两人的贡献，被数学家指出后才悄悄补上。这个结果已有数学界的后续工作跟进：已有数学家[在其基础上构造出新的一类 non-sofic 群](https://arxiv.org/abs/2608.02025)。
+Thom 的故事线更早。1999 年，Gromov 提出一个问题：是否每个群（描述对称性的代数结构）都能被有限的置换很好地近似？能被近似的群后来称作 [sofic 群](https://mathworld.wolfram.com/SoficGroup.html)，27 年间没人造出反例。OpenAI 8 月 1 日公布的十个成果里就有第一个 non-sofic 群的构造，其证明的关键一步直接建立在 [Kun 2016 年的定理](https://arxiv.org/abs/1606.04471)和 [Kun–Thom 2019 年的论文](https://arxiv.org/abs/1901.03963)之上；据 [Northeast Times 报道](https://northeasttimes.com/2026/09/10/two-mathematicians-demand-answers-from-openai-on-training-data/)，最初的成果介绍没有提到两人的贡献，被数学家指出后才悄悄补上。这个结果已有数学界的后续工作跟进：已有数学家作为回应[构造出无挠（torsion-free）的 non-sofic 群](https://arxiv.org/abs/2608.02025)。
 
-让 Thom 起疑的是路线选择。用他[在 Mathstodon 帖子里](https://mathstodon.xyz/@andreasthom/117240535270608201)的话说，Kun–Thom 这条路「从来不是领先候选」，圈内原本更看好借道量子计算复杂度的另一条路线；而他恰好花了几个月时间，和 ChatGPT 反复讨论 expander 匹配问题（expander 是一类连接性极强的稀疏图）以及 Kun–Thom 工作的延伸。模型偏偏沿着这条冷门路线走通了。他 6 月 29 日关掉了账户里「用我的数据改进模型」的开关，但按 [OpenAI 的官方说明](https://help.openai.com/en/articles/8983099-does-the-improve-the-model-for-everyone-setting-sync-between-web-and-mobile-devices)，这类开关只约束今后的新对话；之前的对话有没有进过训练，OpenAI 也不提供逐对话的使用记录（[数据控制说明](https://help.openai.com/en/articles/7730893-data-control)），用户无从查证。
+让 Thom 起疑的是路线选择。用他[在 Mathstodon 帖子里](https://mathstodon.xyz/@andreasthom/117240535270608201)的话说，Kun–Thom 这条路「从来不是领先候选」，圈内原本更看好借道量子计算复杂度的另一条路线；而他恰好花了几个月时间，和 ChatGPT 反复讨论 expander 匹配问题（expander 是一类连接性极强的稀疏图）以及 Kun–Thom 工作的延伸。模型偏偏沿着这条冷门路线走通了。他 6 月 29 日关掉了账户里「用我的数据改进模型」的开关，但按 [OpenAI 的官方说明](https://help.openai.com/en/articles/8983099-does-the-improve-the-model-for-everyone-setting-sync-between-web-and-mobile-devices)，这类开关只约束今后的新对话；之前的对话有没有进过训练，OpenAI 也不提供逐对话的使用记录（[数据控制说明](https://help.openai.com/en/articles/7730893-data-controls-faq)），用户无从查证。
 
 ## 三句否认，三个口径
 
@@ -48,7 +48,7 @@ OpenAI 对 Buckmaster 事件的官方声明说：「在他们公开发表之前�
 
 第二层是时间方向。训练开关只管以后，不管以前；OpenAI 也没有提供「哪条对话进了哪个训练批次」的记录，用户无从事后对账。[Hacker News 上的讨论](https://news.ycombinator.com/item?id=49639408)（截至发稿有 600 多条评论）里，多位用户还报告这个开关会在不知情时被重置回「开」。我没有验证过重置的说法，但方向不重要，要害在于：整个机制的可信度建立在厂商单方面的执行上，官方没有给用户任何可核验的凭据。
 
-第三层最根本：自查不可证伪。学术界处理同类利益冲突靠制度。期刊审稿人和基金评审人都负[保密义务](https://publicationethics.org/files/Ethical_Guidelines_For_Peer_Reviewers.pdf)，动别人未发表的成果要承担职业后果，而且有编辑部、资助机构这些第三方来裁决。AI 公司如今坐在结构相同的位置上：既是研究者的工具供应商，又在同一批问题上和研究者竞赛。但配套机制是零：OpenAI 没有公开可逐条追溯的训练数据来源记录，模型 checkpoint 也不开放给第三方审计，出了争议，调查者和被调查者是同一家公司。相当于让期刊审稿人自己决定要不要抢投稿人的结果，出事后再由他本人出具调查报告。
+第三层最根本：自查不可证伪。学术界处理同类利益冲突靠制度。期刊审稿人负[保密义务](https://publicationethics.org/files/Ethical_Guidelines_For_Peer_Reviewers.pdf)，不得利用稿件为自己谋利，违反要承担职业后果，而且有编辑部这个第三方来裁决争议。AI 公司如今坐在结构相同的位置上：既是研究者的工具供应商，又在同一批问题上和研究者竞赛。但配套机制是零：OpenAI 公开的信息里，看不到可逐条追溯的训练数据来源记录，也看不到开放给第三方审计的模型 checkpoint，而在这场争议里，迄今所有的调查和声明都出自 OpenAI 自己。相当于让期刊审稿人自己决定要不要抢投稿人的结果，出事后再由他本人出具调查报告。
 
 ## 研究者现在能做什么
 
@@ -58,7 +58,7 @@ OpenAI 对 Buckmaster 事件的官方声明说：「在他们公开发表之前�
 
 优先权要靠时间戳，别靠完美的成稿。Buckmaster 和 Alpöge 的优先权能得到对方公开承认，靠的是 9 月 7 日抢先把远称不上完善的版本公开，Buckmaster 自己在声明里都为这些稿子的完成度道了歉。在 AI 公司也下场解题的环境里，「攒一个漂亮 writeup 再发」的代价结构已经变了：早挂出来的粗糙版本，比晚发的精致版本值钱。
 
-至于 AI 公司这一侧，Tao 的批评点在另一个层面：他[公开表示](https://fortune.com/2026/09/08/openai-says-it-cracked-navier-stokes-math-grand-challenge-buckmaster-accusation-cheating-intimidation-tao-lament/)，AI 公司正把这些悬置多年的难题当作展示模型实力的营销素材，不加节制的用法会把数学变成一场对世界没什么益处的产量竞赛。顺着这条批评还能再看远一步：Gromov 的问题悬了 27 年，Navier-Stokes 悬了 26 年，这批开放问题是几代数学家攒下的存货。AI 工具消化存货的速度一旦上来，稀缺的能力就会从解题挪向提出问题：判断哪些新问题值得解、把它们表述成能着手攻的形式，这件事眼下我还看不到模型能替人做。我的判断更窄一些：这一周真正被消耗的，是 AI 公司做科学研究的信用。数学界对优先权的计较全行业出名，一次含糊的否认，在这个圈子里的代价来得格外快。数学家只是最先把这笔账算清楚的人；同样的结构性冲突，摆在每一个把未发表的想法喂进闭源工具的行业面前。
+至于 AI 公司这一侧，Tao 的批评点在另一个层面：他[公开表示](https://fortune.com/2026/09/08/openai-says-it-cracked-navier-stokes-math-grand-challenge-buckmaster-accusation-cheating-intimidation-tao-lament/)，AI 公司正把这些悬置多年的难题当作展示模型实力的营销素材，并警告说，不加节制地把开放问题当矿藏采掘，可能会毁掉未来数学技术赖以生长的生态。顺着这条批评还能再看远一步：Gromov 的问题悬了 27 年，Navier-Stokes 悬了 26 年，这批开放问题是几代数学家攒下的存货。AI 工具消化存货的速度一旦上来，稀缺的能力就会从解题挪向提出问题：判断哪些新问题值得解、把它们表述成能着手攻的形式，这件事眼下我还看不到模型能替人做。我的判断更窄一些：这一周真正被消耗的，是 AI 公司做科学研究的信用。数学界对优先权的计较全行业出名，一次含糊的否认，在这个圈子里的代价来得格外快。数学家只是最先把这笔账算清楚的人；同样的结构性冲突，摆在每一个把未发表的想法喂进闭源工具的行业面前。
 
 ## 参考来源
 
@@ -71,6 +71,7 @@ OpenAI 对 Buckmaster 事件的官方声明说：「在他们公开发表之前�
 - [Clay 研究所官方题面（Fefferman）](https://www.claymath.org/wp-content/uploads/2022/06/navierstokes.pdf) — 四个可选命题，爆破版本允许光滑外力
 - [Terence Tao 博客（2026-09-07）](https://terrytao.wordpress.com/2026/09/07/finite-time-blowup-with-smooth-forcing-term-for-the-incompressible-porous-medium-boussinesq-and-incompressible-euler-equations/) — Alpöge–Buckmaster 三个爆破结果的介绍与评价
 - [TechCrunch：OpenAI fought dirty on career-making math problem](https://techcrunch.com/2026/09/08/openai-fought-dirty-on-career-making-math-problem-says-nyu-mathematician/) — Buckmaster 声明的报道与 Bubeck 的回应
+- [The Decoder 的报道](https://the-decoder.com/openai-researcher-allegedly-pressured-mathematician-to-drop-anthropic-co-author-from-math-breakthrough-paper/) — Bubeck 对署名指控的否认与对两人优先权的承认
 - [Fortune 的综合报道](https://fortune.com/2026/09/08/openai-says-it-cracked-navier-stokes-math-grand-challenge-buckmaster-accusation-cheating-intimidation-tao-lament/) — Tao 对 AI 公司做数学的批评
 - [CNBC 报道](https://www.cnbc.com/2026/09/09/openai-navier-stokes-math-problem-solved.html) — OpenAI 宣布解决带外力 Navier-Stokes、不申领奖金
 - [Northeast Times 报道](https://northeasttimes.com/2026/09/10/two-mathematicians-demand-answers-from-openai-on-training-data/) — 署名补正、Thom 的 opt-out 时间（6 月 29 日）等细节
