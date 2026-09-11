@@ -58,7 +58,7 @@ def send(text: str):
                 if attempt == 2:
                     print("warning: discord send failed after 3 attempts", file=sys.stderr)
                 else:
-                    time.sleep(5 * (attempt + 1))()
+                    time.sleep(5 * (attempt + 1))
 
 
 def topics_message(date: str) -> str:

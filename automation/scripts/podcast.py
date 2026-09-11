@@ -55,15 +55,21 @@ def frontmatter(markdown: str) -> dict:
 def render(text: str, out_mp3: Path, title: str) -> float:
     """Speak the article and tag the file. Returns its length in seconds."""
     seconds = azure_tts.synthesize(text, out_mp3)
-    tagged = out_mp3.with_suffix(".tagged.mp3")
+    tagged = out_mp3.with_name(out_mp3.name + ".tagging")
     subprocess.run(
         ["ffmpeg", "-y", "-loglevel", "error", "-i", str(out_mp3),
          "-codec", "copy",
          "-metadata", f"title={title}", "-metadata", "artist=Mengya (Mia) Hu",
-         "-metadata", f"album={FEED_TITLE}", str(tagged)],
+         "-metadata", f"album={FEED_TITLE}", "-f", "mp3", str(tagged)],
         check=True)
     tagged.replace(out_mp3)
     return seconds
+
+
+def _atomic_write(path: Path, text: str):
+    tmp = path.with_name(path.name + ".tmp")
+    tmp.write_text(text)
+    tmp.replace(path)
 
 
 def load_state() -> list:
@@ -82,9 +88,9 @@ def write_feed(episodes: list):
       <title>{html.escape(ep['title'])}</title>
       <description>{html.escape(ep.get('summary', ''))}</description>
       <link>{html.escape(link)}</link>
-      <guid isPermaLink="false">{ep['slug']}</guid>
+      <guid isPermaLink="false">{ep['slug']}@{ep.get('version', 1)}</guid>
       <pubDate>{ep['pub_date']}</pubDate>
-      <enclosure url="{root}/episodes/{ep['file']}" length="{ep['bytes']}" type="audio/mpeg"/>
+      <enclosure url="{root}/episodes/{ep['file']}?v={ep.get('version', 1)}" length="{ep['bytes']}" type="audio/mpeg"/>
       <itunes:duration>{int(ep['seconds'])}</itunes:duration>
       <itunes:explicit>false</itunes:explicit>
     </item>""")
@@ -103,7 +109,7 @@ def write_feed(episodes: list):
   </channel>
 </rss>
 """
-    (PODCAST_DIR / "feed.xml").write_text(feed)
+    _atomic_write(PODCAST_DIR / "feed.xml", feed)
 
 
 def prune(episodes: list):
@@ -137,9 +143,12 @@ def main():
     mp3 = EPISODE_DIR / f"{slug}.mp3"
     seconds = render(text, mp3, title)
 
-    episodes = [ep for ep in load_state() if ep["slug"] != slug]
+    previous = load_state()
+    version = int(time.time())  # re-renders get a new guid + enclosure URL
+    episodes = [ep for ep in previous if ep["slug"] != slug]
     episodes.insert(0, {
         "slug": slug,
+        "version": version,
         "title": (f"PR #{args.pr}｜{title}" if args.pr else title),
         "summary": meta.get("description", ""),
         "file": mp3.name,
@@ -148,7 +157,7 @@ def main():
         "pub_date": format_datetime(datetime.now(timezone.utc)),
         "pr_url": args.url,
     })
-    STATE_FILE.write_text(json.dumps(episodes, ensure_ascii=False, indent=2))
+    _atomic_write(STATE_FILE, json.dumps(episodes, ensure_ascii=False, indent=2))
     write_feed(episodes)
     prune(episodes)
 

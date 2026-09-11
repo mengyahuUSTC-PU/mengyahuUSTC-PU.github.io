@@ -189,55 +189,16 @@ def handle_distribution(slug: str, when: str = "now"):
                              "at": datetime.now(timezone.utc).isoformat()}
     dist_file.write_text(json.dumps(pack, ensure_ascii=False, indent=2))
 
-    # Newsletter: same approval gate as Typefully ("发" = user reviewed the pack).
-    # A failure here must never read as success — the social posts going out
-    # while the email silently dies is exactly what happened on 2026-08-25.
+    # Newsletter: approval adds the article to tonight's digest. Two approvals
+    # in one afternoon used to mean two emails an hour apart, which reads as
+    # spam; now a cron near 23:59 Seattle time sends whatever accumulated as
+    # one email per language, and a late approval rides along the next day.
     newsletter_status = "未生成"
     if pack.get("email"):
-        # Kit's free plan blocks POST /broadcasts, so Kit is only the signup form
-        # and the list of record now; Resend does the sending.
-        from resend_client import ResendError, preflight, send_newsletter
-        counts, failures = {}, []
-        allowed, note = preflight()
-        if not allowed:
-            failures.append(f"Resend 预检未通过：{note}")
-        else:
-            for lang in ("zh", "en"):
-                part = pack["email"].get(lang) or {}
-                if not (part.get("subject") and part.get("html")):
-                    continue
-                try:
-                    counts[lang] = send_newsletter(lang, part["subject"], part["html"])
-                except ResendError as exc:
-                    failures.append(f"{lang}: {exc}")
-                except Exception as exc:
-                    failures.append(f"{lang}: {str(exc)[:200]}")
-        if failures:
-            # Keep the rendered email so nothing has to be regenerated: the user
-            # can paste it into Kit's dashboard, or resend once Kit is fixed.
-            outbox = REPO_ROOT / "automation" / "data" / "newsletter-unsent"
-            outbox.mkdir(parents=True, exist_ok=True)
-            saved = []
-            for lang in ("zh", "en"):
-                part = pack["email"].get(lang) or {}
-                if not (part.get("subject") and part.get("html")):
-                    continue
-                path = outbox / f"{slug}.{lang}.html"
-                path.write_text(f"<!-- subject: {part['subject']} -->\n{part['html']}")
-                saved.append(str(path))
-            newsletter_status = "❌ 未发出"
-            send("🚨 **Newsletter 没有发出去**（{}）\n原因：{}\n"
-                 "邮件正文已存好，不用重新生成：\n{}\n"
-                 "邮件没丢，修好后回一句「补发 {}」就行。".format(slug, 
-                     " · ".join(failures)[:400], "\n".join(saved), slug))
-        else:
-            sent = [f"{l} → {n} 人" for l, n in counts.items() if n]
-            if sent:
-                newsletter_status = "✅ " + " · ".join(sent)
-                send(f"📧 Newsletter 已发出（Resend）：{' · '.join(sent)}")
-            elif counts:
-                newsletter_status = "⏭ 无订阅者"
-                send("📧 Newsletter 跳过：目前还没有订阅者。")
+        from newsletter_digest import enqueue
+        target = enqueue(slug, pack.get("title") or slug, pack["email"], pack.get("url", ""))
+        newsletter_status = f"⏳ 合并进 {target} 的合集，23:59 西雅图时间发出"
+        send(f"📧 Newsletter 已加入 {target} 的合集（当天所有文章合并成一封，23:59 西雅图时间发出）。")
     if when == "peak":
         from zoneinfo import ZoneInfo
         def pt(s):
@@ -253,50 +214,26 @@ def handle_distribution(slug: str, when: str = "now"):
 
 
 def handle_newsletter_resend(slug: str):
-    """"补发 <slug>": send the newsletter for an already-distributed pack.
-
-    Used after a send failed (bad key, unverified domain, provider outage). The
-    social posts are untouched — this only pushes the email.
-    """
+    """"补发 <slug>": put an already-distributed pack's newsletter into the
+    next digest. Goes through the digest on purpose: the rule is one email a
+    day, and a resend is not an exception to it."""
     dist_file = DATA / "dist" / f"{slug}.json"
     if not dist_file.exists():
         send(f"⚠️ 找不到 {slug} 的分发包。")
         return
     pack = json.loads(dist_file.read_text())
-    email = pack.get("email") or {}
-    if not email:
+    if not pack.get("email"):
         send(f"⚠️ {slug} 没有 newsletter 内容。")
         return
-
-    from resend_client import ResendError, preflight, send_newsletter
-    allowed, note = preflight()
-    if not allowed:
-        send(f"⚠️ 还是发不了：{note}")
-        return
-
-    counts, failures = {}, []
-    for lang in ("zh", "en"):
-        part = email.get(lang) or {}
-        if not (part.get("subject") and part.get("html")):
-            continue
-        try:
-            counts[lang] = send_newsletter(lang, part["subject"], part["html"])
-        except ResendError as exc:
-            failures.append(f"{lang}: {exc}")
-        except Exception as exc:
-            failures.append(f"{lang}: {str(exc)[:200]}")
-
-    if failures:
-        send(f"🚨 补发失败（{slug}）：{' · '.join(failures)[:400]}")
-        return
-    sent = " · ".join(f"{l} → {n} 人" for l, n in counts.items() if n)
-    send(f"📧 {slug} 的 newsletter 已补发：{sent or '没有订阅者'}")
+    from newsletter_digest import enqueue
+    target = enqueue(slug, pack.get("title") or slug, pack["email"], pack.get("url", ""))
+    send(f"📧 {slug} 已加入 {target} 的 newsletter 合集，23:59 西雅图时间随当天的一起发出。")
 
 
 HELP_TEXT = ("🤔 没听懂。可用指令：\n"
              "`1 3` 选题 · `写 话题或链接` 手动选题 · `改文章 [slug] 意见` · `改简报 意见` · "
              "`改L 意见`（LinkedIn）· `改X 意见`（thread）· `发 [slug]` 排程 · "
-             "`补发 [slug]` 重发 newsletter · `退订 <邮箱>`")
+             "`补发 [slug]` 把 newsletter 放进当晚合集 · `退订 <邮箱>`")
 
 
 def latest_briefing_slug():
