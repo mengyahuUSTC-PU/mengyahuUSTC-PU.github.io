@@ -95,6 +95,7 @@ def notify(text: str):
 def park(job: dict, job_file: Path):
     """Keep the job and its markdown together so --requeue has everything."""
     FAILED.mkdir(parents=True, exist_ok=True)
+    job["parked_month"] = month_stamp()
     md = Path(job["markdown"])
     if md.exists() and md.parent in (QUEUE, WORKING):
         md.rename(FAILED / md.name)
@@ -135,6 +136,27 @@ def requeue(slug: str) -> bool:
     return True
 
 
+def month_stamp() -> str:
+    return time.strftime("%Y-%m", time.gmtime())  # Azure resets the quota on UTC month boundaries
+
+
+def revive_after_quota_reset():
+    """Jobs parked because the month's free characters ran out come back on
+    their own once the month changes — the owner chose the free tier and does
+    not want to babysit it."""
+    for job_file in FAILED.glob("*.json"):
+        try:
+            job = json.loads(job_file.read_text())
+        except Exception:
+            continue
+        if QUOTA_MARK not in (job.get("last_error") or "") and job.get("last_error") != "parked with the quota exhaustion":
+            continue
+        if job.get("parked_month") == month_stamp():
+            continue  # still the month that ran dry
+        requeue(job["slug"])
+        print(f"{job['slug']}: quota reset, back in the queue")
+
+
 def recover_working():
     """Anything left in working/ belonged to a worker that died mid-render
     (reboot, kill). Put it back so it is retried, not forgotten."""
@@ -152,6 +174,7 @@ def drain():
     QUEUE.mkdir(parents=True, exist_ok=True)
     WORKING.mkdir(parents=True, exist_ok=True)
     FAILED.mkdir(parents=True, exist_ok=True)
+    revive_after_quota_reset()
     recover_working()
 
     while True:
@@ -183,9 +206,10 @@ def drain():
             # rather than burning three attempts each and hammering the API.
             park(job, job_file)
             print(f"{job['slug']}: Azure quota exhausted, parked")
-            notify(f"🚨 **朗读版停摆：Azure 语音本月免费额度用完了**（{job['slug']} 已停放）。\n"
-                   f"要么等下月 1 号自动恢复后跑 `podcast_worker.py --requeue {job['slug']}`，"
-                   f"要么把 brand-tts 升到 S0（约 $16/百万字符，走 Azure credit）后立刻补渲染。")
+            notify(f"🚨 **朗读版暂停：Azure 语音本月免费额度用完了**（{job['slug']} 已停放）。\n"
+                   f"不会产生任何费用：停放的任务会在下月 1 号自动重新渲染。\n"
+                   f"如果想现在就恢复，那是额外消费（升到 S0，按目前用量每月约 $9，走 Azure credit）——"
+                   f"回复「升级语音」我再动，不回复就等下月。")
             for other_file in list(QUEUE.glob("*.json")):
                 try:
                     other = json.loads(other_file.read_text())

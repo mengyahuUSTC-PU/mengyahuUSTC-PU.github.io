@@ -169,8 +169,10 @@ def synthesize(text: str, out_mp3: Path) -> float:
             import sys
             sys.path.insert(0, "/home/mia/site/automation/scripts")
             from discord_notify import send
-            send(f"⚠️ Azure 语音本月已用 {total:,}/{budget:,} 字符（{total/budget:.0%}）。"
-                 f"中文按 2 字符计费，超出后当月剩下的朗读版都会失败；升级到 S0 约 $16/百万字符，走 Azure credit。")
+            send(f"⚠️ Azure 语音本月已用 {total:,}/{budget:,} 免费字符（{total/budget:.0%}）。"
+                 f"用完后当月剩下的朗读版会自动停放、下月 1 号自动恢复，不会产生任何费用。\n"
+                 f"如果你想月底也不断供，那是一笔额外消费（S0 约 $16/百万字符，按目前用量每月约 $9，走 Azure credit）——"
+                 f"回复「升级语音」我再动，不回复就维持免费档。")
         except Exception:
             pass
     return duration_seconds(out_mp3)
