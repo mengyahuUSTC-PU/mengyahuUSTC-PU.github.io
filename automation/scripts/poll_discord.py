@@ -195,10 +195,18 @@ def handle_distribution(slug: str, when: str = "now"):
     # one email per language, and a late approval rides along the next day.
     newsletter_status = "未生成"
     if pack.get("email"):
-        from newsletter_digest import enqueue
-        target = enqueue(slug, pack.get("title") or slug, pack["email"], pack.get("url", ""))
-        newsletter_status = f"⏳ 合并进 {target} 的合集，23:59 西雅图时间发出"
-        send(f"📧 Newsletter 已加入 {target} 的合集（当天所有文章合并成一封，23:59 西雅图时间发出）。")
+        # Dist packs carry no title; the Chinese subject line is the closest
+        # thing to one, and it is what the nightly report will show.
+        title = (pack.get("title") or (pack["email"].get("zh") or {}).get("subject")
+                 or (pack["email"].get("en") or {}).get("subject") or slug)
+        try:
+            from newsletter_digest import enqueue
+            target = enqueue(slug, title, pack["email"], pack.get("url", ""))
+            newsletter_status = f"⏳ 合并进 {target} 的合集，23:59 西雅图时间发出"
+            send(f"📧 Newsletter 已加入 {target} 的合集（当天所有文章合并成一封，23:59 西雅图时间发出）。")
+        except Exception as exc:  # noqa: BLE001 — the pack is already marked scheduled
+            newsletter_status = f"❌ 没进合集：{str(exc)[:120]}"
+            send(f"🚨 Newsletter 没能加入合集（{slug}）：{str(exc)[:200]}\n回一句「补发 {slug}」可以重试。")
     if when == "peak":
         from zoneinfo import ZoneInfo
         def pt(s):
@@ -225,8 +233,14 @@ def handle_newsletter_resend(slug: str):
     if not pack.get("email"):
         send(f"⚠️ {slug} 没有 newsletter 内容。")
         return
-    from newsletter_digest import enqueue
-    target = enqueue(slug, pack.get("title") or slug, pack["email"], pack.get("url", ""))
+    title = (pack.get("title") or (pack["email"].get("zh") or {}).get("subject")
+             or (pack["email"].get("en") or {}).get("subject") or slug)
+    try:
+        from newsletter_digest import enqueue
+        target = enqueue(slug, title, pack["email"], pack.get("url", ""))
+    except Exception as exc:  # noqa: BLE001
+        send(f"🚨 补发失败（{slug}）：{str(exc)[:200]}")
+        return
     send(f"📧 {slug} 已加入 {target} 的 newsletter 合集，23:59 西雅图时间随当天的一起发出。")
 
 
