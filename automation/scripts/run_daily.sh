@@ -16,6 +16,18 @@ PY=${PYTHON_BIN:-automation/.venv/bin/python}
 
 mkdir -p "$DATA" "$DRAFTS"
 
+# Auth preflight. A lapsed login used to kill the run silently at topic
+# selection: the error never reached the log, and the only clue was a
+# missing briefing. Check first, say so where the owner will see it, and
+# stop — nothing downstream can work without it.
+if ! auth_out=$(echo ping | claude -p --output-format text --model haiku 2>&1) \
+   || printf '%s' "$auth_out" | grep -qiE 'authenticate|oauth|expired'; then
+  echo "error: claude auth failed: $auth_out"
+  "$PY" "$SCRIPTS/discord_notify.py" \
+    "🚨 今天的日更没有跑：VM 的 Claude 登录已过期（$(date -u +%H:%M) UTC 检测到）。来找 Claude Code 说「重新登录 VM」；修好后在这里回一句「补跑日更」即可。" || true
+  exit 1
+fi
+
 echo "=== [$(date -u +%FT%TZ)] fetch ==="
 "$PY" "$SCRIPTS/fetch_sources.py"
 
