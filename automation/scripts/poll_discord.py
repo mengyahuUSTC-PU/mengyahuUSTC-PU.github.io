@@ -247,7 +247,7 @@ def handle_newsletter_resend(slug: str):
 HELP_TEXT = ("🤔 没听懂。可用指令：\n"
              "`1 3` 选题 · `写 话题或链接` 手动选题 · `改文章 [slug] 意见` · `改简报 意见` · "
              "`改L 意见`（LinkedIn）· `改X 意见`（thread）· `发 [slug]` 排程 · "
-             "`补发 [slug]` 把 newsletter 放进当晚合集 · `退订 <邮箱>`")
+             "`补发 [slug]` 把 newsletter 放进当晚合集 · `退订 <邮箱>` · `补跑日更`")
 
 
 def latest_briefing_slug():
@@ -392,6 +392,23 @@ def main():
             from resend_client import unsubscribe
             address = m.group(1).strip("<>")
             send(f"✅ {address} {unsubscribe(address)}")
+            continue
+
+        # "补跑日更": re-run today's daily pipeline, e.g. after a re-login.
+        # Same flock as the cron entry, so it can never run twice at once.
+        if re.fullmatch(r"补跑日更", content):
+            script = REPO_ROOT / "automation" / "scripts" / "run_daily.sh"
+            probe = subprocess.run(["flock", "-n", "/tmp/pipeline-git.lock", "true"], capture_output=True)
+            if probe.returncode != 0:
+                send("ℹ️ 日更已经在跑了，不重复启动；跑完会照常推到这里。")
+                continue
+            subprocess.Popen(
+                ["flock", "-n", "/tmp/pipeline-git.lock", "bash", str(script)],
+                cwd=str(REPO_ROOT),
+                stdout=open("/home/mia/cron-daily.log", "a"), stderr=subprocess.STDOUT,
+                stdin=subprocess.DEVNULL, start_new_session=True,
+            )
+            send("▶️ 日更开始补跑（抓取 → 选题 → 快讯，约 15–20 分钟），结果会照常推到这里。")
             continue
 
         # "补发 [slug]": resend a newsletter whose delivery failed earlier.
