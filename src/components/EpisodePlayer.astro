@@ -1,0 +1,25 @@
+---
+// Audio version of an article, when one has been published to 《胡说 AI》.
+// The manifest is written by the pipeline when the episode goes out, so a
+// post without audio simply renders nothing.
+import episodes from '../data/podcast.json';
+import type { Lang } from '../lib/i18n';
+
+interface Props { slug: string; lang: Lang }
+const { slug, lang } = Astro.props;
+const episode = (episodes as Record<string, { url: string; seconds: number }>)[slug];
+const minutes = episode ? Math.max(1, Math.round(episode.seconds / 60)) : 0;
+const copy = lang === 'zh'
+  ? { label: `听音频版 · 约 ${minutes} 分钟`, sub: '由 AI 语音朗读', subscribe: '订阅播客《胡说 AI》' }
+  : { label: `Listen · about ${minutes} min`, sub: 'Read by a synthetic voice, in Chinese', subscribe: 'Subscribe to the podcast' };
+---
+{episode && (
+  <aside class="episode-player">
+    <div class="episode-head">
+      <span class="episode-label">{copy.label}</span>
+      <span class="episode-sub">{copy.sub}</span>
+    </div>
+    <audio controls preload="none" src={episode.url}></audio>
+    <a class="episode-subscribe" href={`/${lang}/podcast/`}>{copy.subscribe} →</a>
+  </aside>
+)}

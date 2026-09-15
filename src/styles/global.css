@@ -242,3 +242,17 @@ h2 { font-size: 1.3rem; }
 /* Honeypot field in the subscribe forms: off-screen for people, present in the
    DOM for bots that fill every input they find. */
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+/* ---------- audio version of an article ---------- */
+.episode-player {
+  margin: 1.4rem 0 2rem;
+  padding: 0.9rem 1.1rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.episode-head { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+.episode-label { font-weight: 700; font-size: 0.92rem; }
+.episode-sub { color: var(--muted); font-size: 0.78rem; }
+.episode-player audio { width: 100%; margin-top: 0.6rem; }
+.episode-subscribe { display: inline-block; margin-top: 0.5rem; font-size: 0.85rem; font-weight: 600; }

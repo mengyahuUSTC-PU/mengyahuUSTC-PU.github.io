@@ -3,6 +3,7 @@ import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import SubscribeBox from '../../components/SubscribeBox.astro';
 import SlideInSubscribe from '../../components/SlideInSubscribe.astro';
+import EpisodePlayer from '../../components/EpisodePlayer.astro';
 import { t, postUrl, type Lang } from '../../lib/i18n';
 
 export async function getStaticPaths() {
@@ -64,6 +65,7 @@ const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
         </div>
       )}
     </header>
+    <EpisodePlayer slug={post.data.slug} lang={lang} />
     <div class="article-body">
       <Content />
     </div>
