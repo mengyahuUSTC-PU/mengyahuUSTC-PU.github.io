@@ -46,12 +46,7 @@ SHOW = {
     "link": f"{SITE}/zh/podcast/",
     "language": "zh-cn",
     "category": "Technology",
-    "description": (
-        "我是胡梦雅，在微软 Responsible AI 团队做应用科学家。这里是我博客深度文章的音频版："
-        "AI 安全、行业趋势、工程实践，还有我正好奇的前沿科技。"
-        "名字有两层意思：胡说 AI，也是那个一本正经胡说八道的 AI。"
-        "音频由 AI 语音朗读，观点仅代表个人。"
-    ),
+    "description": "我博客深度文章的音频版：AI 安全、行业趋势、工程实践，还有我正好奇的前沿科技。我姓胡，在这儿聊 AI 新闻；说的都是从个人经验里长出来的判断，算不上权威，索性自称一句「胡说」。音频由 AI 语音朗读，观点仅代表个人。",
 }
 
 
@@ -207,9 +202,16 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("slug", nargs="?")
     ap.add_argument("--list", action="store_true")
+    ap.add_argument("--refresh-feed", action="store_true",
+                    help="rewrite feed.xml and the site manifest from existing episodes")
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args()
-    if args.list:
+    if args.refresh_feed:
+        episodes = load(STATE, [])
+        write_atomic(PUBLIC / "feed.xml", build_feed(episodes))
+        update_site_manifest(episodes)
+        print(f"feed rebuilt from {len(episodes)} episode(s), nothing re-synthesized")
+    elif args.list:
         for e in load(STATE, []):
             print(f"{e['pub_date'][:16]}  {int(e['seconds'])//60:>3}分  {e['slug']}  {e['title'][:40]}")
     elif args.slug:
