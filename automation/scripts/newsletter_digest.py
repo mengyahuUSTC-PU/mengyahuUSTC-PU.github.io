@@ -119,6 +119,27 @@ def enqueue(slug: str, title: str, email: dict, url: str = "") -> str:
         return target.isoformat()
 
 
+PODCAST_MANIFEST = Path("/home/mia/site/src/data/podcast.json")
+
+
+def _listen_line(item: dict, lang: str) -> str:
+    """A line pointing at the audio version, when one exists. Links to the
+    article page (which carries the player), not to a bare mp3."""
+    if lang != "zh":
+        return ""
+    try:
+        episodes = json.loads(PODCAST_MANIFEST.read_text())
+    except Exception:
+        return ""
+    ep = episodes.get(item["slug"])
+    if not ep:
+        return ""
+    minutes = max(1, round(ep["seconds"] / 60))
+    url = f"https://mengyahu.com/zh/{item['slug']}/"
+    return (f'<p style="margin:.8em 0 0"><a href="{url}">🎧 听音频版（约 {minutes} 分钟）</a>'
+            f' · <a href="https://mengyahu.com/zh/podcast/">订阅播客《胡说 AI》</a></p>')
+
+
 def compose(lang: str, items: list):
     """One article is sent as itself; several are stacked under their own
     headings, with the subject naming the first and counting the rest."""
@@ -128,7 +149,7 @@ def compose(lang: str, items: list):
         return None, None
     if len(parts) == 1:
         e = parts[0]["email"][lang]
-        return e["subject"], e["html"]
+        return e["subject"], e["html"] + _listen_line(parts[0], lang)
 
     first = parts[0]["email"][lang]["subject"]
     extra = len(parts) - 1
@@ -140,7 +161,7 @@ def compose(lang: str, items: list):
     for it in parts:
         e = it["email"][lang]
         sections.append(f'<h2 style="font-size:1.15em;margin:1.6em 0 .4em">'
-                        f'{html.escape(e["subject"])}</h2>\n{e["html"]}')
+                        f'{html.escape(e["subject"])}</h2>\n{e["html"]}{_listen_line(it, lang)}')
     return subject, intro + "\n<hr>\n".join(sections)
 
 

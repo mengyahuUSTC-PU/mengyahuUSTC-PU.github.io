@@ -14,6 +14,7 @@ import json
 import os
 import re
 import subprocess
+import time
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -188,6 +189,24 @@ def handle_distribution(slug: str, when: str = "now"):
     pack["scheduled_for"] = {"x": x_when, "linkedin": li_when,
                              "at": datetime.now(timezone.utc).isoformat()}
     dist_file.write_text(json.dumps(pack, ensure_ascii=False, indent=2))
+
+    # The published article also becomes an episode of the public podcast.
+    # Queued, not rendered inline: the Discord reply should not wait on Azure.
+    if not slug.startswith("briefing-"):
+        try:
+            queue = Path("/home/mia/podcast/queue")
+            queue.mkdir(parents=True, exist_ok=True)
+            (queue / f"public-{slug}.json").write_text(json.dumps(
+                {"slug": slug, "public": True, "queued_at": time.time()},
+                ensure_ascii=False, indent=2))
+            subprocess.Popen(
+                ["/home/mia/site/automation/.venv/bin/python",
+                 str(Path(__file__).with_name("podcast_worker.py"))],
+                stdout=open("/home/mia/cron-podcast.log", "a"),
+                stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL, start_new_session=True)
+            send(f"🎙️ 《胡说 AI》正在生成 {slug} 的音频（约 1 分钟），完成后会自动上线到播客和文章页。")
+        except Exception as exc:  # noqa: BLE001 — never block distribution on this
+            send(f"⚠️ 播客音频没能排上队（{slug}）：{str(exc)[:160]}")
 
     # Newsletter: approval adds the article to tonight's digest. Two approvals
     # in one afternoon used to mean two emails an hour apart, which reads as

@@ -40,14 +40,16 @@ def claim_next():
         try:
             job = json.loads(job_file.read_text())
             slug = job["slug"]
-            src = Path(job["markdown"])
+            # Public jobs read the published article from the repo, so they
+            # carry no markdown of their own.
+            src = Path(job["markdown"]) if job.get("markdown") else None
         except Exception as exc:  # noqa: BLE001 — a bad file must not stall the queue
             FAILED.mkdir(parents=True, exist_ok=True)
             job_file.rename(FAILED / job_file.name)
             print(f"{job_file.name}: unreadable job file, parked ({exc})")
             continue
         WORKING.mkdir(parents=True, exist_ok=True)
-        if src.exists() and src.parent == QUEUE:
+        if src and src.exists() and src.parent == QUEUE:
             src.rename(WORKING / src.name)
             job["markdown"] = str(WORKING / src.name)
         working = WORKING / job_file.name
@@ -58,6 +60,11 @@ def claim_next():
 
 
 def render(job: dict) -> subprocess.CompletedProcess:
+    # A public job reads the PUBLISHED article and goes to the public feed;
+    # a draft job reads the PR's markdown and stays in the private feed.
+    if job.get("public"):
+        cmd = [PYTHON, str(PODCAST.with_name("podcast_public.py")), job["slug"]]
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=RENDER_TIMEOUT)
     cmd = [PYTHON, str(PODCAST), job["markdown"]]
     if job.get("pr"):
         cmd += ["--pr", str(job["pr"])]
@@ -96,8 +103,8 @@ def park(job: dict, job_file: Path):
     """Keep the job and its markdown together so --requeue has everything."""
     FAILED.mkdir(parents=True, exist_ok=True)
     job["parked_month"] = month_stamp()
-    md = Path(job["markdown"])
-    if md.exists() and md.parent in (QUEUE, WORKING):
+    md = Path(job["markdown"]) if job.get("markdown") else None
+    if md and md.exists() and md.parent in (QUEUE, WORKING):
         md.rename(FAILED / md.name)
         job["markdown"] = str(FAILED / md.name)
     (FAILED / job_file.name).write_text(json.dumps(job, ensure_ascii=False, indent=2))
@@ -107,8 +114,8 @@ def park(job: dict, job_file: Path):
 def back_to_queue(job: dict, job_file: Path):
     """Return a job to the queue for a later attempt (same file name, so a
     re-enqueue that happened meanwhile wins by being newer)."""
-    md = Path(job["markdown"])
-    if md.exists() and md.parent == WORKING:
+    md = Path(job["markdown"]) if job.get("markdown") else None
+    if md and md.exists() and md.parent == WORKING:
         md.rename(QUEUE / md.name)
         job["markdown"] = str(QUEUE / md.name)
     target = QUEUE / job_file.name
@@ -123,8 +130,8 @@ def requeue(slug: str) -> bool:
         print(f"{slug}: nothing parked under that name")
         return False
     job = json.loads(job_file.read_text())
-    md = Path(job["markdown"])
-    if md.exists() and md.parent == FAILED:
+    md = Path(job["markdown"]) if job.get("markdown") else None
+    if md and md.exists() and md.parent == FAILED:
         md.rename(QUEUE / md.name)
         job["markdown"] = str(QUEUE / md.name)
     job["attempts"] = 0
@@ -181,8 +188,8 @@ def drain():
         job_file, job = claim_next()
         if not job_file:
             return
-        markdown = Path(job["markdown"])
-        if not markdown.exists():
+        markdown = Path(job.get("markdown", "/nonexistent"))
+        if not job.get("public") and not markdown.exists():
             job["last_error"] = "source markdown is gone"
             park(job, job_file)
             print(f"{job['slug']}: source markdown is gone, parked")
@@ -192,7 +199,8 @@ def drain():
         result = render(job)
         if result.returncode == 0:
             job_file.unlink()
-            markdown.unlink(missing_ok=True)  # the episode is the artifact now
+            if not job.get("public"):
+                markdown.unlink(missing_ok=True)  # the episode is the artifact now
             print(f"{job['slug']}: done in {time.time()-started:.0f}s")
             print((result.stdout or "").strip()[-400:])
             continue
