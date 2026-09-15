@@ -8,9 +8,9 @@ slug: pace-the-frontier-veto-map
 translationOf: pace-the-frontier-veto-map
 ---
 
-9 月 14 日上午，洛杉矶 All-In 峰会。黄仁勋正在台上和主持人讨论 Dario Amodei 两天前发表的《We Must Pace the Frontier》，他的手机响了，来电的是 Trump。据 [TechCrunch 的现场报道](https://techcrunch.com/2026/09/14/nvidia-ceo-jensen-huang-tells-trump-were-not-going-to-let-an-ai-slowdown-happen/)，Trump 在电话里说：「机器人不会接管世界，整件事是个骗局」；「他们正好落进一帮不想看到它发生的人的算计里——可能是政客，也可能是中国。我们不会让这发生」；「我们得稍微小心一点，做事要审慎，但这不意味着我们要叫停一个行业」。黄仁勋回答：「您说得对。我们不会让那发生，先生。」台下鼓掌。
+9 月 14 日上午，洛杉矶 All-In 峰会。黄仁勋正在台上和主持人讨论 Dario Amodei 两天前发表的《We Must Pace the Frontier》，他的手机响了，来电的是 Trump。据 [TechCrunch 的现场报道](https://techcrunch.com/2026/09/14/nvidia-ceo-jensen-huang-tells-trump-were-not-going-to-let-an-ai-slowdown-happen/)，Trump 在电话里说机器人不会接管世界，并把这类减速担忧称作骗局：「他们正好落进一帮不想看到它发生的人的算计里——可能是政客，也可能是中国。我们不会让这发生。这是个骗局。」他又补了一句：「我们得稍微小心一点……做事要审慎，但这不意味着我们要叫停一个行业。」黄仁勋回答：「您说得对。我们不会让那发生，先生。」台下鼓掌。
 
-这通电话把一件事摆到了明面上：Amodei 的调速提案发出 48 小时，表态的名单排开，队形分得异常整齐——出来说话的实验室掌门人都点了头，说不的，是卖芯片的和管政府的。
+这通电话把一件事摆到了明面上：Amodei 的调速提案发出 48 小时，表态的名单排开，队形分得异常整齐——出来说话的实验室掌门人（Altman、Musk、Hassabis）都点了头，说不的，是卖芯片的和管政府的。
 
 ## 48 小时表态清单
 
@@ -18,12 +18,12 @@ translationOf: pace-the-frontier-veto-map
 
 然后是各方表态，按时间排：
 
-- **9 月 12 日当天**，Sam Altman 发帖：「我同意 Dario，我们需要给前沿调速……承诺让独立评估员以等同员工的权限驻场是个好主意，我们会做同样的事」（据 [Zvi 的汇总](https://thezvi.wordpress.com/2026/09/14/we-must-pace-the-frontier/)转引，下同）。注意后半句：这是 OpenAI 对第一步的跟进承诺，有具体内容，可核查。
-- Elon Musk 的第一条回应只有三个词：「Dario is right」。Demis Hassabis 说方向是对的。Bernie Sanders 嫌不够，要求彻底暂停而非调速——批评声里有一支来自「太温和」一侧。
-- **9 月 13 日**，前白宫 AI 事务负责人、现任总统科学技术顾问委员会（PCAST）联合主席（[3 月的转岗报道](https://techcrunch.com/2026/03/26/david-sacks-is-done-as-ai-czar-heres-what-hes-doing-instead/)）David Sacks [回应](https://twitter.com/DavidSacks/status/2098973625252708460)：「请便，你们自己就是前沿」——想减速自己减，别拿这个换反垄断豁免。我[昨天写过](/zh/briefing-2026-09-13)，这番话虽然不是正式的政府决定，但等于把方案里需要政府配合的部分挡了回去。
+- **9 月 12 日当天**，Sam Altman 发帖：「我同意 Dario，我们需要给前沿调速……我们会做同样的事」（据 [Zvi 的汇总](https://thezvi.wordpress.com/2026/09/14/we-must-pace-the-frontier/)转引，下同）。注意后半句：这是 OpenAI 对第一步的跟进承诺，有具体内容，可核查。
+- Elon Musk 的第一条回应只有三个词：「Dario is right」。Demis Hassabis 说方向是对的。Bernie Sanders 嫌不够，要求彻底暂停而非调速：「朝着悬崖冲的时候，你不是松一松油门，你是踩刹车。」——批评声里有一支来自「太温和」一侧。
+- **9 月 13 日**，前白宫 AI 事务负责人、现任总统科学技术顾问委员会（PCAST）联合主席（[3 月的转岗报道](https://techcrunch.com/2026/03/26/david-sacks-is-done-as-ai-czar-heres-what-hes-doing-instead/)）David Sacks [回应](https://twitter.com/DavidSacks/status/2098973625252708460)：「请便，你们自己就是前沿」——想减速自己减，但「别再装作你们需要任何人的许可」，也别要求暂停反垄断法「好让你们组一个卡特尔」。我[昨天写过](/zh/briefing-2026-09-13)，这番话虽然不是正式的政府决定，但等于把方案里需要政府配合的部分挡了回去。
 - **9 月 14 日**，就是开头那一幕。按 TechCrunch 的说法，黄仁勋在现场讨论中与 Amodei 立场相左；被完整记录下来的表态，就是回给 Trump 的那句「我们不会让那发生」。
 
-截至发稿，我没有检索到 Meta 方面对这篇文章的公开表态。公开点头的三位实验室掌门人——Altman、Musk、Hassabis——没有一个反对调速本身。反对最硬的两票，一票来自算力供应商，一票来自华盛顿。
+截至发稿，我没有检索到 Meta 方面对这篇文章的公开表态，[Zvi 的反应汇总](https://thezvi.wordpress.com/2026/09/14/we-must-pace-the-frontier/)里也未见。公开点头的三位实验室掌门人——Altman、Musk、Hassabis——没有一个反对调速本身。反对最硬的两票，一票来自算力供应商，一票来自华盛顿。
 
 ## 黄仁勋反对的不是安全论述，是货单
 
@@ -31,23 +31,23 @@ translationOf: pace-the-frontier-veto-map
 
 模型实验室卖的是能力的使用权。一个对所有人生效的对称速率上限，冻结的是相对位次：你慢我也慢，谁也没让出身位——这正是 Amodei 文中反复强调的设计前提（调速「必须让民主国家对威权国家的领先尽可能大」）。而竞赛烧掉的算力开支、出了事故的责任和名誉损失，都记在实验室自己的账上。顺着这个结构推——这是我的推演，没人会这么承认——一个绑住所有对手的上限，对实验室未必是坏生意：烧钱速度降下来，排名不变，尾部风险还小了。
 
-Nvidia 的账完全相反。它卖的就是竞赛的投入品。Amodei 方案里「按原料调速」那一条，点名要限制的三样东西——训练算力、训练方式、内部用 AI 改进 AI 的程度——第一样就是 Nvidia 的货。全行业若协调减速，最先受挤压的自然是它的订单增速。而且挤压的还不只是未来订单：Nvidia 这两年一直在给自己的买家出钱——承诺在 2032 年前兜底购买 CoreWeave 至多 63 亿美元卖不掉的算力（[SEC 8-K](https://www.sec.gov/Archives/edgar/data/1769628/000176962825000047/crwv-20250909.htm)），对 OpenAI 承诺与 10 吉瓦系统部署绑定的至多 1000 亿美元投资（[官方公告](https://nvidianews.nvidia.com/news/openai-and-nvidia-announce-strategic-partnership-to-deploy-10gw-of-nvidia-systems)）。《经济学人》本月初[把它比作 AI 的央行](https://www.economist.com/interactive/briefing/2026/09/03/nvidia-is-the-central-bank-of-ai)（[我的拆解](/zh/briefing-2026-09-12)）：借出去的钱都押在客户继续扩张上。在我看来，对这样一张资产负债表，「调速」就是个系统性风险词。
+Nvidia 的账完全相反。它卖的就是竞赛的投入品。Amodei 方案里「按原料调速」那一条，点名要限制的三样东西——训练算力、训练方式、内部用 AI 改进 AI 的程度——第一样就是 Nvidia 的货。全行业若协调减速，最先受挤压的自然是它的订单增速。而且挤压的还不只是未来订单：至少从 2023 年 4 月参与 CoreWeave 的 B 轮融资起（[TechCrunch](https://techcrunch.com/2023/04/20/coreweave-a-gpu-focused-cloud-compute-provider-lands-221m-investment/)），Nvidia 就一直在给自己的买家出钱，而且承诺随着热潮越滚越大——承诺在 2032 年前兜底购买 CoreWeave 至多 63 亿美元卖不掉的算力（[SEC 8-K](https://www.sec.gov/Archives/edgar/data/1769628/000176962825000047/crwv-20250909.htm)），又宣布计划对 OpenAI 投资至多 1000 亿美元、随 10 吉瓦 Nvidia 系统的部署逐步到位（[官方公告](https://nvidianews.nvidia.com/news/openai-and-nvidia-announce-strategic-partnership-to-deploy-10gw-of-nvidia-systems)）。《经济学人》本月初[把它比作 AI 的央行](https://www.economist.com/interactive/briefing/2026/09/03/nvidia-is-the-central-bank-of-ai)（[我的拆解](/zh/briefing-2026-09-12)）：它承诺押下的这些资本，赌的都是客户继续扩张。在我看来，对这样一张资产负债表，「调速」就是个系统性风险词。
 
-还有第二条战线。Amodei 文中重申了他的出口管制立场：「不要向中国出售强大的 AI 芯片或半导体制造设备，并打击芯片走私。」黄仁勋在这个问题上的立场同样公开：2025 年 5 月他在 Computex 说「总的来看，出口管制是一次失败」，并给出他自己的估计——Nvidia 在中国的市场份额从 2021 年的约 95% 掉到了 50%（[CNBC](https://www.cnbc.com/2025/05/21/nvidia-ceo-jensen-huang-slams-us-chip-restrictions-as-a-failure.html)）。
+还有第二条战线。Amodei 文中重申了他的出口管制立场：「不要向中国出售强大的 AI 芯片或半导体制造设备，并打击芯片走私。」黄仁勋在这个问题上的立场同样公开：2025 年 5 月他在 Computex 说「总的来看，出口管制是一次失败」，并给出他自己的估计——Nvidia 在中国 AI 芯片市场的份额从 2021 年的约 95% 掉到了 50%（[CNBC](https://www.cnbc.com/2025/05/21/nvidia-ceo-jensen-huang-slams-us-chip-restrictions-as-a-failure.html)）。
 
 所以 9 月 14 日那句话不是即兴发挥。2025 年 6 月，黄仁勋就在巴黎 VivaTech 上说他「几乎不同意 Amodei 说的每一件事」，并把对方的立场概括成三条：AI 可怕到只有他们该做、贵到别人做不起、强到所有人会失业，「所以只有他们公司该做这件事」；他自己的主张是「要安全就公开地做，别躲在暗屋里做完告诉我这很安全」（[Fortune](https://fortune.com/2025/06/12/jensen-huang-has-a-bone-to-pick-with-dario-amodei)，Anthropic 当时否认 Amodei 说过「只有 Anthropic 该做」）。十五个月过去，从公开表态看，两人的分歧原样摆在那里，变的是这次有一位总统打电话进来站队。
 
 ## 激励地图解释不了 Musk
 
-把表态全部还原成买卖关系，有一个明显的反例：Musk。xAI 是重度买卡方——Colossus 集群已装下二十余万块 Nvidia GPU，还在向 55 万块的规模扩建（[Introl 的统计](https://introl.com/blog/xai-colossus-2-gigawatt-expansion-555k-gpus-january-2026)）——若立场纯由货单决定，他该站黄仁勋一边；7 月那封 Pacing the Frontier 联署信，[官方签名名单](https://www.pacingthefrontier.com/)里有 OpenAI、Anthropic、Google DeepMind、Meta AI 的员工，不见 xAI（[我当时的拆解](/zh/pacing-the-frontier-open-letter)）。这次他却说「Dario is right」。
+把表态全部还原成买卖关系，有一个明显的反例：Musk。xAI 是重度买卡方——位于孟菲斯的 Colossus 集群已经跑着数十万块 Nvidia GPU，还在向一家业内追踪机构估计的 55.5 万块以上的规模扩建（[Introl 的统计](https://introl.com/blog/xai-colossus-2-gigawatt-expansion-555k-gpus-january-2026)，系基于公开报道拼出的估算，并非官方数字）——若立场纯由货单决定，他该站黄仁勋一边；7 月那封 Pacing the Frontier 联署信，[官方签名名单](https://www.pacingthefrontier.com/)里有 OpenAI、Anthropic、Google DeepMind、Meta AI 的员工，不见 xAI（[我当时的拆解](/zh/pacing-the-frontier-open-letter)）。这次他却说「Dario is right」。
 
 我对这个反例的读法是：它恰好标出了表态的价格。「Dario is right」三个词，帖子里没有承诺 xAI 做任何事，也和他从 2014 年起的 AI 风险言论（[《华盛顿邮报》当年的报道](https://www.washingtonpost.com/news/innovations/wp/2014/10/24/elon-musk-with-artificial-intelligence-we-are-summoning-the-demon/)）完全兼容——表这个态几乎不用付出什么。Altman 的表态里唯一有分量的部分，也是那半句有具体内容的「我们会做同样的事」。7 月我写过那封联署信为什么能聚齐上千个签名：它把诉求降级成「保留减速的选项」，签名几乎零成本。Amodei 这篇往前走的一步，恰恰是给表态标了价——驻场评估员要占工位、发门禁卡、让出发表权。价格一出现，口头同意和掏钱同意就分开了。
 
 ## 方案还剩下什么
 
-按这 48 小时的回应盘点三步方案：第三步（国际协调）绕不开白宫，而总统刚在直播电话里把这类减速担忧统称为骗局；第二步依赖的反垄断豁免，被 PCAST 联合主席公开拒绝——这两票都不是正式的政府决定，但风向不难读；剩下的是第一步——不需要任何人点头的那一步——现在有 Anthropic 的单方面承诺，加上 OpenAI 的跟进承诺。
+按这 48 小时的回应盘点三步方案：第三步（国际协调）绕不开白宫，而总统刚在直播电话里把这类减速担忧统称为骗局；第二步依赖的反垄断豁免，被 PCAST 联合主席公开表态反对——这两票都不是正式的政府决定，两步也都没有正式出局，但风向不难读；剩下的是第一步——不需要任何人点头的那一步——现在有 Anthropic 的单方面承诺，加上 OpenAI 的跟进承诺。
 
-这就是「单方倡议在缺乏约束力时能起多大作用」的实测答案：它拦不住任何一个反对者，但它让 Altman、Musk、Hassabis、Sacks、黄仁勋，直到白宫，在两天之内先后亮出了自己和「速度」的利益关系，而且这份记录是公开的。7 月的联署信登记的是「谁担心」，这一轮摆上台面的是谁的生意押在继续扩张上——两张名单以后都赖不掉。
+这就是「单方倡议在缺乏约束力时能起多大作用」的实测答案：它拦不住任何一个反对者，但它让 Altman、Musk、Hassabis、Sacks、黄仁勋，直到总统本人，在两天之内先后公开亮明了各自在「速度」这件事上站在哪里。7 月的联署信登记的是「谁担心」，这一轮摆上台面的是谁的生意押在继续扩张上——两张名单以后都赖不掉。
 
 接下来可观察的节点也随之收窄成三个：METR 这类机构的评估员有没有真的在 Anthropic 拿到工位和权限、第一份不经公司编辑的独立报告何时出现；OpenAI 那句「我们会做同样的事」落不落成同等权限；口头同意的 xAI 们有没有任何一个跟进有成本的动作。刹车若真造得出来，第一脚只能踩在实验室自己楼里——这 48 小时里，芯片供应商和白宫已经把话说明白了：他们不打算让它踩到自己。
 
@@ -59,10 +59,10 @@ Nvidia 的账完全相反。它卖的就是竞赛的投入品。Amodei 方案里
 - [Zvi Mowshowitz: We Must Pace The Frontier](https://thezvi.wordpress.com/2026/09/14/we-must-pace-the-frontier/) — Altman、Musk、Hassabis、Sanders 表态的转引汇总
 - [David Sacks 回应帖（X）](https://twitter.com/DavidSacks/status/2098973625252708460) 及 [RealClearPolitics 署名评论](https://www.realclearpolitics.com/2026/09/13/my_response_to_dario_amodei_nobody_is_stopping_you_710814.html) — 「请便」回应原文；[TechCrunch（2026-03）](https://techcrunch.com/2026/03/26/david-sacks-is-done-as-ai-czar-heres-what-hes-doing-instead/) — Sacks 卸任白宫 AI 事务负责人、转任 PCAST 联合主席
 - [Fortune: Jensen Huang has a bone to pick with Dario Amodei（2025-06）](https://fortune.com/2025/06/12/jensen-huang-has-a-bone-to-pick-with-dario-amodei) — 黄仁勋 VivaTech 发言与 Anthropic 回应
-- [CNBC: Jensen Huang slams US chip restrictions as a failure（2025-05）](https://www.cnbc.com/2025/05/21/nvidia-ceo-jensen-huang-slams-us-chip-restrictions-as-a-failure.html) — 「出口管制是一次失败」、中国份额 95%→50%
-- [The Economist: Nvidia is the central bank of AI（2026-09-03）](https://www.economist.com/interactive/briefing/2026/09/03/nvidia-is-the-central-bank-of-ai)、[CoreWeave SEC 8-K](https://www.sec.gov/Archives/edgar/data/1769628/000176962825000047/crwv-20250909.htm)、[Nvidia–OpenAI 合作公告](https://nvidianews.nvidia.com/news/openai-and-nvidia-announce-strategic-partnership-to-deploy-10gw-of-nvidia-systems) — 循环融资结构与具体金额
+- [CNBC: Jensen Huang slams US chip restrictions as a failure（2025-05）](https://www.cnbc.com/2025/05/21/nvidia-ceo-jensen-huang-slams-us-chip-restrictions-as-a-failure.html) — 「出口管制是一次失败」、中国 AI 芯片市场份额 95%→50%
+- [The Economist: Nvidia is the central bank of AI（2026-09-03）](https://www.economist.com/interactive/briefing/2026/09/03/nvidia-is-the-central-bank-of-ai)、[CoreWeave SEC 8-K](https://www.sec.gov/Archives/edgar/data/1769628/000176962825000047/crwv-20250909.htm)、[Nvidia–OpenAI 合作公告](https://nvidianews.nvidia.com/news/openai-and-nvidia-announce-strategic-partnership-to-deploy-10gw-of-nvidia-systems)、[TechCrunch: CoreWeave lands $221M investment（2023-04）](https://techcrunch.com/2023/04/20/coreweave-a-gpu-focused-cloud-compute-provider-lands-221m-investment/) — 循环融资结构、具体金额，以及 Nvidia 2023 年入股 CoreWeave 的起点
 - [Pacing the Frontier 联署官网](https://www.pacingthefrontier.com/) — 签名人数与签名者所属公司名单
-- [Introl: xAI Colossus 2GW expansion](https://introl.com/blog/xai-colossus-2-gigawatt-expansion-555k-gpus-january-2026) — xAI 的 Nvidia GPU 采购规模
+- [Introl: xAI Colossus 2GW expansion](https://introl.com/blog/xai-colossus-2-gigawatt-expansion-555k-gpus-january-2026) — xAI 的 Nvidia GPU 采购规模（第三方估算）
 - [Washington Post: 'With artificial intelligence we are summoning the demon'（2014-10）](https://www.washingtonpost.com/news/innovations/wp/2014/10/24/elon-musk-with-artificial-intelligence-we-are-summoning-the-demon/) — Musk 2014 年 MIT 演讲
 - [本站：这封公开信没要求 AI 减速——它承认的事更值得担心](/zh/pacing-the-frontier-open-letter) — 7 月联署信的签名成本分析、xAI 缺席的观察
 - [本站快讯 2026-09-12](/zh/briefing-2026-09-12)、[2026-09-13](/zh/briefing-2026-09-13) — 方案机制拆解、Sacks 回应的时间线
