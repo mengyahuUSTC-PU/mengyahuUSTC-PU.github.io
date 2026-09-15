@@ -148,8 +148,10 @@ def main():
         # wait for the next five-minute cron tick. flock keeps this to one
         # worker no matter how many PRs open at once.
         subprocess.Popen(
-            ["flock", "-n", "/tmp/podcast-worker.lock",
-             "/home/mia/site/automation/.venv/bin/python",
+            # No flock wrapper here: the worker takes the lock itself, and an
+            # outer flock on the same file made every launched worker exit at
+            # once ("another worker holds the lock") — three days of no audio.
+            ["/home/mia/site/automation/.venv/bin/python",
              str(Path(__file__).with_name("podcast_worker.py"))],
             stdout=open("/home/mia/cron-podcast.log", "a"),
             stderr=subprocess.STDOUT, start_new_session=True,
