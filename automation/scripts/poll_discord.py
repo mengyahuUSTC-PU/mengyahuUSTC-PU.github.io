@@ -402,7 +402,11 @@ def main():
             # lock is shared with unrelated jobs and would give false answers.
             # The launch waits for that lock the way the cron entry does —
             # flock -n would give up silently and the reply would be a lie.
-            probe = subprocess.run(["pgrep", "-fx", f"bash {script}"], capture_output=True)
+            # cron starts it as ./automation/scripts/run_daily.sh, a hand launch
+            # by absolute path; match either, anchored at the end of the line.
+            probe = subprocess.run(
+                ["pgrep", "-f", r"bash (\./|/home/mia/site/)automation/scripts/run_daily\.sh$"],
+                capture_output=True)
             if probe.returncode == 0:
                 send("ℹ️ 日更已经在跑了，不重复启动；跑完会照常推到这里。")
                 continue
