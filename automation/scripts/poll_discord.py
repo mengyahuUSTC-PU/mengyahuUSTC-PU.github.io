@@ -398,12 +398,16 @@ def main():
         # Same flock as the cron entry, so it can never run twice at once.
         if re.fullmatch(r"补跑日更", content):
             script = REPO_ROOT / "automation" / "scripts" / "run_daily.sh"
-            probe = subprocess.run(["flock", "-n", "/tmp/pipeline-git.lock", "true"], capture_output=True)
-            if probe.returncode != 0:
+            # "Already running" is decided by an exact process match: the git
+            # lock is shared with unrelated jobs and would give false answers.
+            # The launch waits for that lock the way the cron entry does —
+            # flock -n would give up silently and the reply would be a lie.
+            probe = subprocess.run(["pgrep", "-fx", f"bash {script}"], capture_output=True)
+            if probe.returncode == 0:
                 send("ℹ️ 日更已经在跑了，不重复启动；跑完会照常推到这里。")
                 continue
             subprocess.Popen(
-                ["flock", "-n", "/tmp/pipeline-git.lock", "bash", str(script)],
+                ["flock", "/tmp/pipeline-git.lock", "bash", str(script)],
                 cwd=str(REPO_ROOT),
                 stdout=open("/home/mia/cron-daily.log", "a"), stderr=subprocess.STDOUT,
                 stdin=subprocess.DEVNULL, start_new_session=True,
