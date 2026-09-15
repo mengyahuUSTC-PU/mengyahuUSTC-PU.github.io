@@ -1,0 +1,110 @@
+---
+import Base from '../../layouts/Base.astro';
+import episodes from '../../data/podcast.json';
+import { getCollection } from 'astro:content';
+import { t, postUrl, type Lang } from '../../lib/i18n';
+
+export function getStaticPaths() {
+  return [{ params: { lang: 'zh' } }, { params: { lang: 'en' } }];
+}
+
+const lang = Astro.params.lang as Lang;
+const otherLang: Lang = lang === 'zh' ? 'en' : 'zh';
+const FEED = 'https://podcast.mengyahu.com/feed.xml';
+
+// Episode titles come from the posts themselves, so the list stays in step
+// with any edit to an article's title.
+const posts = await getCollection('blog', (p) => p.data.lang === 'zh');
+const bySlug = new Map(posts.map((p) => [p.data.slug, p.data]));
+const list = Object.entries(episodes as Record<string, { url: string; seconds: number; published: string }>)
+  .map(([slug, ep]) => ({ slug, ...ep, post: bySlug.get(slug) }))
+  .filter((e) => e.post)
+  .sort((a, b) => b.post!.pubDate.valueOf() - a.post!.pubDate.valueOf());
+
+const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US',
+  { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+
+const copy = lang === 'zh' ? {
+  title: '胡说 AI',
+  blurb: '我博客深度文章的音频版：AI 安全、行业趋势、工程实践，还有我正好奇的前沿科技。名字有两层意思：胡说 AI，也是那个一本正经胡说八道的 AI。音频由 AI 语音朗读，观点仅代表个人。',
+  subscribe: '订阅',
+  rss: '复制 RSS 地址',
+  apple: 'Apple Podcasts',
+  spotify: 'Spotify',
+  xyz: '小宇宙',
+  soon: '审核中',
+  episodes: '节目列表',
+  read: '读文字版',
+  empty: '第一集马上就来。',
+  minutes: (m: number) => `约 ${m} 分钟`,
+} : {
+  title: '胡说 AI (Hu Shuo AI)',
+  blurb: 'Audio versions of my long-form posts, in Chinese: AI safety, industry trends, engineering practice, and whatever in frontier tech I am curious about. The name reads two ways — Hu (my surname) on AI, and the AI that talks nonsense. Read by a synthetic voice; views are my own.',
+  subscribe: 'Subscribe',
+  rss: 'Copy the RSS address',
+  apple: 'Apple Podcasts',
+  spotify: 'Spotify',
+  xyz: 'Xiaoyuzhou',
+  soon: 'pending review',
+  episodes: 'Episodes',
+  read: 'Read the text',
+  empty: 'The first episode is on its way.',
+  minutes: (m: number) => `about ${m} min`,
+};
+---
+
+<Base
+  title={copy.title}
+  description={copy.blurb}
+  lang={lang}
+  path={`/${lang}/podcast/`}
+  altPath={`/${otherLang}/podcast/`}
+>
+  <article class="article podcast-page">
+    <header>
+      <h1>{copy.title}</h1>
+    </header>
+    <div class="podcast-intro">
+      <img class="podcast-cover" src="https://podcast.mengyahu.com/cover.jpg" alt={copy.title} width="220" height="220" />
+      <div>
+        <p>{copy.blurb}</p>
+        <p class="podcast-links">
+          <strong>{copy.subscribe}：</strong>
+          <a href={FEED}>{copy.rss}</a>
+          <span class="podcast-soon">{copy.apple} · {copy.spotify} · {copy.xyz}（{copy.soon}）</span>
+        </p>
+      </div>
+    </div>
+
+    <h2 class="section-label">{copy.episodes}</h2>
+    {list.length === 0 ? <p>{copy.empty}</p> : (
+      <ul class="episode-list">
+        {list.map((e) => (
+          <li>
+            <p class="post-meta">{fmt.format(e.post!.pubDate)} · {copy.minutes(Math.max(1, Math.round(e.seconds / 60)))}</p>
+            <h3>{e.post!.title}</h3>
+            <p>{e.post!.description}</p>
+            <audio controls preload="none" src={e.url}></audio>
+            <a href={postUrl('zh', e.slug)}>{copy.read} →</a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </article>
+</Base>
+
+<style>
+  .podcast-intro { display: flex; gap: 1.4rem; align-items: flex-start; margin-bottom: 2.4rem; }
+  .podcast-cover { border-radius: 12px; flex: none; }
+  .podcast-links { margin-top: 0.8rem; font-size: 0.92rem; }
+  .podcast-soon { color: var(--muted); margin-left: 0.6rem; font-size: 0.85rem; }
+  .episode-list { list-style: none; padding: 0; margin: 0; }
+  .episode-list li { padding: 1.2rem 0; border-top: 1px solid var(--border); }
+  .episode-list h3 { margin: 0.2rem 0 0.4rem; font-size: 1.1rem; }
+  .episode-list p { margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.7; }
+  .episode-list audio { width: 100%; margin: 0.7rem 0 0.4rem; }
+  @media (max-width: 640px) {
+    .podcast-intro { flex-direction: column; }
+    .podcast-cover { width: 160px; height: 160px; }
+  }
+</style>
