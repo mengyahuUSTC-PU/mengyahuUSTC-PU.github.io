@@ -38,6 +38,7 @@ const copy = lang === 'zh' ? {
   blurb: '我博客深度文章的音频版：AI 安全、行业趋势、工程实践，还有我正好奇的前沿科技。我姓胡，在这儿聊 AI 新闻；说的都是从个人经验里得来的判断，索性自称一句「胡说」。音频由 AI 语音朗读，观点仅代表个人。',
   subscribe: '订阅',
   rss: '复制 RSS 地址',
+  copied: '已复制',
   apple: 'Apple Podcasts',
   spotify: 'Spotify',
   xyz: '小宇宙',
@@ -51,6 +52,7 @@ const copy = lang === 'zh' ? {
   blurb: 'Audio versions of my long-form posts, in Chinese: AI safety, industry trends, engineering practice, and whatever in frontier tech I am curious about. My surname is Hu, and 胡说 also means talking nonsense — fitting for one practitioner reading the news from her own experience. Read by a synthetic voice; views are my own.',
   subscribe: 'Subscribe',
   rss: 'Copy the RSS address',
+  copied: 'Copied',
   apple: 'Apple Podcasts',
   spotify: 'Spotify',
   xyz: 'Xiaoyuzhou',
@@ -82,7 +84,7 @@ const copy = lang === 'zh' ? {
           {links.apple && <a href={links.apple}>{copy.apple}</a>}
           {links.spotify && <a href={links.spotify}>{copy.spotify}</a>}
           {links.xiaoyuzhou && <a href={links.xiaoyuzhou}>{copy.xyz}</a>}
-          <a href={FEED}>{copy.rss}</a>
+          <button class="rss-copy" type="button" data-feed={FEED} data-copied={copy.copied}>{copy.rss}</button>
           {pending.length > 0 && <span class="podcast-soon">{pending.join(' · ')}（{copy.soon}）</span>}
         </p>
       </div>
@@ -110,6 +112,18 @@ const copy = lang === 'zh' ? {
   .podcast-cover { border-radius: 12px; flex: none; }
   .podcast-links { margin-top: 0.8rem; font-size: 0.92rem; }
   .podcast-links a { margin-right: 0.9rem; }
+  .rss-copy {
+    margin-right: 0.9rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .rss-copy.is-copied { color: var(--muted); text-decoration: none; }
   .podcast-soon { color: var(--muted); margin-left: 0.6rem; font-size: 0.85rem; }
   .episode-list { list-style: none; padding: 0; margin: 0; }
   .episode-list li { padding: 1.2rem 0; border-top: 1px solid var(--border); }
@@ -121,3 +135,28 @@ const copy = lang === 'zh' ? {
     .podcast-cover { width: 160px; height: 160px; }
   }
 </style>
+
+<script>
+  // A feed URL is for pasting into a podcast app, so copy it rather than
+  // navigating to raw XML. Falls back to selecting the text when the
+  // clipboard is unavailable (older browsers, insecure contexts).
+  document.querySelectorAll<HTMLButtonElement>('.rss-copy').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const feed = button.dataset.feed ?? '';
+      const done = button.dataset.copied ?? 'Copied';
+      const label = button.textContent;
+      try {
+        await navigator.clipboard.writeText(feed);
+      } catch {
+        window.prompt(feed, feed);
+        return;
+      }
+      button.textContent = done;
+      button.classList.add('is-copied');
+      setTimeout(() => {
+        button.textContent = label;
+        button.classList.remove('is-copied');
+      }, 1800);
+    });
+  });
+</script>
