@@ -1,6 +1,9 @@
 ---
 import Base from '../../layouts/Base.astro';
 import episodes from '../../data/podcast.json';
+const links: Record<string, string> = await import('../../data/podcast-links.json')
+  .then((m) => m.default as Record<string, string>)
+  .catch(() => ({}));
 import { getCollection } from 'astro:content';
 import { t, postUrl, type Lang } from '../../lib/i18n';
 
@@ -20,6 +23,12 @@ const list = Object.entries(episodes as Record<string, { url: string; seconds: n
   .map(([slug, ep]) => ({ slug, ...ep, post: bySlug.get(slug) }))
   .filter((e) => e.post)
   .sort((a, b) => b.post!.pubDate.valueOf() - a.post!.pubDate.valueOf());
+
+const pending = [
+  !links.apple && 'Apple Podcasts',
+  !links.spotify && 'Spotify',
+  !links.xiaoyuzhou && '小宇宙',
+].filter(Boolean) as string[];
 
 const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US',
   { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
@@ -70,8 +79,11 @@ const copy = lang === 'zh' ? {
         <p>{copy.blurb}</p>
         <p class="podcast-links">
           <strong>{copy.subscribe}：</strong>
+          {links.apple && <a href={links.apple}>{copy.apple}</a>}
+          {links.spotify && <a href={links.spotify}>{copy.spotify}</a>}
+          {links.xiaoyuzhou && <a href={links.xiaoyuzhou}>{copy.xyz}</a>}
           <a href={FEED}>{copy.rss}</a>
-          <span class="podcast-soon">{copy.apple} · {copy.spotify} · {copy.xyz}（{copy.soon}）</span>
+          {pending.length > 0 && <span class="podcast-soon">{pending.join(' · ')}（{copy.soon}）</span>}
         </p>
       </div>
     </div>
@@ -97,6 +109,7 @@ const copy = lang === 'zh' ? {
   .podcast-intro { display: flex; gap: 1.4rem; align-items: flex-start; margin-bottom: 2.4rem; }
   .podcast-cover { border-radius: 12px; flex: none; }
   .podcast-links { margin-top: 0.8rem; font-size: 0.92rem; }
+  .podcast-links a { margin-right: 0.9rem; }
   .podcast-soon { color: var(--muted); margin-left: 0.6rem; font-size: 0.85rem; }
   .episode-list { list-style: none; padding: 0; margin: 0; }
   .episode-list li { padding: 1.2rem 0; border-top: 1px solid var(--border); }
