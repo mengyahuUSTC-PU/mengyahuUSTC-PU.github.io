@@ -41,6 +41,17 @@ def apple_link() -> str | None:
     return None
 
 
+def spotify_live(url: str) -> bool:
+    """oEmbed answers only once the show is actually browsable."""
+    try:
+        with urllib.request.urlopen(
+                "https://open.spotify.com/oembed?url=" + urllib.parse.quote(url, safe=""),
+                timeout=20) as r:
+            return bool(json.load(r).get("title"))
+    except Exception:
+        return False
+
+
 def load() -> dict:
     try:
         return json.loads(LINKS.read_text())
@@ -77,6 +88,13 @@ def main():
     if "--show" in sys.argv:
         print(json.dumps(links, ensure_ascii=False, indent=2) if links else "(还没有任何平台链接)")
         return
+    spotify = links.get("spotify")
+    if spotify and not links.get("spotify_confirmed") and spotify_live(spotify):
+        links["spotify_confirmed"] = True
+        publish(links)
+        notify(f"🎉 **《胡说 AI》已经能在 Spotify 上搜到了**\n{spotify}")
+        print("spotify: live")
+
     found = apple_link()
     if found and links.get("apple") != found:
         links["apple"] = found
