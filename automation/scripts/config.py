@@ -74,6 +74,9 @@ RSS_FEEDS = [
     ("Transformer Circuits (Olah et al.)", "https://transformer-circuits.pub/feed.xml"),
     ("Interconnects (Nathan Lambert)", "https://www.interconnects.ai/feed"),
     ("One Useful Thing (Ethan Mollick)", "https://www.oneusefulthing.org/feed"),
+    # Meta first-party (2026-09-21): ai.meta.com/blog returns 400 to this host,
+    # so the newsroom feed stands in for their launch announcements.
+    ("Meta Newsroom", "https://about.fb.com/news/feed/", "filter"),
     # Government primary sources (added 2026-07-19, reverse-engineered from
     # yage.ai's digest sourcing). FR feed is pre-scoped to AI; NIST is broad,
     # so it carries the "filter" flag (keyword-gated in fetch_rss).
@@ -91,7 +94,6 @@ RSS_FEEDS = [
 # (name, page url, href regex, url prefix to make links absolute)
 SCRAPE_SOURCES = [
     ("Anthropic News", "https://www.anthropic.com/news", r'href="(/news/[^"#?]+)"', "https://www.anthropic.com"),
-    ("Meta AI Blog", "https://ai.meta.com/blog/", r'href="(/blog/[^"#?]+)"', "https://ai.meta.com"),
     ("Stanford HAI", "https://hai.stanford.edu/news", r'href="(/news/[^"#?]+)"', "https://hai.stanford.edu"),
     # Chinese labs + star startups without feeds (added 2026-07-19)
     ("Moonshot/Kimi Blog", "https://www.kimi.com/blog", r'href="(/blog/[^"#?]+)"', "https://www.kimi.com"),
@@ -101,3 +103,15 @@ SCRAPE_SOURCES = [
 
 # How many days back an item may be dated and still enter the pool.
 MAX_AGE_DAYS = 3
+
+
+# Launch radar (added 2026-09-21). The source list can only cover labs we
+# already know about; Jev shipped from a company that did not exist a month
+# ago and reached us three days late, through someone else's blog. These
+# queries surface announcements whoever makes them. Treated as radar, not as
+# citable sources: the writer still goes to the original.
+LAUNCH_RADAR = [
+    ("发布雷达: 新模型", "%22AI+model%22+(launch+OR+launches+OR+released)+when:4d"),
+    ("发布雷达: 新助手/智能体", "(%22AI+assistant%22+OR+%22AI+agent%22)+(launch+OR+launches)+when:4d"),
+    ("发布雷达: 实验室动态", "(OpenAI+OR+Anthropic+OR+%22Google+DeepMind%22+OR+Meta+AI)+(launch+OR+announces)+when:4d",),
+]

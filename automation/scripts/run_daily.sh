@@ -57,6 +57,11 @@ cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/t
 "$PY" -c "import json,sys; d=json.load(open('$DATA/selection-$DATE.json')); \
 print(f\"briefing items: {len(d.get('briefing_items',[]))}, deep-dive candidates: {len(d.get('deep_dive_candidates',[]))}, research items: {len(d.get('research_items',[]))}\")"
 
+# What did we pass over while the AI world was talking about it? Runs after
+# selection so it can compare the two, and never blocks the day's work.
+echo "=== coverage check ==="
+"$PY" "$SCRIPTS/coverage_check.py" "$DATE" || true
+
 echo "=== briefing draft ==="
 cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/briefing.md" \
   <(echo "## 今日日期：$DATE") \

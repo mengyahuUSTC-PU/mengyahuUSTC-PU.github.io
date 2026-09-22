@@ -136,6 +136,7 @@ def fetch_hackernews():
                 "title": clean(title, 200),
                 "url": s.get("url") or f"https://news.ycombinator.com/item?id={story_id}",
                 "summary": f"{s.get('score', 0)} points, {s.get('descendants', 0)} comments",
+                "score": s.get("score", 0),
                 "published": datetime.fromtimestamp(
                     s.get("time", 0), tz=timezone.utc
                 ).isoformat(),
@@ -143,6 +144,45 @@ def fetch_hackernews():
         )
         time.sleep(0.1)
     return items
+
+
+def _radar_key(title: str) -> str:
+    """Title without the trailing " - Publisher", lowercased: syndicated copies
+    of one wire story collapse to a single key."""
+    import re as _re
+    base = _re.sub(r"\s+-\s+[^-]{2,40}$", "", title or "").lower()
+    return _re.sub(r"[^a-z0-9\u4e00-\u9fff]+", "", base)[:80]
+
+
+def fetch_launch_radar():
+    """Google News queries that catch launches from labs we do not follow."""
+    from config import LAUNCH_RADAR
+
+    items, failed, seen = [], [], set()
+    for name, query in LAUNCH_RADAR:
+        url = f"https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en"
+        try:
+            parsed = feedparser.parse(requests.get(url, headers=UA, timeout=25).content)
+            for e in parsed.entries[:12]:
+                when = entry_datetime(e)
+                if when and when < CUTOFF:
+                    continue
+                if not matches(e.get("title", ""), HN_KEYWORDS):
+                    continue
+                key = _radar_key(e.get("title", ""))
+                if not key or key in seen:
+                    continue
+                seen.add(key)
+                items.append({
+                    "source": name,
+                    "title": clean(e.get("title", ""), 200),
+                    "url": e.get("link", ""),
+                    "summary": clean(e.get("summary", ""), 300),
+                    "published": (when or NOW).isoformat(),
+                })
+        except Exception as exc:
+            failed.append({"source": name, "error": str(exc)[:200]})
+    return items[:18], failed
 
 
 def entry_datetime(e):
@@ -226,6 +266,105 @@ def historical_urls():
     return seen
 
 
+def add_heat(items):
+    """Tag each item with how many DISTINCT sources mention its distinctive
+    names, over this pool and the two before it.
+
+    Counting raw mentions rewarded whoever repeats themselves most — one wire
+    story syndicated ten times, or a site advertising its own conference.
+    Distinct sources is the thing that actually means "everyone is talking
+    about this".
+    """
+    import re as _re
+    from collections import Counter, defaultdict
+
+    # Words that are capitalised but carry no story: sentence starters, the
+    # publishers themselves, and the conference circuit.
+    STOP = {
+        "The", "This", "That", "With", "From", "What", "How", "Why", "New", "And",
+        "For", "Its", "Has", "Now", "You", "Your", "Are", "Not", "All", "Can",
+        "Here", "After", "Before", "More", "Most", "Best", "First", "Last",
+        "AI", "LLM", "GPT", "API", "US", "UK", "EU", "CEO", "IT", "PDF",
+        "TechCrunch", "VentureBeat", "Reuters", "Bloomberg", "Verge", "Wired",
+        "Disrupt", "Register", "Post", "Times", "Journal", "News", "Blog",
+        "Hacker", "Show", "Ask", "Announcing", "Introducing",
+        # The radar queries contain these verbs, so every radar headline
+        # carries them; they mark the shape of the news, never the subject.
+        "Launch", "Launches", "Launched", "Launching", "Announce", "Announces",
+        "Announced", "Unveils", "Unveiled", "Debuts", "Release", "Releases",
+        "Released", "Introduces", "Rolls", "Adds", "Brings", "Hits", "Says",
+    }
+
+    # Vendor names appear in half the pool on any given day, so they say
+    # nothing about whether one story is breaking. Heat should come from the
+    # specific thing being talked about: Muse, Jev, Astra — not "Google".
+    VENDORS = {
+        "Google", "Meta", "OpenAI", "Anthropic", "Microsoft", "Amazon", "Apple",
+        "Nvidia", "DeepMind", "ChatGPT", "Claude", "Gemini", "Llama", "Copilot",
+        "China", "Silicon", "Valley",
+    }
+
+    def names_raw(text):
+        return {w for w in _re.findall(r"\b[A-Z][A-Za-z0-9.\-]{2,}\b", text or "")
+                if w not in STOP and w not in VENDORS}
+
+    def names(text):
+        cap = max(6, archive_total * GENERIC_SHARE)
+        return {w for w in names_raw(text) if doc_freq.get(w, 0) <= cap}
+
+    def read_pool(path):
+        try:
+            prev = json.loads(path.read_text())
+            return prev if isinstance(prev, list) else prev.get("items", [])
+        except Exception:
+            return []
+
+    pools = sorted(DATA_DIR.glob("pool-*.json"))
+    history = [it for p in pools[-3:-1] for it in read_pool(p)]
+
+    # Generic-word filter, measured against our own archive. Words like Models,
+    # Alignment or Reasoning turn up in 3-6% of everything we fetch; a name
+    # that marks an actual event sits near or below 1% (Muse 0.7%, Codex 0.4%,
+    # Jev 0.06%). Counting DAYS instead of items was the first attempt and it
+    # was wrong: a story running for two weeks looked "common" exactly when it
+    # was hottest, which is how Muse got dropped.
+    doc_freq = Counter()
+    archive_total = 0
+    for path in pools[-30:]:
+        rows = read_pool(path)
+        archive_total += len(rows)
+        for it in rows:
+            for w in names_raw(it.get("title", "")):
+                doc_freq[w] += 1
+    GENERIC_SHARE = 0.015          # ~1.5% of the archive
+
+    def bucket(item: dict) -> str:
+        """One voice per outlet. Radar items all share a source name, so use
+        the publisher Google News appends to the title — identical wire copies
+        were already collapsed when the radar was fetched."""
+        source = str(item.get("source", ""))
+        if not source.startswith("发布雷达"):
+            return source
+        tail = _re.search(r"\s+-\s+([^-]{2,40})$", item.get("title", "") or "")
+        return f"radar:{tail.group(1).strip().lower()}" if tail else "radar:unknown"
+
+    sources_by_name = defaultdict(set)
+    for it in items + history:
+        b = bucket(it)
+        for n in names(it.get("title", "")):
+            sources_by_name[n].add(b)
+
+    for it in items:
+        ns = names(it.get("title", ""))
+        it["heat"] = max((len(sources_by_name[n]) for n in ns), default=0)
+        hot = [n for n in ns if len(sources_by_name[n]) >= 3]
+        if hot:
+            it["hot_names"] = sorted(hot, key=lambda n: -len(sources_by_name[n]))[:3]
+        else:
+            it.pop("hot_names", None)
+    return items
+
+
 def main():
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     pool = {"fetched_at": NOW.isoformat(), "items": [], "failed_sources": []}
@@ -236,7 +375,7 @@ def main():
         except Exception as exc:
             pool["failed_sources"].append({"source": fn.__name__, "error": str(exc)[:200]})
 
-    for fetcher in (fetch_rss, fetch_scraped):
+    for fetcher in (fetch_rss, fetch_scraped, fetch_launch_radar):
         got, failed = fetcher()
         pool["items"].extend(got)
         pool["failed_sources"].extend(failed)
@@ -248,7 +387,7 @@ def main():
             continue
         seen.add(item["url"])
         unique.append(item)
-    pool["items"] = unique
+    pool["items"] = add_heat(unique)
 
     out = DATA_DIR / f"pool-{PT_DATE}.json"
     out.write_text(json.dumps(pool, ensure_ascii=False, indent=2))
