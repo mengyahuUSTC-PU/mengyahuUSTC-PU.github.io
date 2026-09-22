@@ -78,8 +78,12 @@ if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else ""
     raw = sys.stdin.read()
     if mode == "json":
-        # Emit clean JSON, repairing bare quotes if the model left any; a
-        # failure here is loud (non-zero exit) instead of a bad file on disk.
+        # Historical pass-through: strip fences only. Ten callers feed it
+        # markdown (drafts, reports, revisions), so it must never validate.
+        print(strip_fences(raw))
+    elif mode == "json-strict":
+        # Selection only: emit clean JSON, repairing bare quotes if the model
+        # left any; a failure is loud (exit 2) instead of a bad file on disk.
         import json
         try:
             data = parse_json_lenient(strip_fences(raw))
@@ -91,4 +95,4 @@ if __name__ == "__main__":
     elif mode == "bilingual":
         split_bilingual(raw, sys.argv[2])
     else:
-        sys.exit("usage: split_output.py json|bilingual [out_prefix]")
+        sys.exit("usage: split_output.py json|json-strict|bilingual [out_prefix]")

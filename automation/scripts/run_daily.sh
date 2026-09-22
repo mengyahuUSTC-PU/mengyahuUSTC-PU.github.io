@@ -52,7 +52,7 @@ cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/t
   <(echo "$RECENT_TOPICS") \
   <(echo "## 当日条目池 JSON") "$POOL" \
   | claude -p --output-format text --model sonnet \
-  | "$PY" "$SCRIPTS/split_output.py" json > "$DATA/selection-$DATE.json"
+  | "$PY" "$SCRIPTS/split_output.py" json-strict > "$DATA/selection-$DATE.json"
 
 # A selection that did not produce valid JSON must be visible, not a silent
 # early exit: say so in Discord, then stop (nothing downstream can run).
