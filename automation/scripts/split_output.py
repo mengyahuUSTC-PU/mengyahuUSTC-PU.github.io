@@ -38,11 +38,56 @@ def split_bilingual(text: str, prefix: str) -> None:
     print(f"wrote {prefix}.zh.md" + (f" and {prefix}.en.md" if en else " (no EN section)"))
 
 
+def repair_json(text: str) -> str:
+    """Escape ASCII quotes the model left bare inside string values.
+
+    Sonnet wrote 判断"balance of power"接下来 inside a JSON string and the whole
+    daily run died at selection with nothing in Discord. A quote inside a
+    string is legitimate only when it ends the string — the next non-space
+    character is , } ] : or end of text; every other quote gets escaped.
+    """
+    out, in_str, i, n = [], False, 0, len(text)
+    while i < n:
+        ch = text[i]
+        if ch == "\\" and in_str:
+            out.append(text[i:i + 2]); i += 2; continue
+        if ch == '"':
+            if not in_str:
+                in_str = True; out.append(ch); i += 1; continue
+            j = i + 1
+            while j < n and text[j] in " \t\r\n":
+                j += 1
+            if j >= n or text[j] in ",}]:":
+                in_str = False; out.append(ch)
+            else:
+                out.append('\\"')
+            i += 1; continue
+        out.append(ch); i += 1
+    return "".join(out)
+
+
+def parse_json_lenient(text: str):
+    import json
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return json.loads(repair_json(text))
+
+
 if __name__ == "__main__":
     mode = sys.argv[1] if len(sys.argv) > 1 else ""
     raw = sys.stdin.read()
     if mode == "json":
-        print(strip_fences(raw))
+        # Emit clean JSON, repairing bare quotes if the model left any; a
+        # failure here is loud (non-zero exit) instead of a bad file on disk.
+        import json
+        try:
+            data = parse_json_lenient(strip_fences(raw))
+        except Exception as exc:
+            sys.stderr.write(f"split_output: model output is not JSON even after repair: {exc}\n")
+            sys.stderr.write(strip_fences(raw)[:600] + "\n")
+            sys.exit(2)
+        print(json.dumps(data, ensure_ascii=False, indent=2))
     elif mode == "bilingual":
         split_bilingual(raw, sys.argv[2])
     else:

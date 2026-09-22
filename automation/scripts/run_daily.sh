@@ -54,6 +54,12 @@ cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/t
   | claude -p --output-format text --model sonnet \
   | "$PY" "$SCRIPTS/split_output.py" json > "$DATA/selection-$DATE.json"
 
+# A selection that did not produce valid JSON must be visible, not a silent
+# early exit: say so in Discord, then stop (nothing downstream can run).
+if ! "$PY" -c "import json; json.load(open('$DATA/selection-$DATE.json'))" 2>/dev/null; then
+  "$PY" "$SCRIPTS/discord_notify.py" "🚨 今天的日更在选题这一步失败（模型输出不是合法 JSON，自动修复也没救回来）。抓取已完成，回一句「补跑日更」可以重试选题。" || true
+  exit 1
+fi
 "$PY" -c "import json,sys; d=json.load(open('$DATA/selection-$DATE.json')); \
 print(f\"briefing items: {len(d.get('briefing_items',[]))}, deep-dive candidates: {len(d.get('deep_dive_candidates',[]))}, research items: {len(d.get('research_items',[]))}\")"
 
