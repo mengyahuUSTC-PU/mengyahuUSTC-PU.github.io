@@ -111,7 +111,7 @@ MAX_AGE_DAYS = 3
 # queries surface announcements whoever makes them. Treated as radar, not as
 # citable sources: the writer still goes to the original.
 LAUNCH_RADAR = [
-    ("发布雷达: 新模型", "%22AI+model%22+(launch+OR+launches+OR+released)+when:4d"),
-    ("发布雷达: 新助手/智能体", "(%22AI+assistant%22+OR+%22AI+agent%22)+(launch+OR+launches)+when:4d"),
-    ("发布雷达: 实验室动态", "(OpenAI+OR+Anthropic+OR+%22Google+DeepMind%22+OR+Meta+AI)+(launch+OR+announces)+when:4d",),
+    ("发布雷达: 新模型", "%22AI+model%22+(launch+OR+launches+OR+released)+when:7d"),
+    ("发布雷达: 新助手/智能体", "(%22AI+assistant%22+OR+%22AI+agent%22)+(launch+OR+launches)+when:7d"),
+    ("发布雷达: 实验室动态", "(OpenAI+OR+Anthropic+OR+%22Google+DeepMind%22+OR+Meta+AI)+(launch+OR+announces)+when:7d",),
 ]
