@@ -16,13 +16,19 @@ TypeSafe 把这类模型叫 System One model，名字借自心理学家 Kahneman
 
 官方说它「不可能幻觉」，准确含义是：输出被限制在预定义类型里，它编不出一个不存在的选项，也不会返回格式错乱的 JSON。这在构造上排除了「胡说」，不等于「判对」。真正的卖点是概率经过校准：它回答 0.7 时，历史上它回答 0.7 的那批判断里，大约七成为真。软件可以直接拿这个数做分支，这是「让 LLM 输出 yes/no」给不了的。
 
+## 分类器早就有，它新在哪
+
+输入文本、输出类别概率，这件事拿标注数据微调一个 BERT 也能做，给 LLM 接个分类头也能做。区别在标签集固化在哪。训出来的分类器只认训练时定死的那几个类目，每个新任务都要一批标注数据和一次训练，类目一改就得重训。Jev 的题目和选项是调用时用自然语言现写的（[docs](https://docs.typesafe.ai/primitives.md)）：这一次问「这封邮件属于哪类工单」，下一次问「这条命令危险吗」，同一个模型都接，零标注、零训练。这种现场出题的通用性，过去只有提示通用 LLM 才拿得到，专训的小分类器给不了。
+
+和提示 LLM 的区别则在校准。LLM 也能在回答里报一个概率，但那个数没经过校准，0.7 不代表七成为真；Jev 把校准本身当训练目标，官方把训练方法叫 RLCD（Reinforcement Learning for Calibrated Decisions，[官方博客](https://typesafe.ai/blog/introducing-system-one-models-and-jev)）。所以它火不是靠准确率碾压，Bryo AI 的测试里 Gemini 还略准一点；火在此前没人把这个组合打包成一个 API：免训练的任意分类、可以当数用的概率、分类器量级的速度和价格。
+
 ## 两个量级的数字是怎么来的
 
 官网首页挂着 193.6 倍快、444.6 倍便宜。口径在[官方博客](https://typesafe.ai/blog/introducing-system-one-models-and-jev)里：自建的 workflow 评测，对照 GPT-6 Astra 和 Claude Fable 5.1，官方自己注明这组数「处于真实收益的高端」，且测试题出自自家团队，「可能存在偏差」。第三方实测普遍低一个量级：Vercel 用它替换 OpenAI 模型做命令安全检查，快 5–18 倍；Bryo AI 测邮件分类，Gemini 略准，但贵 10–20 倍（均见 [TechCrunch](https://techcrunch.com/2026/09/18/a-new-kind-of-ai-model-from-a-chatgpt-inventor-is-thrilling-developers/)）。做预算时按 5–20 倍算比较稳。
 
 ## 审核系统拿它换什么
 
-内容安全系统今天做机器判定，常规是两条路：自己训分类器，需要标注数据，类目一改就得重训；或者调通用 LLM 让它输出 JSON，慢、贵，还要兜住格式错乱。Jev 给了第三条：免训练的通用判断 API，返回的是能直接用的概率。审核系统最值钱的正是这个数——高置信自动处置，中间段进人工队列，这套分层今天靠 LLM guardrail 做不了，它只回你一句「unsafe」，不附可信的置信度。
+内容安全系统今天做机器判定，走的正是上面两条老路：训专用分类器，或者调通用 LLM 让它输出 JSON，慢、贵，还要兜住格式错乱。Jev 给了第三条：免训练的通用判断 API，返回的是能直接用的概率。审核系统最值钱的正是这个数——高置信自动处置，中间段进人工队列，这套分层今天靠 LLM guardrail 做不了，它只回你一句「unsafe」，不附可信的置信度。
 
 代价有三条。阈值责任回到使用者头上：TypeSafe CTO Armin Ronacher 对 TechCrunch 说，用户得自己明白 50% 的概率约等于抛硬币，该弃就弃。数值只在等级层面校准：[已知缺陷文档](https://docs.typesafe.ai/model-jaggedness/jev-1.13.md)写明 Score 不能拿来插值，Noul 一题和它的否定式加起来也未必等于 1。还有语言：官方明说英语之外（含中日韩文）准确率更低，拿去做中文审核要先自测。
 
@@ -42,8 +48,9 @@ Simon Willison [自己试了搜索重排序](https://simonwillison.net/2026/Sep/
 
 ## 参考来源
 
-- [Introducing System One Models & Jev — TypeSafe AI Blog](https://typesafe.ai/blog/introducing-system-one-models-and-jev) — 发布日期、题型、延迟数据、193.6x/444.6x 的评测口径与官方自述局限
+- [Introducing System One Models & Jev — TypeSafe AI Blog](https://typesafe.ai/blog/introducing-system-one-models-and-jev) — 发布日期、题型、延迟数据、RLCD 训练方法、193.6x/444.6x 的评测口径与官方自述局限
 - [Models — TypeSafe AI Docs](https://docs.typesafe.ai/models.md) — jev-1.13.0 版本、64k/32k 上下文、定价、语言支持
+- [Primitives — TypeSafe AI Docs](https://docs.typesafe.ai/primitives.md) — 题目与选项在调用时以自然语言定义、三种题型的结构
 - [Jev 1.13 jaggedness — TypeSafe AI Docs](https://docs.typesafe.ai/model-jaggedness/jev-1.13.md) — 对抗性内容可移动答案、Score/Noul 校准缺陷
 - [A new kind of AI model from a ChatGPT inventor is thrilling developers — TechCrunch](https://techcrunch.com/2026/09/18/a-new-kind-of-ai-model-from-a-chatgpt-inventor-is-thrilling-developers/) — Almeida 背景、Vercel 5–18x、Bryo AI 10–20x、Ronacher 引语
 - [Companies are putting Jev in charge of AI agent decisions — VentureBeat](https://venturebeat.com/security/companies-are-putting-jev-in-charge-of-ai-agent-decisions-and-prompt-injection-can-influence-the-verdict) — 14 万等待名单、集成方、Octomind 测试数字、LangChain/Pydantic 缓解方案
