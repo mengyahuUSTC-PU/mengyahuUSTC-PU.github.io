@@ -1,5 +1,5 @@
 ---
-title: "隐私政策是一份文件，你的车发出的流量是另一份"
+title: "21 辆车开进法拉第帐篷，19 辆在向第三方发数据"
 description: "东北大学与 Consumer Reports 把 21 辆车开进法拉第帐篷抓包：19 辆在向第三方发数据，车载 AI 助手正要接入同一条数据链。"
 pubDate: 2026-10-01
 tags: [privacy, connected-cars, data-brokers]
