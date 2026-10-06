@@ -150,6 +150,35 @@ def newsletter_stats():
         return {"error": str(exc)[:200]}
 
 
+def headline(tok, pid, s, e):
+    """The numbers the report leads with. Engaged sessions (10s+, or 2+ pages)
+    rather than sessions: about a quarter of all sessions since launch were
+    headless-browser crawlers (Singapore, data-centre towns) that GA4's
+    built-in bot filter lets through. They never engage, so engaged sessions
+    drop them without anyone having to decide what is a bot."""
+    tot = ga4_report(tok, pid, ["newVsReturning"],
+                     ["totalUsers", "sessions", "engagedSessions"], s, e)
+    out = {"sessions": 0, "engagedSessions": 0, "returning_users": 0, "users": 0}
+    for r in tot:
+        out["sessions"] += int(r["sessions"])
+        out["engagedSessions"] += int(r["engagedSessions"])
+        out["users"] += int(r["totalUsers"])
+        if r["newVsReturning"] == "returning":
+            out["returning_users"] += int(r["totalUsers"])
+    # Countries whose traffic looks scripted: barely any engagement, one page,
+    # near-zero time. Reported, not removed; the report says what it set aside.
+    suspect = []
+    for r in ga4_report(tok, pid, ["country"],
+                        ["sessions", "engagedSessions", "userEngagementDuration"], s, e):
+        n = int(r["sessions"])
+        if n >= 10 and int(r["engagedSessions"]) / n < 0.12 \
+                and float(r["userEngagementDuration"]) / n < 3:
+            suspect.append({"country": r["country"], "sessions": n,
+                            "engagedSessions": int(r["engagedSessions"])})
+    out["suspected_bot_sessions"] = suspect
+    return out
+
+
 def main():
     load_env()
     pid = os.environ["GA4_PROPERTY_ID"]
@@ -160,15 +189,18 @@ def main():
     gsc_end = date.today() - timedelta(days=3)
     gsc_start = gsc_end - timedelta(days=6)
 
+    ps, pe = (start - timedelta(days=7)).isoformat(), (end - timedelta(days=7)).isoformat()
     out = {
         "window": {"start": s, "end": e},
+        "headline": headline(tok, pid, s, e),
+        "headline_previous_week": headline(tok, pid, ps, pe),
         "by_channel": ga4_report(tok, pid, ["sessionSource", "sessionMedium"],
-                                 ["sessions", "totalUsers"], s, e),
+                                 ["sessions", "engagedSessions", "totalUsers"], s, e),
         "by_campaign": ga4_report(tok, pid, ["sessionCampaignName"],
                                   ["sessions"], s, e),
         "by_page": ga4_report(tok, pid, ["pagePath"],
                               ["screenPageViews", "activeUsers", "userEngagementDuration"], s, e),
-        "by_day": ga4_report(tok, pid, ["date"], ["sessions", "activeUsers"], s, e),
+        "by_day": ga4_report(tok, pid, ["date"], ["sessions", "engagedSessions", "activeUsers"], s, e),
         "gsc_window": {"start": gsc_start.isoformat(), "end": gsc_end.isoformat()},
         "gsc_queries": gsc_query(tok, ["query"], gsc_start.isoformat(), gsc_end.isoformat()),
         "gsc_pages": gsc_query(tok, ["page"], gsc_start.isoformat(), gsc_end.isoformat()),

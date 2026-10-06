@@ -115,9 +115,11 @@ def main():
         }
 
     DIST.mkdir(parents=True, exist_ok=True)
+    from datetime import datetime, timezone
     (DIST / f"{slug}.json").write_text(
         json.dumps({"slug": slug, "thread": thread, "linkedin": linkedin,
-                    "email": email, "status": "pending"},
+                    "email": email, "status": "pending",
+                    "previewed_at": datetime.now(timezone.utc).isoformat()},
                    ensure_ascii=False, indent=2)
     )
 
@@ -130,11 +132,12 @@ def main():
             f"**中文主题**：{email['zh']['subject']}\n```{email['zh']['html']}```\n"
             f"**EN subject**: {email['en']['subject']}\n```{email['en']['html']}```"
         )
-    steps = "thread + LinkedIn 排进 Typefully" + (
-        " + newsletter 发给订阅者" if email else "")
+    steps = "thread + LinkedIn 排进 Typefully"
     send(
         f"⏸ 以上是 **{slug}** 的分发队列（未排程）。\n"
-        f"回复 `定时发 {slug}`（推荐：高峰时段数据更好）或 `发 {slug}` 立即发 → {steps}。不回复则不排程。"
+        f"回复 `定时发 {slug}`（推荐：高峰时段数据更好）或 `发 {slug}` 立即发 → {steps}。"
+        f"不回复则不发：两天后提醒一次，7 天后作废。\n"
+        f"Newsletter 改成每周日自动合集，这篇不管发不发都会进本周那封。"
     )
     # --- HN suitability (non-blocking; user submits with her own account) ---
     try:

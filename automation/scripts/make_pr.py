@@ -104,6 +104,9 @@ def main():
                        "tags 必须英文小写 kebab-case（会泄漏到英文界面）：" + ", ".join(bad_tags)]
     if comments:
         body_parts += ["", "## 事实核查点 / 备选标题", *comments]
+    if parsed[0][0].get("lang", "zh") == "zh" and not slug.startswith("briefing"):
+        body_parts += ["", "## 💬 你有亲身经历吗？",
+                       "这个话题你自己有没有相关经历？有的话在 PR 里留言一两句，我写进开头；没有就不用管。"]
     body_parts += ["", "**Merge = 发布上线。** 需要修改请在 PR 里留言。", "", "🤖 Generated with [Claude Code](https://claude.com/claude-code)"]
 
     try:

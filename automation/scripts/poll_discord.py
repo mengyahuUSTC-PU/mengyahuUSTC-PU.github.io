@@ -208,10 +208,9 @@ def handle_distribution(slug: str, when: str = "now"):
         except Exception as exc:  # noqa: BLE001 — never block distribution on this
             send(f"⚠️ 播客音频没能排上队（{slug}）：{str(exc)[:160]}")
 
-    # Newsletter: approval adds the article to tonight's digest. Two approvals
-    # in one afternoon used to mean two emails an hour apart, which reads as
-    # spam; now a cron near 23:59 Seattle time sends whatever accumulated as
-    # one email per language, and a late approval rides along the next day.
+    # Newsletter: weekly since 2026-10 (Sunday 23:59 Seattle time), and every
+    # deep dive that went live that week is in it whether or not it was
+    # approved for social. Enqueueing here only makes sure of it.
     newsletter_status = "未生成"
     if pack.get("email"):
         # Dist packs carry no title; the Chinese subject line is the closest
@@ -221,8 +220,8 @@ def handle_distribution(slug: str, when: str = "now"):
         try:
             from newsletter_digest import enqueue
             target = enqueue(slug, title, pack["email"], pack.get("url", ""))
-            newsletter_status = f"⏳ 合并进 {target} 的合集，23:59 西雅图时间发出"
-            send(f"📧 Newsletter 已加入 {target} 的合集（当天所有文章合并成一封，23:59 西雅图时间发出）。")
+            newsletter_status = ("已在之前的 newsletter 里发过" if target == "already"
+                                 else f"⏳ 进 {target}（周日）23:59 的每周合集")
         except Exception as exc:  # noqa: BLE001 — the pack is already marked scheduled
             newsletter_status = f"❌ 没进合集：{str(exc)[:120]}"
             send(f"🚨 Newsletter 没能加入合集（{slug}）：{str(exc)[:200]}\n回一句「补发 {slug}」可以重试。")
@@ -256,17 +255,17 @@ def handle_newsletter_resend(slug: str):
              or (pack["email"].get("en") or {}).get("subject") or slug)
     try:
         from newsletter_digest import enqueue
-        target = enqueue(slug, title, pack["email"], pack.get("url", ""))
+        target = enqueue(slug, title, pack["email"], pack.get("url", ""), force=True)
     except Exception as exc:  # noqa: BLE001
         send(f"🚨 补发失败（{slug}）：{str(exc)[:200]}")
         return
-    send(f"📧 {slug} 已加入 {target} 的 newsletter 合集，23:59 西雅图时间随当天的一起发出。")
+    send(f"📧 {slug} 已加入 {target}（周日）的每周 newsletter，23:59 西雅图时间发出。")
 
 
 HELP_TEXT = ("🤔 没听懂。可用指令：\n"
              "`1 3` 选题 · `写 话题或链接` 手动选题 · `改文章 [slug] 意见` · `改简报 意见` · "
              "`改L 意见`（LinkedIn）· `改X 意见`（thread）· `发 [slug]` 排程 · "
-             "`补发 [slug]` 把 newsletter 放进当晚合集 · `退订 <邮箱>` · `补跑日更`")
+             "`补发 [slug]` 把 newsletter 放进本周合集 · `退订 <邮箱>` · `补跑日更`")
 
 
 def latest_briefing_slug():
@@ -296,7 +295,7 @@ def handle_dist_edit(part: str, feedback: str):
     for f in sorted((DATA / "dist").glob("*.json"), key=lambda p: p.stat().st_mtime):
         try:
             d = json.loads(f.read_text())
-            if d.get("status") != "scheduled":
+            if d.get("status", "pending") == "pending":
                 pending_packs.append(d)
         except Exception:
             continue
@@ -358,16 +357,20 @@ def main():
         # "定时发 …": queue for next weekday peak slots instead of publishing now.
         peak_match = re.match(r"定时发[\s，,]*([A-Za-z0-9\- ]*)$", content)
         if peak_match:
-            pending = []
+            # Named, any unsent pack can go (an expired one too); unnamed, only
+            # packs still waiting are candidates.
+            pending, sendable = [], []
             for f in sorted((DATA / "dist").glob("*.json"), key=lambda p: p.stat().st_mtime):
                 try:
                     d = json.loads(f.read_text())
                     if d.get("status") != "scheduled":
+                        sendable.append(d["slug"])
+                    if d.get("status", "pending") == "pending":
                         pending.append(d["slug"])
                 except Exception:
                     continue
             tokens = peak_match.group(1).split()
-            slug_ = next((s for s in pending if s in tokens), None)
+            slug_ = next((s for s in sendable if s in tokens), None)
             if not slug_ and len(pending) == 1:
                 slug_ = pending[0]
             if not slug_ and len(pending) > 1:
@@ -384,16 +387,20 @@ def main():
         # a token matching a pending pack slug wins, else the latest pending pack.
         dist_match = re.match(r"发[\s，,]*([A-Za-z0-9\- ]*)$", content)
         if dist_match:
-            pending = []
+            # Named, any unsent pack can go (an expired one too); unnamed, only
+            # packs still waiting are candidates.
+            pending, sendable = [], []
             for f in sorted((DATA / "dist").glob("*.json"), key=lambda p: p.stat().st_mtime):
                 try:
                     d = json.loads(f.read_text())
                     if d.get("status") != "scheduled":
+                        sendable.append(d["slug"])
+                    if d.get("status", "pending") == "pending":
                         pending.append(d["slug"])
                 except Exception:
                     continue
             tokens = dist_match.group(1).split()
-            slug_ = next((s for s in pending if s in tokens), None)
+            slug_ = next((s for s in sendable if s in tokens), None)
             if not slug_ and len(pending) == 1:
                 slug_ = pending[0]
             if not slug_ and len(pending) > 1:
@@ -535,7 +542,7 @@ def handle_selection(ranks, date):
                     [sys.executable, str(SCRIPTS / "make_pr.py"), str(draft)],
                     cwd=REPO_ROOT, check=True, capture_output=True, text=True, timeout=300,
                 ).stdout.strip()
-                send(f"📬 选题 {rank} 草稿已开 PR：{pr}\n随便迭代（PR 留言或「改」指令），满意后 Merge——之后核查、修正、英文版直到上线**全自动**，你只需在分发预览后回「发」。")
+                send(f"📬 选题 {rank} 草稿已开 PR：{pr}\n随便迭代（PR 留言或「改」指令），满意后 Merge——之后核查、修正、英文版直到上线**全自动**，你只需在分发预览后回「发」。\n💬 这个话题你自己有没有相关经历？有的话在 PR 里留言一两句，我写进开头（Ranger 那篇就是这样成了 7 月以后最好的一篇）；没有就不用管。")
             except subprocess.CalledProcessError as exc:
                 send(f"⚠️ 选题 {rank} 写稿失败：\n```{(exc.stderr or str(exc))[-500:]}```")
 
@@ -553,7 +560,7 @@ def handle_new_topic(topic: str):
             [sys.executable, str(SCRIPTS / "make_pr.py"), str(REPO_ROOT / draft_rel)],
             cwd=REPO_ROOT, check=True, capture_output=True, text=True, timeout=300,
         ).stdout.strip()
-        send(f"📬 手动选题草稿已开 PR：{pr}\n随便迭代（PR 留言或「改」指令），满意后 Merge——之后核查、修正、英文版直到上线**全自动**，你只需在分发预览后回「发」。")
+        send(f"📬 手动选题草稿已开 PR：{pr}\n随便迭代（PR 留言或「改」指令），满意后 Merge——之后核查、修正、英文版直到上线**全自动**，你只需在分发预览后回「发」。\n💬 这个话题你自己有没有相关经历？有的话在 PR 里留言一两句，我写进开头（Ranger 那篇就是这样成了 7 月以后最好的一篇）；没有就不用管。")
     except subprocess.CalledProcessError as exc:
         send(f"⚠️ 手动选题写稿失败：\n```{(exc.stderr or str(exc))[-500:]}```")
 
@@ -623,7 +630,7 @@ def route_free_text(content, date):
     if action == "revise_distribution":
         # Hard-validate against real packs: the router must never send
         # distribute.py after a slug with no pack (unpublished article etc.).
-        pendings = [p["slug"] for p in packs if p["status"] != "scheduled"]
+        pendings = [p["slug"] for p in packs if p["status"] not in ("scheduled", "expired")]
         if slug not in pendings:
             if len(pendings) == 1:
                 slug = pendings[0]
