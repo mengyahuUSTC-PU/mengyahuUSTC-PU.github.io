@@ -10,11 +10,16 @@ interface Props {
   path: string;
   /** Path of the same page in the other language, if it exists */
   altPath?: string;
+  /** Share card for this page; defaults to the site card */
+  image?: string;
+  /** Article pages set this; it switches og:type and adds the publish time */
+  published?: Date;
 }
 
-const { title, description, lang, path, altPath } = Astro.props;
+const { title, description, lang, path, altPath, image, published } = Astro.props;
 const otherLang: Lang = lang === 'zh' ? 'en' : 'zh';
 const canonical = new URL(path, SITE_URL).href;
+const ogImage = new URL(image ?? `/og/${lang}.png`, SITE_URL).href;
 ---
 
 <html lang={lang === 'zh' ? 'zh-CN' : 'en'}>
@@ -85,7 +90,18 @@ const canonical = new URL(path, SITE_URL).href;
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={published ? 'article' : 'website'} />
+    <meta property="og:site_name" content={SITE_TITLE} />
+    <meta property="og:locale" content={lang === 'zh' ? 'zh_CN' : 'en_US'} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
+    {published && <meta property="article:published_time" content={published.toISOString()} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
   </head>
   <body>
     <header class="band">

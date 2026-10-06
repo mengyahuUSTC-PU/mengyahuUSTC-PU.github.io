@@ -44,6 +44,8 @@ const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
   lang={lang}
   path={postUrl(lang, post.data.slug)}
   altPath={altPath}
+  image={`/og/${lang}/${post.data.slug}.png`}
+  published={post.data.pubDate}
 >
   <article class="article">
     <header>
@@ -76,8 +78,15 @@ const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
     headline: post.data.title,
     description: post.data.description,
     datePublished: post.data.pubDate.toISOString().slice(0, 10),
+    dateModified: post.data.pubDate.toISOString().slice(0, 10),
     inLanguage: lang === 'zh' ? 'zh-CN' : 'en',
-    author: { '@id': 'https://mengyahu.com/#person' },
+    image: `https://mengyahu.com/og/${lang}/${post.data.slug}.png`,
+    keywords: post.data.tags.filter((tag) => tag !== 'briefing').join(', ') || undefined,
+    // Named in full here as well: the Person node lives in another JSON-LD
+    // block, and not every parser joins @id references across blocks.
+    author: { '@type': 'Person', '@id': 'https://mengyahu.com/#person', name: 'Mengya Hu',
+              url: `https://mengyahu.com/${lang}/about/` },
+    publisher: { '@type': 'Person', '@id': 'https://mengyahu.com/#person', name: 'Mengya Hu' },
     mainEntityOfPage: `https://mengyahu.com${postUrl(lang, post.data.slug)}`,
   })} />
   {related.length > 0 && (
