@@ -32,7 +32,7 @@ translationOf: chinese-agent-fleet-amap
 
 这个形态像什么？研究者的原话：像一次评测或任务生成的运行，"仅凭这些记录，没法把它和训练 rollout 区分开"（rollout 指训练中让模型反复尝试任务、收集轨迹来更新模型）。顺着这个形态推，最合理的解释未必是谁下令"去攻击高德"，而可能是某条训练或评测管线把活的互联网当成了环境、把绕过竞品反爬当成了待解的任务。agent 只是在认真完成作业，成本落在高德的服务器，以及被当免费代理用的 urlquery、webhook.site 和互联网档案馆头上。
 
-这件事还有一层背景：开放互联网正在因为同类压力关门。维基媒体去年[公布过账单](https://diff.wikimedia.org/2025/04/01/how-crawlers-impact-the-operations-of-the-wikimedia-projects/)，爬虫只占其页面浏览量的 35%，却制造了核心数据中心 65% 的高成本流量，我八月在[数字公地那篇](/zh/tragedy-of-the-digital-commons)里算过这笔账；就在这支舰队开工的同一周，Reddit 于 9 月 30 日[宣布](https://www.reddit.com/r/modnews/comments/1wubgvt/continuing_our_infrastructure_updates_whats/)停止支持 RSS、2027 年 3 月前关闭公开 Data API，理由是这类接口"已成为大规模抓取和自动化滥用的常见入口"。但本案恰好说明关门拦不住谁：封锁挡下的是守规矩、身份可识别的访问者，这支舰队被拦一次就换一条路。平台把"默认可访问"换成"默认需授权"，agent 把绕行当成待解的任务，两边互为对方升级的理由。
+这件事还有一层背景：开放互联网正在因为同类压力关门。维基媒体去年[公布过账单](https://diff.wikimedia.org/2025/04/01/how-crawlers-impact-the-operations-of-the-wikimedia-projects/)，爬虫只占其页面浏览量的 35%，却制造了核心数据中心 65% 的高成本流量，我八月在[数字公地那篇](/zh/tragedy-of-the-digital-commons)里算过这笔账。这种压力小到我这个个人博客也量得到：写这篇文章时我翻了 7 月 17 日到 10 月 4 日共 80 天的访问数据，约四分之一的流量只看一页、页面停留 0 秒，是典型的爬虫行为。就在这支舰队开工的同一周，Reddit 于 9 月 30 日[宣布](https://www.reddit.com/r/modnews/comments/1wubgvt/continuing_our_infrastructure_updates_whats/)停止支持 RSS、2027 年 3 月前关闭公开 Data API，理由是这类接口"已成为大规模抓取和自动化滥用的常见入口"。但本案恰好说明关门拦不住谁：封锁挡下的是守规矩、身份可识别的访问者，这支舰队被拦一次就换一条路。平台把"默认可访问"换成"默认需授权"，agent 把绕行当成待解的任务，两边互为对方升级的理由。
 
 ## 安全论文的威胁模型没盖住这里
 
@@ -53,3 +53,5 @@ translationOf: chinese-agent-fleet-amap
 - [Containing the Autonomous Operator（arXiv:2610.02861）](https://arxiv.org/abs/2610.02861) — agent 运行时安全的代表性威胁模型（prompt injection、模型不作为安全边界），用作对照
 - [Researchers are tracking a Chinese AI 'agent fleet'（TechCrunch，2026-10-05）](https://techcrunch.com/2026/10/05/researchers-are-tracking-a-chinese-ai-agent-fleet/) — 选题线索；正文事实均已对照一手报告核验
 - 站内：[复制不损耗原件，AI 为什么还是把开放网络吃出了公地悲剧？](/zh/tragedy-of-the-digital-commons) — 开放基础设施被 AI 爬虫消耗的账单与"圈地"框架
+
+<!-- 个人站数据（7/17–10/4 共 80 天，约 1/4 流量为单页访问、停留 0 秒）来自作者自述的站点分析数据，未独立复核具体数值；"典型的爬虫行为"为基于行为特征的推断（单页+0 秒停留），非 bot 标记确认 -->
