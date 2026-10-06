@@ -115,6 +115,16 @@ def run_audit(pr_number: int) -> str:
     return "fix_pr" if json.loads(open_fix or "[]") else "clean"
 
 
+def announce(slug: str):
+    """Queue both language versions for the search-engine ping (indexnow.py
+    flushes hourly, once the deploy is live). Never blocks the pipeline."""
+    try:
+        from indexnow import queue_urls
+        queue_urls([f"https://mengyahu.com/{lang}/{slug}/" for lang in ("zh", "en")])
+    except Exception as exc:  # noqa: BLE001
+        print(f"indexnow queue failed for {slug}: {exc}")
+
+
 def main():
     load_env()
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -141,6 +151,7 @@ def main():
                     cwd=REPO_ROOT, check=True, capture_output=True, text=True, timeout=1200,
                 )
                 state["done"].append(number)
+                announce(slug)
             except subprocess.CalledProcessError as exc:
                 send(f"⚠️ 分发内容生成失败（{slug}）：\n```{(exc.stderr or str(exc))[-500:]}```")
             continue
@@ -151,6 +162,7 @@ def main():
             send(f"✅ {date_part} 快讯已合并，网站部署中（约 2 分钟后上线）："
                  f"https://mengyahu.com/zh/briefing-{date_part}/")
             state["done"].append(number)
+            announce(f"briefing-{date_part}")
             continue
 
         # zh deep dive merged -> post-merge audit. Runs in the dedicated
