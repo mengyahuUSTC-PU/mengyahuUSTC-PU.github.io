@@ -54,6 +54,14 @@ But before you connect, it's worth deciding with the right mental model: treat t
 
 The larger judgment: this gap doesn't close without legislation. HHS's guidance states where the protection ends. The FTC [updated](https://www.ftc.gov/business-guidance/blog/2024/04/updated-ftc-health-breach-notification-rule-puts-new-provisions-place-protect-users-health-apps) its breach notification rule in 2024 to more clearly cover health apps, and [Washington State](https://www.atg.wa.gov/protecting-washingtonians-personal-health-data-and-privacy) and others have begun legislating for health data that escapes HIPAA (the My Health My Data Act). But these are patches: the notification rule governs disclosure after a breach, not everyday use; state laws stop at state residents and business nexus. HIPAA's entity list was frozen into the healthcare system of 1996; a product of 2026 just piped medical records into the context window of a conversational AI. Until legislation fills the space between those two facts, the sentence "your medical records are protected" should — the moment you tap Connect — switch to the past tense.
 
+## Quick answers
+
+**Is ChatGPT HIPAA compliant?** For the consumer ChatGPT Health feature, HIPAA doesn't apply in the first place. HIPAA regulates covered entities (healthcare providers, health plans, clearinghouses) and the business associates working for them. On the public record, OpenAI is neither when you connect your own records, so there is nothing for it to comply with or to violate.
+
+**Does HIPAA still protect my records after I connect them to ChatGPT?** No. When you use your HIPAA right of access to send records to an app you chose, [HHS guidance](https://www.hhs.gov/hipaa/for-professionals/privacy/guidance/access-right-health-apps-apis/index.html) says the hospital is no longer responsible for them, and HIPAA places no limits on what the app does with them. From then on, what protects them is OpenAI's privacy commitments, the FTC's rules against deceptive practices, and some state laws.
+
+**Can I delete the health data I shared?** OpenAI says disconnecting deletes the connected data within 30 days. That is a product policy, not a legal right: a court-ordered litigation hold can override it, and context that already reached other conversations or memory may not be fully removed.
+
 ## References
 
 - [Launching Health in ChatGPT — OpenAI](https://openai.com/index/health-in-chatgpt/) — official announcement (site blocks scraping; key content cross-checked against multiple reports)
