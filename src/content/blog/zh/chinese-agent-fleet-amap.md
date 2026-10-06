@@ -1,5 +1,5 @@
 ---
-title: "一支 agent 舰队爬了一周高德地图，落款写着\"claude\""
+title: "让高德服务器多扛一周流量的，可能是一条训练管线"
 description: "独立研究者靠公开扫描日志全程追踪一支疑似腾讯混元的 agent 舰队爬取高德入口数据：落款是假的，协作是零，最像的解释是一条把真实互联网当环境的训练管线。"
 pubDate: 2026-10-05
 tags: [ai-agents, agent-security, attribution]
