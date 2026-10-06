@@ -32,6 +32,8 @@ translationOf: chinese-agent-fleet-amap
 
 这个形态像什么？研究者的原话：像一次评测或任务生成的运行，"仅凭这些记录，没法把它和训练 rollout 区分开"（rollout 指训练中让模型反复尝试任务、收集轨迹来更新模型）。顺着这个形态推，最合理的解释未必是谁下令"去攻击高德"，而可能是某条训练或评测管线把活的互联网当成了环境、把绕过竞品反爬当成了待解的任务。agent 只是在认真完成作业，成本落在高德的服务器，以及被当免费代理用的 urlquery、webhook.site 和互联网档案馆头上。
 
+这件事还有一层背景：开放互联网正在因为同类压力关门。维基媒体去年[公布过账单](https://diff.wikimedia.org/2025/04/01/how-crawlers-impact-the-operations-of-the-wikimedia-projects/)，爬虫只占其页面浏览量的 35%，却制造了核心数据中心 65% 的高成本流量，我八月在[数字公地那篇](/zh/tragedy-of-the-digital-commons)里算过这笔账；就在这支舰队开工的同一周，Reddit 于 9 月 30 日[宣布](https://www.reddit.com/r/modnews/comments/1wubgvt/continuing_our_infrastructure_updates_whats/)停止支持 RSS、2027 年 3 月前关闭公开 Data API，理由是这类接口"已成为大规模抓取和自动化滥用的常见入口"。但本案恰好说明关门拦不住谁：封锁挡下的是守规矩、身份可识别的访问者，这支舰队被拦一次就换一条路。平台把"默认可访问"换成"默认需授权"，agent 把绕行当成待解的任务，两边互为对方升级的理由。
+
 ## 安全论文的威胁模型没盖住这里
 
 同一周的 arXiv 上，agent 运行时安全的论文接连出现。拿《[Containing the Autonomous Operator](https://arxiv.org/abs/2610.02861)》（arXiv:2610.02861）来说，它的威胁模型很有代表性：敌人是 prompt injection，agent 随时可能被完全劫持，所以模型不能当安全边界，运营方要用基础设施把自家 agent 关进围栏。
@@ -46,5 +48,8 @@ translationOf: chinese-agent-fleet-amap
 
 - [We found a Chinese agent fleet（swarmcha.se 初步报告）](https://swarmcha.se/posts/chinese-agent-fleet) — 一手来源：全部舰队数据（2,048 份报告、216 地点、峰值 1,810、428 套程序、4–8/14 并发）、成都动物园读数、"claude"标签 211 份、文体归因（Hy4 28%/GLM 26%/Claude 0%）、Hy3 自称 Claude 29/36、hysandbox-ats 代理与证书、无协作结论、评测/训练 rollout 判断、Wayback 2,030 次抓取
 - [Early rogue AI agent activity found on urlquery.net（Transluce，2026-09-23）](https://transluce.org/agent-activity) — urlquery 被 agent 当匿名代理的机制、6,467 份明确 agent 活动报告
+- [How crawlers impact the operations of the Wikimedia projects（Wikimedia Diff，2025-04-01）](https://diff.wikimedia.org/2025/04/01/how-crawlers-impact-the-operations-of-the-wikimedia-projects/) — 爬虫占页面浏览量 35%、核心数据中心高成本流量 65%
+- [r/modnews 官方公告（2026-09-30）](https://www.reddit.com/r/modnews/comments/1wubgvt/continuing_our_infrastructure_updates_whats/) — Reddit 停止支持 RSS、关闭公开 Data API 的时间表与官方理由（一手）
 - [Containing the Autonomous Operator（arXiv:2610.02861）](https://arxiv.org/abs/2610.02861) — agent 运行时安全的代表性威胁模型（prompt injection、模型不作为安全边界），用作对照
 - [Researchers are tracking a Chinese AI 'agent fleet'（TechCrunch，2026-10-05）](https://techcrunch.com/2026/10/05/researchers-are-tracking-a-chinese-ai-agent-fleet/) — 选题线索；正文事实均已对照一手报告核验
+- 站内：[复制不损耗原件，AI 为什么还是把开放网络吃出了公地悲剧？](/zh/tragedy-of-the-digital-commons) — 开放基础设施被 AI 爬虫消耗的账单与"圈地"框架
