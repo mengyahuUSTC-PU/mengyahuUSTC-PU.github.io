@@ -8,7 +8,7 @@ slug: utah-ai-prescription-sandbox
 translationOf: utah-ai-prescription-sandbox
 ---
 
-10 月 5 日起，犹他州 18 岁以上居民可以下载一个叫 Nolla Derm 的 app：验证身份、签知情同意、填一份简短问卷、拍五个角度的面部照片，10 到 15 分钟后拿到痤疮治疗方案，符合条件就直接开出处方，发到本州药房。试点价每月 4.99 美元。全程没有医生出场（[Nolla 公告，经 Unite.AI 转述](https://www.unite.ai/nolla-health-launches-ai-issued-initial-acne-prescriptions-in-utah/)）。
+10 月 5 日起，犹他州 18 岁以上居民可以下载一个叫 Nolla Derm 的 app：验证身份、签知情同意、填一份简短问卷、拍五个角度的面部照片，10 到 15 分钟后拿到痤疮治疗方案，符合条件就直接开出处方，发到本州药房。试点价每月 4.99 美元。全程没有医生出场（[Nolla 官方公告](https://www.nollahealth.com/blog/ai-prescriptions-utah)）。
 
 科技媒体的标题是「犹他成为首个允许 AI 在无直接人类监督下看诊开药的州」（[TechSpot](https://www.techspot.com/news/114111-utah-become-first-state-ai-examine-patients-prescribe.html)）。我去读了州政府的原始文件，两个事实让这个标题变味。
 
@@ -18,7 +18,9 @@ translationOf: utah-ai-prescription-sandbox
 
 ## 开方的公司是什么来头
 
-Nolla 不是一家临时凑出来的纯软件公司，但也不是医生开的公司。它 2024 年在挪威起家，靠痤疮治疗和皮肤癌筛查两个 app 运营，据公司披露半年服务了超过 5 万名患者；2025 年 9 月进入美国 40 多个州，当时的模式仍是 AI 辅助、医生把关；种子轮 450 万美元由 General Catalyst 领投（[General Catalyst 投资说明](https://www.generalcatalyst.com/stories/seeding-the-future-with-nolla-health)）。
+Nolla 不是一家临时凑出来的纯软件公司，但也不是医生开的公司。它 2024 年在挪威起家，靠痤疮治疗和皮肤癌筛查两个 app 运营，据公司披露半年服务了超过 5.5 万名患者，约占挪威人口的 1%；2025 年 9 月进入美国 40 多个州，当时的模式仍是 AI 辅助、医生把关；种子轮 450 万美元由 General Catalyst 领投（[General Catalyst 投资说明](https://www.generalcatalyst.com/stories/seeding-the-future-with-nolla-health)）。
+
+它的获客是纯消费级直购：用户自己从 App Store 下载，不经医生转诊，公司也没有公开任何与医院或 Teladoc 一类远程医疗平台的合作。规模数字同样来自公司自述：美国版 Nolla Derm 至今下载超过 17.5 万次、覆盖 44 个州（[Nolla 官方公告](https://www.nollahealth.com/blog/ai-prescriptions-utah)）——注意这是下载量，不是付费患者数。潜在市场本身不小：按美国皮肤科学会的统计，痤疮是美国最常见的皮肤病，每年影响近 5000 万人（[AAD 统计页](https://www.aad.org/media/stats-numbers)）。犹他这次最直接的获客手段是价格：Nolla 在其他州的医生把关版服务月费 59 美元，试点价压到 4.99 美元，不到十分之一。至于广告投放或后续渠道合作的规划，公司没有公开，我没能查到。
 
 创始团队里最接近医学的人是联合创始人 Luis Ruben Soenksen：生物医学工程出身，约翰斯·霍普金斯生物工程硕士、MIT 博士，曾任 MIT 首位「AI 与医疗」方向的 Venture Builder，做了十年皮肤病学方向的 AI 建模研究——但他是工程师和研究者，不是执业医师。CEO Luis Wenus 则是增长运营出身，此前是 Worldcoin 第一号员工、负责市场拓展；第三位联合创始人是 Sean Geiger。执业医师在公司的位置是顾问层：首席医学顾问 Zaid Fadul 是家庭医学医师，顾问名单里还有哈佛的皮肤科医师 Omar Badri 和流行病学家 Michael Mina（[Nolla 团队页](https://www.nollahealth.com/our-team)）。至于试点里实际审核处方的两名犹他执业医师与公司是雇佣还是合作关系，官方材料没有写明，这一点我没能核实。
 
@@ -60,17 +62,20 @@ Nolla 的原话是「美国首个」（nation's first），有媒体把它拔高
 - [AI Authorized Pilots（犹他商务厅官方试点列表）](https://commerce.utah.gov/ai/regulatory-relief-4/authorized-pilots/) — Nolla/Doctronic/August AI 各协议的范围、排除条件、三阶段结构、豁免内容、Doctronic 停留在第一阶段及协议收紧的事实
 - [SB 149 Artificial Intelligence Amendments 正式文本（犹他州议会）](https://le.utah.gov/~2024/bills/sbillenr/SB0149.pdf) — AI Policy Act、OAIP、学习实验室与监管缓解协议的法律授权
 - [Utah and Doctronic Announce Groundbreaking Partnership（犹他商务厅，2026-01-06）](https://commerce.utah.gov/2026/01/06/news-release-utah-and-doctronic-announce-groundbreaking-partnership-for-ai-prescription-medication-renewals/) — Doctronic 试点的官方定位与各方表态
+- [Nolla Health Launches the Nation's First AI-Powered Prescriptions（Nolla 官方公告）](https://www.nollahealth.com/blog/ai-prescriptions-utah) — 患者流程、试点定价、Nolla Derm 下载量与覆盖州数
 - [Seeding the Future with Nolla Health（General Catalyst）](https://www.generalcatalyst.com/stories/seeding-the-future-with-nolla-health) — 种子轮融资、创始人背景、挪威起家与美国扩张
 - [Our Team（Nolla Health 官网）](https://www.nollahealth.com/our-team) — 医学顾问与科学顾问名单
+- [Skin conditions by the numbers（美国皮肤科学会）](https://www.aad.org/media/stats-numbers) — 痤疮为美国最常见皮肤病、每年影响近 5000 万人
 - [Chinese Startup Trials First AI Doctor Clinic in Saudi Arabia（Bloomberg，2025-05-15）](https://www.bloomberg.com/news/articles/2025-05-15/chinese-startup-trials-first-ai-doctor-clinic-in-saudi-arabia) — 森亿智能沙特 AI 诊所的流程、病种范围与人类医师签字环节
 - [《互联网诊疗监管细则（试行）》：严禁使用人工智能等自动生成处方（广州市政府门户转载）](https://www.gz.gov.cn/zwfw/zxfw/ylfw/content/post_8335006.html) — 中国对 AI 自动生成处方的禁止性规定
-- [Nolla Health Launches AI-Issued Initial Acne Prescriptions in Utah（Unite.AI 转述公司公告）](https://www.unite.ai/nolla-health-launches-ai-issued-initial-acne-prescriptions-in-utah/) — 患者流程、定价、三阶段具体数字（100/500/750、10%）、公司的「首个」说法
+- [Nolla Health Launches AI-Issued Initial Acne Prescriptions in Utah（Unite.AI 转述公司公告）](https://www.unite.ai/nolla-health-launches-ai-issued-initial-acne-prescriptions-in-utah/) — 三阶段具体数字（100/500/750、10%）、公司的「首个」说法
 - [TechSpot 报道](https://www.techspot.com/news/114111-utah-become-first-state-ai-examine-patients-prescribe.html) — 选题来源，用于对照媒体标题与协议原文的差距
 
 <!-- 核查备注（不入正文）：
-1. 挪威「半年超 5 万患者」为公司自述数字，General Catalyst 与 Beauty Independent 转述，未见独立验证。
+1. 挪威「半年超 5.5 万患者（约人口 1%）」为公司自述数字，General Catalyst 与 Beauty Independent 转述，未见独立验证。
 2. Soenksen 的学历与 MIT Venture Builder 职位经 MIT innovation 页面与多方报道交叉核实；其「十年皮肤病学 AI 建模研究」出自媒体报道（Beauty Independent），未逐篇核对其论文列表。
 3. 审核处方的两名犹他执业医师与 Nolla 的关系（雇佣/签约）官方试点页未写明，正文已如实注明未核实。
 4. 森亿智能沙特诊所信息源头为 Bloomberg 2025-05-15 报道；「错误率低于 0.3%」为公司自述且测试方法未公开，正文未采用该数字。
 5. 《互联网诊疗监管细则（试行）》由国家卫健委、国家中医药局 2022 年发布，「处方应由接诊医师本人开具，严禁使用人工智能等自动生成处方」为原文条款；引用链接为广州市政府门户的官方转载页。
+6. 「Nolla Derm 下载超 17.5 万次、覆盖 44 州」为公司官方公告自述数字，无独立验证；美国版月费 59 美元出自 Beauty Independent 对公司的报道（https://www.beautyindependent.com/4-5m-raise-nolla-health-ai-startup-offers-acne-care/）。公司未公开任何营销投放计划或与医院/远程医疗平台的渠道合作，正文已如实注明；「无平台合作」为检索未见，非官方否认。
 -->
