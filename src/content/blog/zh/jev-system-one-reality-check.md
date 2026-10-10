@@ -20,7 +20,7 @@ Jev 自称「System One 模型」，名字取自卡尼曼的快慢思考：只�
 
 架构上官方几乎守口如瓶，对外只给过「transformer 架构」一个词（公司自述，见 [Wikipedia 词条](https://en.wikipedia.org/wiki/Jev_%28AI_model%29)；也有外部观察者猜测它基于开源权重 LLM 或 BERT 类架构，均未证实）。我翻遍官方博客和文档，能确认的是：输入仍是文本（图像、音频不支持），且按输入 token 计费，每百万 token 收 0.042 美元；输出侧用「并行采样」替代了逐 token 的自回归生成。所以「非文本」的准确含义是：砍掉了输出端的自回归解码，输入端照样按 token 计量。
 
-这一刀确实能解释速度和成本。LLM 生成 500 个 token 的回答要做 500 次串行前向计算；Jev 的三类输出本质是分类和回归，一次前向并行给出全部答案，官方标称端到端 70–500 毫秒。成本同理：LLM 的输出 token 定价通常是输入的数倍（[OpenAI 定价页](https://developers.openai.com/api/docs/pricing)上主力模型为 4–8 倍），Jev 的输出干脆免费。
+这一刀确实能解释速度和成本。LLM 生成 500 个 token 的回答要做 500 步串行解码，每个 token 都以前一个为条件；Jev 的三类输出本质是分类和回归，[一次查询就能并行返回全部答案](https://typesafe.ai/blog/introducing-system-one-models-and-jev)，官方标称端到端 70–500 毫秒。成本同理：LLM 的输出 token 定价是输入的数倍（[OpenAI 当前主力模型](https://developers.openai.com/api/docs/pricing)通常为 5 倍，少数较旧或专用模型高达 8 倍），Jev 的输出干脆免费。
 
 这个形态其实眼熟：在我看来，它就是一个做大了的分类器，或者说 reward model 的产品化。真正算得上新的是训练目标，他们称之为 RLCD（Reinforcement Learning for Calibrated Decisions）：RLHF 优化人类偏好，RLVR 优化可验证奖励，RLCD 把输出概率直接校准到真实结果上。这家公司把「校准的置信度」本身当成了产品。
 
@@ -30,27 +30,27 @@ Jev 自称「System One 模型」，名字取自卡尼曼的快慢思考：只�
 
 ## 「零幻觉」的小字
 
-官方论证是：输出受预定义 schema 约束，类型错误[「在数学上不可能」](https://typesafe.ai/blog/introducing-system-one-models-and-jev)。这是真的，但它保证的是格式，不是事实。以 0.95 的置信度选错团队、打错分，在这套定义下不算幻觉。[官方文档](https://docs.typesafe.ai/concepts/system-one)自己也写了：校准按预测的群组衡量，不保证单个答案正确。而且 schema 层面的保证并不稀缺：主流 LLM API 的[结构化输出](https://openai.com/index/introducing-structured-outputs-in-the-api/)靠受约束解码，早就能让输出百分之百符合 JSON schema。
+官方论证是：输出受预定义 schema 约束，类型错误[「在数学上不可能」](https://typesafe.ai/blog/introducing-system-one-models-and-jev)。这是真的，但它保证的是格式，不是事实。以 0.95 的置信度选错团队、打错分，在这套定义下不算幻觉。[官方文档](https://docs.typesafe.ai/concepts/system-one)自己也写了：校准按预测的群组衡量，不保证单个答案正确。而且 schema 层面的保证并不稀缺：主流 LLM API 的[结构化输出](https://openai.com/index/introducing-structured-outputs-in-the-api/)用受约束解码强制输出符合 JSON schema 已经有一段时间；OpenAI 自报在内部评测中达到 100% 的 schema 符合率。
 
 说句公道话，TypeSafe 发布博客的坦诚程度超过多数厂商：明说评测由内部团队编写、可能有偏，延迟数据来自 OpenRouter、几乎肯定有偏，193.6 倍「预计处于真实收益的较高端」。小字写得诚实，大字照样印在首页。
 
 ## 独立复测：成本成立，校准翻车
 
-发布三周，第三方数字已经出来了。工程师 Pavel Ravvich 做了目前最完整的[独立评测](https://medium.com/@pravvich/typesafes-jev-beyond-the-hype-an-independent-benchmark-8bdc1c99d000)（[代码和原始数据公开](https://github.com/PavelRavvich/jev-bench)）：SMS 垃圾短信检测 500 条、Banking77 意图分类（77 选 1）500 条，对比 jev-1.13、GPT-6-Luna（便宜档）和 GPT-6-Astra（前沿档，只跑了 130 条子集）。结果分三层：
+发布三周，第三方数字已经出来了。工程师 Paul Ravvich 做了一个公开、可复现的[独立评测](https://medium.com/@pravvich/typesafes-jev-beyond-the-hype-an-independent-benchmark-8bdc1c99d000)（[代码和原始数据公开](https://github.com/PavelRavvich/jev-bench)）：SMS 垃圾短信检测 500 条、Banking77 意图分类（77 选 1）500 条，对比 jev-1.13、GPT-6-Luna（便宜档）和 GPT-6-Astra（前沿档，只跑了 130 条子集）。结果分三层：
 
-- 成本声称基本成立：便宜 84 到 139 倍。
+- 成本声称对前沿模型基本成立：便宜 84 到 139 倍；对便宜档差距缩小，一项任务约 2.2 倍，另一项接近持平。
 - 速度缩水：快约 6 倍，远低于首页宣传的量级；尾延迟确实很稳。
 - 准确率和校准不及格：垃圾检测与便宜 LLM 持平，77 类意图分类落后便宜 LLM，两项都落后前沿模型。更关键的是校准本身：垃圾检测任务上 Jev 的 ECE（期望校准误差，衡量模型报出的置信度与实际正确率的偏差，越小越好）为 0.053，前沿模型只有 0.006，连便宜 LLM 都比它准；Banking77 上 Jev 的校准三者最差。
 
-[inovex 的工单分类评测](https://www.inovex.de/en/blog/typesafe-ai-jev-review-how-good-is-the-new-model-for-ai-classification/)补了几个细节：同一条工单重复跑，得分在 0.67 到 0.76 之间波动；选项顺序换一下，分数能差 ±0.1。该文自己设计的一个案例更直观：题面已经写明正确概率是 45% 的问题，Jev 报出的置信度却高达 0.96–0.98；文中引用的另一项 900 条工单的第三方测试也给出同方向的定性结论——Jev 在多选题上过度自信。这些评测样本都不大，公开数据集也可能混进过训练数据，但方向一致；而且「数据集可能见过」这个偏差本来是帮 Jev 的。
+[inovex 的工单分类评测](https://www.inovex.de/en/blog/typesafe-ai-jev-review-how-good-is-the-new-model-for-ai-classification/)补了几个细节：同一条工单重复跑，得分在 0.67 到 0.76 之间波动；选项顺序换一下，分数能差 ±0.1。该文自己设计的一个案例更直观：题面已经写明正确概率是 45% 的问题，Jev 报出的置信度却高达 0.96–0.98；文中引用的另一项 900 条工单的第三方测试也给出同方向的定性结论——Jev 在多选题上过度自信。这些评测样本都不大，公开数据集也可能混进过参测各家模型的训练数据，但方向一致。
 
 ## 跟微调 BERT 比呢
 
 拿 Jev 对比 LLM 只回答了一半问题。ChatGPT 之前，这类任务的标准做法是拿标注数据微调一个 BERT 类小模型，这才是 Jev 真正要替代的方案。几个独立仓库补上了这组对比，结果可以概括成：冷启动赢，有标注数据输。
 
-一项 [Banking77 实验](https://github.com/simonmesmith/jev-banking77-experiment)里，Jev 准确率 92.40%，2020 年发表的微调 BERT 基线是 93.66%，差 1.26 个百分点；但这一跑不是零样本，提示里给了类别定义和标注示例，还加了 BM25 检索。[另一项专测零样本的对比](https://github.com/zhuyansen/jev-zeroshot-vs-bert)更接近「拿来就用」：Banking77 掉到 71.2%，不过对 DeBERTa、BART 两个零样本基线在七个测试集上全部领先（嵌入式基线 BGE-M3 是例外，在 Banking77 上反超 Jev 一个百分点）。作者还估了训练模型追平 Jev 零样本成绩需要的标注量，不同数据集和方法差异很大：AG News 约 231 到 336 条；Banking77 上用 BGE-M3 嵌入加逻辑回归约 238 条，微调 BERT 则要约 1338 条。[第三项在五个表格类任务上的对比](https://github.com/cfu288/jev-vs-ml-classifiers)最不客气：有训练数据时，最好的经典 sklearn 分类器 macro-F1 拿到 0.76，微调 ModernBERT 0.69，Jev 只有 0.58。
+一项 [Banking77 实验](https://github.com/simonmesmith/jev-banking77-experiment)里，Jev 准确率 92.40%，2020 年发表的微调 BERT 基线是 93.66%，差 1.26 个百分点；但这一跑不是零样本，提示里给了类别定义和经 BM25 检索挑选的标注示例。[另一项专测零样本的对比](https://github.com/zhuyansen/jev-zeroshot-vs-bert)更接近「拿来就用」：Banking77 掉到 71.2%，不过对 DeBERTa、BART 两个零样本基线在七个测试集上全部领先（嵌入式基线 BGE-M3 是例外，在 Banking77 上反超 Jev 一个百分点）。作者还估了训练模型追平 Jev 零样本成绩需要的标注量，不同数据集和方法差异很大：AG News 约 231 到 336 条；Banking77 上用 BGE-M3 嵌入加逻辑回归约 238 条，微调 BERT 则要约 1338 条。[第三项在五个表格类任务上的对比](https://github.com/cfu288/jev-vs-ml-classifiers)最不客气：有训练数据时，最好的经典 sklearn 分类器 macro-F1 拿到 0.76，微调 ModernBERT 0.69，Jev 只有 0.58。
 
-所以在这些测试覆盖的任务上，有几百到一千多条标注数据时，训练出来的小模型就能追平或反超；Jev 赢的是不标注、不训练、不部署，开箱成绩就压过绝大多数零样本基线。这些测试顺带给泛化问题提供了一个局部答案——零样本对比的作者担心公开基准混进过训练集，用 Jev 发布之后才提交的 arXiv 论文做了污染对照：Jev 的成绩只降 0.035，零样本基线降约 0.11，说明成绩不全靠背题。但这是 258 篇论文的小样本，代替不了官方自己的披露。
+所以在 AG News、Banking77 和那五个表格类任务上，几百到一千多条标注数据就能换来一个追平或反超 Jev 的小模型；而同一项零样本对比里的另外三个测试集（SST-2、TweetEval、PAWS）上，给了 2048 条标注的训练模型仍然没追上。Jev 赢的是不标注、不训练、不部署，开箱成绩就压过绝大多数零样本基线。这些测试顺带给泛化问题提供了一个局部答案——零样本对比的作者担心公开基准混进过训练集，用 Jev 发布之后才提交的 arXiv 论文做了污染对照：Jev 的成绩只降 0.035，零样本基线降约 0.11，不太像大面积背题；但作者自己也提醒，258 篇论文是小样本，这个对照也排除不了任何单个基准上的泄漏。它同样代替不了官方自己的披露。
 
 ## 校准是它唯一不能输的指标
 
@@ -58,7 +58,7 @@ Jev 自称「System One 模型」，名字取自卡尼曼的快慢思考：只�
 
 成本和速度优势是真的，6 倍和 84 倍也足以改变一类场景的选型：大流量日志筛选、特征提取、请求分流这类用 LLM 属于杀鸡用牛刀的任务。但这是「更便宜的分类基础设施」的故事，而估值讲的是「后 LLM 新范式」的故事。官方称三分之一的财富 500 强「正在使用」Jev，这个说法没有给出口径；我猜在早期访问阶段多半指有团队试用，而非生产部署。两个故事之间差的，就是 193.6 和 6 之间的那段距离。
 
-接下来值得盯一件具体的事：TypeSafe 会不会在未见过的新数据上公布分原语的校准指标（ECE 或可靠性曲线）。公布且赢了，75 亿的故事才算立住；一直不公布，那它就是在用 LLM 时代的融资叙事，卖一个 BERT 时代就有的东西。
+接下来值得盯一件具体的事：TypeSafe 会不会在未见过的新数据上公布分原语的校准指标（ECE 或可靠性曲线）。截至发稿，[官方文档](https://docs.typesafe.ai/concepts/system-one)里只有概念性的说法，其他官方材料里我也没找到这类数据。公布且赢了，75 亿的故事才算立住；一直不公布，那它就是在用 LLM 时代的融资叙事，卖一个 BERT 时代就有的东西。
 
 ## 参考来源
 
@@ -69,10 +69,10 @@ Jev 自称「System One 模型」，名字取自卡尼曼的快慢思考：只�
 - [TypeSafe 文档: Jev 1.13 已知弱项](https://docs.typesafe.ai/model-jaggedness/jev-1.13) — 计数/日期/双重否定/指令注入弱点、Score 数值校准偏弱
 - [Wikipedia: Jev (AI model)](https://en.wikipedia.org/wiki/Jev_%28AI_model%29) — 公司自述 transformer 架构与合成数据训练；架构、权重、论文均未公布
 - [SiliconANGLE: Jev creator TypeSafe closes $870M round](https://siliconangle.com/2026/10/09/jev-creator-typesafe-closes-870m-round-at-7-5b-valuation/) — 融资报道、发布时间线
-- [Pavel Ravvich: Jev beyond the hype — an independent benchmark](https://medium.com/@pravvich/typesafes-jev-beyond-the-hype-an-independent-benchmark-8bdc1c99d000) 及 [jev-bench 仓库](https://github.com/PavelRavvich/jev-bench) — 84–139x 成本、约 6x 速度、ECE 对比、测试方法与局限
+- [Paul Ravvich: Jev beyond the hype — an independent benchmark](https://medium.com/@pravvich/typesafes-jev-beyond-the-hype-an-independent-benchmark-8bdc1c99d000) 及 [jev-bench 仓库](https://github.com/PavelRavvich/jev-bench) — 对前沿模型 84–139x 成本、约 6x 速度、ECE 对比、测试方法与局限
 - [inovex: TypeSafe AI Jev Review](https://www.inovex.de/en/blog/typesafe-ai-jev-review-how-good-is-the-new-model-for-ai-classification/) — 重复运行波动、选项顺序敏感、给定 45% 概率案例中报 0.96–0.98 置信度、「非技术革命而是产品化包装」结论
 - [jev-banking77-experiment](https://github.com/simonmesmith/jev-banking77-experiment) — Jev 92.40% vs 微调 BERT 基线 93.66%（Casanueva et al. 2020 发表值）、非零样本设置、成本与延迟
 - [jev-zeroshot-vs-bert](https://github.com/zhuyansen/jev-zeroshot-vs-bert) — 零样本基线对比、追平所需标注量估计、arXiv 污染对照
 - [jev-vs-ml-classifiers](https://github.com/cfu288/jev-vs-ml-classifiers) — 五个表格类任务上与经典分类器及微调 ModernBERT 的对比
 - [OpenAI: Introducing Structured Outputs in the API](https://openai.com/index/introducing-structured-outputs-in-the-api/) — LLM 结构化输出早已提供 schema 级保证
-- [OpenAI API 定价页](https://developers.openai.com/api/docs/pricing) — 输出 token 价格为输入的 4–8 倍
+- [OpenAI API 定价页](https://developers.openai.com/api/docs/pricing) — 输出 token 价格为输入的数倍
