@@ -12,13 +12,13 @@ translationOf: cross-session-attacks-agent-skill-artifacts
 
 两次会话各自看都没有异常:第一次确实在做摘要,第二次确实在做提交。恶意内容藏在第一个 skill 写进 JSON 的 `handoff_guidance`(交接说明)字段里,第二个 skill 的说明文件引导 agent「执行交接说明里的待办操作」。攻击被拆成两半,每一半单独审查都像正常功能。
 
-这是 10 月 9 日挂出的一篇论文([arXiv:2610.13227](https://arxiv.org/abs/2610.13227))的开场案例。论文把这类手法称为跨会话攻击(cross-session attacks),载体是**持久化产物**(persistent artifacts):skill 运行后留在磁盘上的文件,包括缓存、配置、项目笔记、中间结果。会话结束,上下文清空,这些文件却留了下来,等着被后续会话里的其他 skill 读取。文件交接本来是 skill 生态的核心卖点:工作流分阶段,阶段之间靠产物衔接。论文指出的问题是,这条衔接通道同时是一条没人设防的攻击通道。
+这是 10 月 9 日挂出的一篇论文([arXiv:2610.13227](https://arxiv.org/abs/2610.13227))的开场案例。论文把这类手法称为跨会话攻击(cross-session attacks),载体是**持久化产物**(persistent artifacts),论文的界定是:skill 运行后留下的文件、配置和缓存数据,加上任务过程中保存的数据库记录。会话结束,上下文清空,这些文件却留了下来,等着被后续会话里的其他 skill 读取。文件交接本来是 skill 生态的核心卖点:工作流分阶段,阶段之间靠产物衔接。论文指出的问题是,这条衔接通道同时是一条没人设防的攻击通道。
 
 ## 为什么单会话的防注入进展帮不上忙
 
-我 7 月写过 [Opus 5 系统卡里的提示注入数据](/zh/opus-5-prompt-injection-system-card):间接注入在 15 次尝试内的成功率被压到 2%,单会话内的注入鲁棒性确实在涨。但那项评测测的是单会话场景:恶意内容和危险动作出现在同一个上下文里,模型有机会把两者对上号。
+我 7 月写过 [Opus 5 系统卡里的提示注入数据](/zh/opus-5-prompt-injection-system-card):间接注入在 15 次尝试内的成功率被压到 2%(数据出自[官方系统卡](https://www.anthropic.com/claude-opus-5-system-card)),单会话内的注入鲁棒性确实在涨。但那项评测测的是单会话场景:恶意内容和危险动作出现在同一个上下文里,模型有机会把两者对上号。
 
-跨会话攻击把这个前提拆掉了。写入恶意内容的会话里没有可疑动作;执行可疑动作的会话里,看不到恶意内容的来源。文件在中间洗掉了出处:agent 读一个 JSON 时,磁盘只给它内容,不告诉它这段内容是谁、在什么授权下写进去的([论文第 6.1 节](https://arxiv.org/html/2610.13227v1#S6.SS1)的防御设计正是冲着补齐这层信息去的)。注入检测盯的是外来内容,而产物是 agent 自己上次写的,看起来像自己人。
+跨会话攻击把这个前提拆掉了。在论文的威胁模型里([第 3.1 节](https://arxiv.org/html/2610.13227v1#S3.SS1)),写入恶意内容的会话里没有可疑动作;执行可疑动作的会话里,看不到恶意内容的来源:后续会话能访问留存的产物,但不继承之前的对话历史。文件在中间洗掉了出处。开头那个案例里,摘要 JSON 中没有任何信息表明那条额外的上传要求来自上游 skill([第 2.2 节](https://arxiv.org/html/2610.13227v1#S2.SS2));这类工作流里的产物不记录是谁、在什么授权下写下它们的,而这正是论文的防御方案要补回的信息([第 6.1 节](https://arxiv.org/html/2610.13227v1#S6.SS1))。注入检测盯的是外来内容,而产物是 agent 自己上次写的,看起来像自己人。
 
 ## 三类攻击,七个模型无一幸免
 
@@ -32,11 +32,11 @@ translationOf: cross-session-attacks-agent-skill-artifacts
 
 七个模型跑在 Codex CLI、Gemini CLI、Claude Code 三个框架上,攻击成功率最低的 Claude Haiku 4.5 也有 46.7%,最高的 GPT-5.3-Codex 到 77.4%。更要紧的是这个数字:53% 的运行里,用户的任务完成了,攻击也成功了。「任务跑完了、结果看着对」完全不能当安全信号。
 
-常规防线为什么接不住,论文的设定里能看得很清楚。会话隔离重置的是对话历史,不重置文件系统。「用完清理产物」会直接破坏依赖产物衔接的工作流:缓存、配置、项目笔记本身就是留给后续任务用的([论文第 2.1 节](https://arxiv.org/html/2610.13227v1#S2.SS1)),删了,工作流就断了。
+常规防线为什么接不住,论文的设定里能看得很清楚。会话隔离——至少在这组实验的配置下——重置的是对话历史,不重置工作区:后续会话对话从零开始,产物却全部继承([论文第 4.2 节](https://arxiv.org/html/2610.13227v1#S4.SS2))。「用完清理产物」则会直接破坏依赖产物衔接的工作流:任务保存的文件和数据库记录本身就是留给后续任务用的,论文也指出,一概拒收这些产物会中断正当的工作流([论文第 2.1 节](https://arxiv.org/html/2610.13227v1#S2.SS1))。
 
-## 框架现状:关卡盯着 skill 和工具,没人盯文件
+## 文档的关卡盯着 skill 和工具调用,没人盯文件
 
-对照主流框架的现有机制:[Claude Code 的 skills 文档](https://code.claude.com/docs/en/skills)的安全模型是装前审查 skill 的 `allowed-tools` 字段(skill 声明自己要用哪些工具),加上运行时的权限规则——工具调用要过 allow/deny 检查;[Anthropic 平台文档](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)的建议是只用自己写的或来自 Anthropic 的 skill,第三方的要逐文件人工审计。装前和运行时都有关卡,但管的都是 skill 本身和它当场调用的工具,这两份文档都没有回答:skill 写下的文件,在下一个会话里算什么身份。
+对照现在框架文档覆盖的范围。我查了 Anthropic 的两份相关页面:[Claude Code 的 skills 文档](https://code.claude.com/docs/en/skills)的安全模型是装前审查 skill 的 `allowed-tools` 字段(skill 声明自己要用哪些工具),加上运行时的权限规则——工具调用要过 allow/deny 检查;[Anthropic 平台文档](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)的建议是只用自己写的或来自 Anthropic 的 skill,第三方的要逐文件人工审计。装前和运行时都有关卡,但管的都是 skill 本身和它当场调用的工具,这两份文档都没有回答:skill 写下的文件,在下一个会话里算什么身份。其他框架的文档我没有做同样细致的核对,但论文在 Codex CLI 和 Gemini CLI 上的攻击成功率说明,它测到的几套脚手架同样没堵上这个口子。
 
 而「只装可信 skill」在当前生态里已经是个很高的要求。Snyk 今年 2 月扫描了 ClawHub 和 skills.sh 上 3,984 个公开 skill([ToxicSkills 报告](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/)):13.4% 带至少一个 critical 级安全问题,人工确认含恶意载荷的有 76 个。skill 生态正在重走 npm 和 PyPI 早期的供应链老路,而跨会话攻击给了恶意 skill 一个比直接作恶更隐蔽的选项:它自己只写文件,脏活留给下一个会话里毫不知情的同伴。
 
@@ -52,12 +52,13 @@ translationOf: cross-session-attacks-agent-skill-artifacts
 2. 审第三方 skill 时,除了读 SKILL.md 和脚本,还要看它往哪里写文件、写的文件会不会被别的 skill 或后续会话读到。写入面比指令面隐蔽得多。
 3. 评测自家 agent 时,不要把任务完成率当安全指标。53% 的「双成功」说明两者可以同时为真。
 
-长期记忆和持久工作区让 agent 更有用,这个方向不会倒退,但 agent 每多留一份东西在磁盘上,就有一部分攻击面从上下文窗口搬进文件系统,单会话注入鲁棒性的提升掩盖不了这次转移。接下来值得盯的是哪家框架先把产物溯源做进产品:谁先让 agent 写下的文件带上出生证明,谁的 skill 生态才谈得上敢装第三方组件。
+长期记忆和持久工作区让 agent 更有用,这个方向不会倒退,但 agent 每多留一份东西在磁盘上,就有一部分攻击面从上下文窗口搬进文件系统,单会话注入鲁棒性的提升掩盖不了这次转移。接下来值得盯的是有没有框架把产物溯源做成产品功能。给 agent 写下的文件配上出生证明,才能堵上这篇论文利用的这个盲区;在这类机制落地之前,装第三方 skill 始终是一件凭信念的事。
 
 ## 参考来源
 
 - [Understanding and Mitigating Cross-Session Attacks via Persistent Artifacts in Agent Skill Composition (arXiv:2610.13227)](https://arxiv.org/abs/2610.13227) — 核心论文:攻击场景、三类机制、SkillRelayBench 数据、SkillRelayGuard 方案与全部实验数字
-- [Claude Code 官方 skills 文档](https://code.claude.com/docs/en/skills) — 核实 Claude Code 现有安全模型(allowed-tools 审查、权限规则),确认该文档未提及产物的跨会话隔离或清理机制
+- [Claude Code 官方 skills 文档](https://code.claude.com/docs/en/skills) — 核实 Claude Code 现有安全模型(allowed-tools 审查、权限规则),确认该页面未涉及 skill 写下的文件在跨会话中的信任身份或清理机制(其涉及跨会话的内容只讲哪些会话会加载某个 skill)
 - [Anthropic 平台 Agent Skills 文档](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview) — 核实官方安全建议原文(只用可信来源、逐文件审计、按装软件对待)
 - [Snyk ToxicSkills 报告](https://snyk.io/blog/toxicskills-malicious-ai-agent-skills-clawhub/) — skill 生态扫描数据:3,984 个 skill、13.4% 含 critical 问题、76 个确认恶意载荷
-- [提示注入快被『解决』了吗?Opus 5 发布里被埋掉的那一页](/zh/opus-5-prompt-injection-system-card) — 本站旧文,单会话间接注入成功率数据(2%)的出处
+- [Claude Opus 5 系统卡](https://www.anthropic.com/claude-opus-5-system-card) — 单会话间接注入数据(15 次尝试内成功率 2%)的一手来源
+- [提示注入快被『解决』了吗?Opus 5 发布里被埋掉的那一页](/zh/opus-5-prompt-injection-system-card) — 本站旧文,对该数据的讨论
