@@ -18,12 +18,19 @@ allowance). It changes three things about each call:
    notice can never be mistaken for an article. Discord gets one note per
    six hours.
 
+4. Model map: /home/mia/.config/claude-pipe.json may hold
+   {"model_map": {"fable": "opus"}}, which reroutes every call that asks for
+   one model to another. Used for the 2026-10 trial of writing on Opus 5.5
+   (the owner is weighing Max 5x against Pro, and Pro has no Fable). Delete
+   the file to go back.
+
 The installed copy is /home/mia/bin/claude-pipe: PR-revision runs check out
 older branches, where this file may not exist. After editing, run
     install -m 755 automation/scripts/claude-pipe /home/mia/bin/claude-pipe
 """
 
 import ctypes
+import json
 import re
 import signal
 import subprocess
@@ -35,6 +42,7 @@ REAL = "/usr/bin/claude"
 LIMIT = re.compile(r"hit your [^\n]{0,40}limit|usage limit|limit reached|limit · resets", re.I)
 NOTE_STAMP = Path("/tmp/claude-pipe-limit-note")
 NOTE_EVERY = 6 * 3600
+MODEL_MAP = Path("/home/mia/.config/claude-pipe.json")
 NOTIFY = ["/home/mia/site/automation/.venv/bin/python",
           "/home/mia/site/automation/scripts/discord_notify.py"]
 
@@ -76,6 +84,10 @@ def limit_text(p):
 
 
 def on_opus(args):
+    return with_model(args, "opus")
+
+
+def with_model(args, model):
     out, skip = [], 0
     for i, a in enumerate(args):
         if skip:
@@ -86,9 +98,21 @@ def on_opus(args):
             continue
         out.append(a)
         if a == "--model" and i + 1 < len(args):
-            out.append("opus")
+            out.append(model)
             skip = 1
     return out
+
+
+def mapped(args):
+    try:
+        table = json.loads(MODEL_MAP.read_text()).get("model_map", {})
+    except (FileNotFoundError, ValueError):
+        return args
+    if "--model" in args[:-1]:
+        target = table.get(args[args.index("--model") + 1])
+        if target:
+            return with_model(args, target)
+    return args
 
 
 def note(message):
@@ -102,7 +126,7 @@ def note(message):
 
 
 def main():
-    args = sys.argv[1:]
+    args = mapped(sys.argv[1:])
     stdin = sys.stdin.buffer.read() if not sys.stdin.isatty() else None
     p = run(args, stdin)
     hit = limit_text(p)

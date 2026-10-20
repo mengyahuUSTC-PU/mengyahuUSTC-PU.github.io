@@ -68,6 +68,18 @@ print(f\"briefing items: {len(d.get('briefing_items',[]))}, deep-dive candidates
 echo "=== coverage check ==="
 "$PY" "$SCRIPTS/coverage_check.py" "$DATE" || true
 
+# Trial from 2026-10-20: the daily briefing is paused (BRIEFING_ENABLED=0 in
+# .env) while the owner decides between Max 5x and Pro; its pages had almost
+# no readers. Candidate topics still go out every day.
+if [ "$(grep -E "^BRIEFING_ENABLED=" .env 2>/dev/null | cut -d= -f2 | tr -d "\"' ")" = "0" ]; then
+  echo "=== briefing paused (BRIEFING_ENABLED=0) ==="
+  if [ -f .env ] && grep -q "^DISCORD_WEBHOOK_URL=" .env; then
+    "$PY" "$SCRIPTS/discord_notify.py" --topics "$DATE"
+  fi
+  echo "=== [$(date -u +%FT%TZ)] done ==="
+  exit 0
+fi
+
 echo "=== briefing draft ==="
 cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/briefing.md" \
   <(echo "## 今日日期：$DATE") \
