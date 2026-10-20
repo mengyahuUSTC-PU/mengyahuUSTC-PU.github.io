@@ -158,6 +158,9 @@ h2 { font-size: 1.3rem; }
   margin: 2.8rem auto 0;
   max-width: 40rem;
 }
+/* In-article copy: sits between sections, so lighter and tighter than the end box. */
+.subscribe-box.subscribe-inline { margin: 2rem 0; padding: 1.1rem 1.3rem; background: var(--bg); }
+.subscribe-box[hidden] { display: none; }
 .subscribe-heading {
   font-family: var(--font-serif);
   font-weight: 600;

@@ -71,6 +71,7 @@ const fmt = new Intl.DateTimeFormat(lang === 'zh' ? 'zh-CN' : 'en-US', {
     <div class="article-body">
       <Content />
     </div>
+    {!post.data.tags.includes('briefing') && <SubscribeBox lang={lang} placement="inline" />}
   </article>
   <script type="application/ld+json" is:inline set:html={JSON.stringify({
     '@context': 'https://schema.org',

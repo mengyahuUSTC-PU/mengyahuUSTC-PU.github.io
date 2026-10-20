@@ -3,9 +3,11 @@ import type { Lang } from '../lib/i18n';
 
 interface Props {
   lang: Lang;
+  /** Where the box sits; reported to analytics with every view and sign-up. */
+  placement?: 'end' | 'inline' | 'home' | 'about' | 'briefing';
 }
 
-const { lang } = Astro.props;
+const { lang, placement = 'end' } = Astro.props;
 
 // Our own endpoint on the VM: it double-opts-in and writes to Resend.
 // No API key is involved here, so this is safe in a static page.
@@ -14,16 +16,16 @@ const action = 'https://api.mengyahu.com/subscribe';
 const copy =
   lang === 'zh'
     ? {
-        heading: '订阅新文章',
-        blurb: '新的深度文章发布时发送到你的邮箱。不发快讯，随时可退订。',
+        heading: placement === 'inline' ? '觉得有用？' : '订阅更新',
+        blurb: '每周日一封信，汇总这周的新文章。随时可退订。',
         placeholder: '你的邮箱',
         button: '订阅',
         success: '确认邮件已发出，点开里面的链接就算订阅成功。',
         error: '提交失败了，请稍后再试。',
       }
     : {
-        heading: 'Subscribe',
-        blurb: 'New essays, straight to your inbox. No daily briefings, unsubscribe anytime.',
+        heading: placement === 'inline' ? 'Finding this useful?' : 'Subscribe',
+        blurb: "One email every Sunday with the week's new essays. Unsubscribe anytime.",
         placeholder: 'you@example.com',
         button: 'Subscribe',
         success: 'Check your inbox and click the confirmation link.',
@@ -31,7 +33,12 @@ const copy =
       };
 ---
 
-<aside class="subscribe-box">
+<aside
+  class:list={['subscribe-box', { 'subscribe-inline': placement === 'inline' }]}
+  data-placement={placement}
+  data-lang={lang}
+  hidden={placement === 'inline'}
+>
   <p class="subscribe-heading">{copy.heading}</p>
   <p class="subscribe-blurb">{copy.blurb}</p>
   <form
@@ -58,11 +65,48 @@ const copy =
 </aside>
 
 <script>
-  // Progressive enhancement: without JS the form posts to Kit's hosted page.
+  const track = (name: string, params: Record<string, string>) =>
+    (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.('event', name, params);
+  const subscribed = () => {
+    try { return localStorage.getItem('nl-subscribed') === '1'; } catch { return false; }
+  };
+
+  // The in-article box. Only 31% of readers reach the end of an article,
+  // where the other box sits, and phones (over half of readers) never get
+  // the slide-in. So a second box goes about 40% of the way in: before a
+  // section heading if the article has at least two (references excluded),
+  // otherwise after the paragraph at 45%. Without JS it stays hidden.
+  document.querySelectorAll<HTMLElement>('.subscribe-box[data-placement="inline"]').forEach((box) => {
+    const body = document.querySelector('.article-body');
+    if (!body || subscribed()) return;
+    const sections = [...body.querySelectorAll(':scope > h2')]
+      .filter((h) => !/参考|来源|References|Sources/i.test(h.textContent ?? ''));
+    if (sections.length >= 2) {
+      sections[Math.max(1, Math.round(sections.length * 0.4))]?.before(box);
+    } else {
+      const paras = body.querySelectorAll(':scope > p');
+      if (paras.length < 6) return;
+      paras[Math.floor(paras.length * 0.45)].after(box);
+    }
+    box.hidden = false;
+  });
+
+  // Measure the funnel: a view is the box at least half on screen once.
+  const seen = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (!e.isIntersecting) continue;
+      const el = e.target as HTMLElement;
+      track('subscribe_view', { placement: el.dataset.placement ?? '', lang: el.dataset.lang ?? '' });
+      seen.unobserve(el);
+    }
+  }, { threshold: 0.5 });
+  document.querySelectorAll<HTMLElement>('.subscribe-box').forEach((box) => seen.observe(box));
+
   document.querySelectorAll<HTMLFormElement>('.subscribe-form').forEach((form) => {
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
-      const note = form.parentElement?.querySelector<HTMLElement>('.subscribe-note');
+      const box = form.closest<HTMLElement>('.subscribe-box');
+      const note = box?.querySelector<HTMLElement>('.subscribe-note');
       const button = form.querySelector<HTMLButtonElement>('button');
       if (button) button.disabled = true;
       try {
@@ -74,7 +118,8 @@ const copy =
         const data = await resp.json();
         if (!resp.ok || data.ok === false) throw new Error('rejected');
         if (note) note.textContent = form.dataset.success ?? '';
-        localStorage.setItem('nl-subscribed', '1');
+        track('sign_up', { method: 'newsletter', placement: box?.dataset.placement ?? '' });
+        try { localStorage.setItem('nl-subscribed', '1'); } catch { /* private mode */ }
         form.reset();
       } catch {
         if (note) note.textContent = form.dataset.error ?? '';
