@@ -109,7 +109,7 @@ def run_audit(pr_number: int) -> str:
         cwd=REPO_ROOT, capture_output=True, text=True, timeout=2400,
     )
     if run.returncode != 0:
-        send(f"⚠️ 三方核查运行失败（PR #{pr_number}）：\n```{(run.stderr or run.stdout)[-400:]}```")
+        send(f"⚠️ 核查运行失败（PR #{pr_number}）：\n```{(run.stderr or run.stdout)[-400:]}```")
         return "error"
     open_fix = sh("gh", "pr", "list", "--state", "open",
                   "--head", f"fix/pr{pr_number}-factcheck", "--json", "number").strip()
@@ -175,7 +175,7 @@ def main():
                 continue
             audit_clone = Path("/home/mia/site-audit")
             if audit_clone.exists():
-                send(f"🔍 {slug} 已合并，三方核查已在并行通道启动（不阻塞其他任务）…")
+                send(f"🔍 {slug} 已合并，核查已在并行通道启动（不阻塞其他任务）…")
                 py = "/home/mia/site/automation/.venv/bin/python"
                 cmd = (f"nohup flock /tmp/audit-git.lock bash -c "
                        f"'cd {audit_clone} && git fetch -q origin && "
@@ -185,7 +185,7 @@ def main():
                 subprocess.Popen(cmd, shell=True)
                 state["done"].append(number)
             else:
-                send(f"🔍 {slug} 已合并，启动三方核查（Opus + Fable + GPT）…")
+                send(f"🔍 {slug} 已合并，启动核查（GPT）…")
                 outcome = run_audit(number)
                 if outcome == "fix_pr":
                     send("核查发现问题，修正 PR 已开（见上方链接）。**Merge 修正后我再生成英文版。**")

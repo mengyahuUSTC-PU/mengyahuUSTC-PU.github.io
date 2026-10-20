@@ -28,7 +28,7 @@ def main():
         cwd=REPO_ROOT, capture_output=True, text=True, timeout=2400,
     )
     if run.returncode != 0:
-        send(f"⚠️ 三方核查运行失败（PR #{pr}）：\n```{(run.stderr or run.stdout)[-400:]}```")
+        send(f"⚠️ 核查运行失败（PR #{pr}）：\n```{(run.stderr or run.stdout)[-400:]}```")
         return
     if mode == "en":
         # User decision 2026-08-11: the EN PR is verified (fixes pushed to its

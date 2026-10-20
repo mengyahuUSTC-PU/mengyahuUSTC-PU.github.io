@@ -3,10 +3,13 @@
 
 Usage: verify_draft.py <pr_number>
 
-1. Three independent verifiers (Opus 5.5, Fable 5.1, GPT via Codex CLI)
-   check every claim: cited? source supports it? For uncited claims they
-   search the web for a suitable source and record it.
-2. If any verifier flags issues, the writer model revises the article on
+1. GPT, through the Codex CLI on the owner's ChatGPT plan, checks every
+   claim: cited? source supports it? For uncited claims it searches the web
+   for a suitable source and records it. Until 2026-10-20 Opus and Fable
+   checked as well; that was half of the pipeline's Claude use, and the owner
+   chose to let GPT carry it alone. When GPT cannot run (login, usage limit),
+   Opus takes its place, so no article goes unchecked.
+2. If the verifier flags issues, the writer model revises the article on
    the PR branch: adds the found citations, downgrades/removes anything
    unverifiable or contradicted. One fix iteration, then human review.
 3. Full reports + an auto-fix summary are posted as a PR comment.
@@ -177,18 +180,26 @@ def main():
     skipped_zh = [f for f in md_files if "/zh/" in f and Path(f).stem in en_slugs]
     md_files = [f for f in md_files if f not in skipped_zh]
 
-    all_reports, fixed_files = [], []
+    all_reports, fixed_files, unchecked, all_checked = [], [], [], []
     for rel in md_files:
         content = sh("git", "show", f"{src_ref}:{rel}")
-        file_reports = []
-        for model, label in [("opus", "Opus 5.5"), ("fable", "Fable 5.1")]:
-            out = claude_verify(content, model)
-            file_reports.append(
-                f"### `{rel}` · 核查员 {label}\n\n{out or '⚠️ 核查器运行失败'}")
-        file_reports.append(f"### `{rel}` · 核查员 GPT（跨厂商）\n\n{gpt_verify(content)}")
+        file_reports, checked = [], []
+        gpt = gpt_verify(content)
+        if gpt.startswith("⚠️"):  # GPT did not run; its error is not a finding
+            out = claude_verify(content, "opus")
+            file_reports.append(f"### `{rel}` · 核查员 Opus 5.5（GPT 未能运行：{gpt[2:].strip()[:120]}）"
+                                f"\n\n{out or '⚠️ 核查器运行失败'}")
+            if out:
+                checked.append(out)
+            else:
+                unchecked.append(rel)
+        else:
+            file_reports.append(f"### `{rel}` · 核查员 GPT（经 Codex CLI）\n\n{gpt}")
+            checked.append(gpt)
         all_reports.extend(file_reports)
+        all_checked.extend(checked)
 
-        if any(any(m in r for m in FLAG_MARKS) for r in file_reports):
+        if any(any(m in r for m in FLAG_MARKS) for r in checked):
             if report_only:
                 # PR already merged: fixes go to a dedicated fix branch/PR.
                 fix_branch = f"fix/pr{pr}-factcheck"
@@ -203,7 +214,7 @@ def main():
         fix_pr_url = sh("gh", "pr", "create", "--base", "master",
                         "--head", f"fix/pr{pr}-factcheck",
                         "--title", f"Fact-check fixes for merged PR #{pr}",
-                        "--body", f"三方核查对已合并的 #{pr} 的修正。Merge = 修正上线。\n\n"
+                        "--body", f"核查对已合并的 #{pr} 的修正。Merge = 修正上线。\n\n"
                                   "🤖 Generated with [Claude Code](https://claude.com/claude-code)")
     if skipped_zh:
         all_reports.append(
@@ -216,15 +227,18 @@ def main():
                   if fixed_files else "无需修正或修正未产生变化。"))
     body = (
         "\n\n".join(all_reports) + summary
-        + "\n\n*三方核查：Opus 5.5、Fable 5.1（各自独立上下文）+ GPT（跨厂商，经 Codex CLI）；"
+        + "\n\n*核查：GPT（经 Codex CLI，用 ChatGPT 会员额度），GPT 无法运行时由 Opus 5.5 代替；"
           "缺引用的断言由核查员找源、写作模型补引，无法核实的自动降级。*"
         + "\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)"
     )
     sh("gh", "pr", "comment", pr, "--body", body)
-    flags = sum(body.count(m) for m in FLAG_MARKS)
+    flags = sum(r.count(m) for r in all_checked for m in FLAG_MARKS)  # findings, not run errors
     icon = "🟢" if flags == 0 else "🟡"
     fixed_note = f"，其中 {len(fixed_files)} 个文件已自动修正" if fixed_files else ""
-    send(f"{icon} PR #{pr} 三方核查完成：{'全部断言核实通过' if flags == 0 else f'{flags} 处被标记{fixed_note}'}，详见 PR 评论。")
+    if unchecked:
+        send(f"🚨 PR #{pr} 有文件没能核查（GPT 和 Opus 都没跑成）：{', '.join(unchecked)}")
+    if all_checked:
+        send(f"{icon} PR #{pr} 核查完成：{'全部断言核实通过' if flags == 0 else f'{flags} 处被标记{fixed_note}'}，详见 PR 评论。")
     print(f"verified PR #{pr}: {flags} flags, fixed: {fixed_files}")
 
 
