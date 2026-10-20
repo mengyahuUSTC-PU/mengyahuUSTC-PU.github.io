@@ -29,7 +29,7 @@ for f in sorted(glob.glob('automation/data/dist/*.json')):
     echo "## 上一期周报全文"
     cat "$PREV"
   fi
-} | claude -p --output-format text --model fable --fallback-model opus \
+} | /home/mia/bin/claude-pipe -p --output-format text --model fable --fallback-model opus \
   | "$PY" automation/scripts/split_output.py json > "$REPORTS/$DATE.md"
 
 git add "$REPORTS/$DATE.md"

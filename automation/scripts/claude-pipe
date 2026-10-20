@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+"""Every pipeline call to Claude goes through here instead of bare `claude`.
+
+Written 2026-10-19, before the move from Max 20x to Max 5x (a quarter of the
+allowance). It changes three things about each call:
+
+1. Tools: only what the call grants with --allowedTools (in practice WebFetch
+   and WebSearch), and none at all otherwise. With the default set, writers
+   tried Edit 188 times in a month (always denied), verifiers fanned out to
+   180 subagents, and verifiers called ScheduleWakeup, which ends a
+   print-mode turn early and leaves the report incomplete.
+2. No MCP: the account's claude.ai connectors were sent with every call.
+   With (1), the fixed prompt per call drops from ~23.6k tokens to 3.5k
+   (no tools) or 4.9k (web tools).
+3. Limits: when a Fable call hits a usage limit (Max 5x runs out of weekly
+   Fable allowance in a heavy week), it is retried once on Opus. Any other
+   limit exits 75 with the message on stderr, never on stdout, so a limit
+   notice can never be mistaken for an article. Discord gets one note per
+   six hours.
+
+The installed copy is /home/mia/bin/claude-pipe: PR-revision runs check out
+older branches, where this file may not exist. After editing, run
+    install -m 755 automation/scripts/claude-pipe /home/mia/bin/claude-pipe
+"""
+
+import ctypes
+import re
+import signal
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+REAL = "/usr/bin/claude"
+LIMIT = re.compile(r"hit your [^\n]{0,40}limit|usage limit|limit reached|limit · resets", re.I)
+NOTE_STAMP = Path("/tmp/claude-pipe-limit-note")
+NOTE_EVERY = 6 * 3600
+NOTIFY = ["/home/mia/site/automation/.venv/bin/python",
+          "/home/mia/site/automation/scripts/discord_notify.py"]
+
+
+def _die_with_parent():
+    # The caller's timeout kills this wrapper; take the real CLI down with it.
+    ctypes.CDLL("libc.so.6").prctl(1, signal.SIGTERM)  # PR_SET_PDEATHSIG
+
+
+def granted_tools(args):
+    tools = []
+    for flag in ("--allowedTools", "--allowed-tools"):
+        if flag in args:
+            i = args.index(flag) + 1
+            while i < len(args) and not args[i].startswith("-"):
+                tools += [t for t in re.split(r"[\s,]+", args[i]) if t]
+                i += 1
+    return tools
+
+
+NO_TOOLS = ("This session has no tools. Work only from the text you are given, "
+            "and answer directly.")
+
+
+def run(args, stdin):
+    tools = granted_tools(args)
+    # Without this line a model asked to check something may emit a call to a
+    # tool that does not exist, and the CLI fails the whole run.
+    extra = [] if tools else ["--append-system-prompt", NO_TOOLS]
+    cmd = [REAL, *args, *extra, "--strict-mcp-config", "--tools", *(tools or [""])]
+    return subprocess.run(cmd, input=stdin, capture_output=True, preexec_fn=_die_with_parent)
+
+
+def limit_text(p):
+    if p.returncode == 0 and len(p.stdout) > 600:
+        return None  # a real answer; it may well mention limits
+    m = LIMIT.search((p.stdout + p.stderr).decode("utf-8", "replace"))
+    return m and m.string[max(0, m.start() - 60):m.end() + 80].strip()
+
+
+def on_opus(args):
+    out, skip = [], 0
+    for i, a in enumerate(args):
+        if skip:
+            skip -= 1
+            continue
+        if a == "--fallback-model":
+            skip = 1  # the CLI refuses a fallback equal to the main model
+            continue
+        out.append(a)
+        if a == "--model" and i + 1 < len(args):
+            out.append("opus")
+            skip = 1
+    return out
+
+
+def note(message):
+    try:
+        if time.time() - NOTE_STAMP.stat().st_mtime < NOTE_EVERY:
+            return
+    except FileNotFoundError:
+        pass
+    NOTE_STAMP.touch()
+    subprocess.run([*NOTIFY, message], capture_output=True, timeout=60)
+
+
+def main():
+    args = sys.argv[1:]
+    stdin = sys.stdin.buffer.read() if not sys.stdin.isatty() else None
+    p = run(args, stdin)
+    hit = limit_text(p)
+    model = args[args.index("--model") + 1] if "--model" in args[:-1] else ""
+    if hit and model == "fable":
+        note(f"⚠️ Fable 额度用完，管线临时改用 Opus 5.5 写稿，额度恢复后自动换回。\n{hit[:200]}")
+        p = run(on_opus(args), stdin)
+        hit = limit_text(p)
+    if hit:
+        note("⚠️ Claude 额度用完，管线的 AI 调用会失败到额度重置为止；重置后回「补跑日更」"
+             f"可以补上当天的日更。\n{hit[:200]}")
+        sys.stderr.write(f"claude-pipe: usage limit: {hit}\n")
+        sys.exit(75)
+    sys.stdout.buffer.write(p.stdout)
+    sys.stderr.buffer.write(p.stderr)
+    sys.exit(p.returncode)
+
+
+if __name__ == "__main__":
+    main()

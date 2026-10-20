@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+CLAUDE = "/home/mia/bin/claude-pipe"  # tools, MCP and usage limits: see automation/scripts/claude-pipe
 LESSONS = REPO_ROOT / "automation" / "prompts" / "editorial-lessons.md"
 
 DISTILL_PROMPT = """你维护一份「编辑教训」文件：作者对 AI 写作的历次反馈提炼成的通用规则。
@@ -33,7 +34,7 @@ def update_lessons(feedback: str, date: str) -> bool:
         + f"\n\n## 新反馈（{date}）\n\n{feedback}"
     )
     run = subprocess.run(
-        ["claude", "-p", "--output-format", "text"],
+        [CLAUDE, "-p", "--output-format", "text"],
         input=prompt, cwd=REPO_ROOT, capture_output=True, text=True, timeout=300,
     )
     if run.returncode != 0:

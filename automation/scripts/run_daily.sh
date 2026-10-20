@@ -51,7 +51,7 @@ cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/t
   <(echo "## 近 7 天已推荐过的选题（同一事件除非有重大新进展，否则不得再次推荐）") \
   <(echo "$RECENT_TOPICS") \
   <(echo "## 当日条目池 JSON") "$POOL" \
-  | claude -p --output-format text --model sonnet \
+  | /home/mia/bin/claude-pipe -p --output-format text --model sonnet \
   | "$PY" "$SCRIPTS/split_output.py" json-strict > "$DATA/selection-$DATE.json"
 
 # A selection that did not produce valid JSON must be visible, not a silent
@@ -75,7 +75,7 @@ cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/b
   <("$PY" -c "import json; print(json.dumps(json.load(open('$DATA/selection-$DATE.json'))['briefing_items'], ensure_ascii=False, indent=2))") \
   <(echo "## research_items JSON") \
   <("$PY" -c "import json; print(json.dumps(json.load(open('$DATA/selection-$DATE.json')).get('research_items', []), ensure_ascii=False, indent=2))") \
-  | claude -p --output-format text --model fable --fallback-model opus --allowedTools "WebFetch" "WebSearch" \
+  | /home/mia/bin/claude-pipe -p --output-format text --model fable --fallback-model opus --allowedTools "WebFetch" "WebSearch" \
   | "$PY" "$SCRIPTS/split_output.py" bilingual "$DRAFTS/briefing-$DATE"
 
 # Review loop (phase 3): briefing goes out as a PR, topic list goes to Discord.

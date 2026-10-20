@@ -20,6 +20,7 @@ import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+CLAUDE = "/home/mia/bin/claude-pipe"  # tools, MCP and usage limits: see automation/scripts/claude-pipe
 DATA = REPO_ROOT / "automation" / "data"
 STATE_FILE = DATA / "state" / "merged.json"
 SCRIPTS = REPO_ROOT / "automation" / "scripts"
@@ -55,7 +56,7 @@ def generate_en(slug: str) -> bool:
     raw = None
     for attempt in (1, 2):
         run = subprocess.run(
-            ["claude", "-p", "--output-format", "text",
+            [CLAUDE, "-p", "--output-format", "text",
              "--model", "fable", "--fallback-model", "opus",
              "--allowedTools", "WebFetch", "WebSearch"],
             input=prompt, cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,

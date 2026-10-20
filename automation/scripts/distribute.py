@@ -17,6 +17,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+CLAUDE = "/home/mia/bin/claude-pipe"  # tools, MCP and usage limits: see automation/scripts/claude-pipe
 SCRIPTS = REPO_ROOT / "automation" / "scripts"
 PROMPTS = REPO_ROOT / "automation" / "prompts"
 DIST = REPO_ROOT / "automation" / "data" / "dist"
@@ -35,7 +36,7 @@ def utm(slug: str, lang: str, source: str, medium: str) -> str:
 
 def claude_gen(prompt: str, model: str = "fable") -> str:
     run = subprocess.run(
-        ["claude", "-p", "--output-format", "text",
+        [CLAUDE, "-p", "--output-format", "text",
          "--model", model] + (["--fallback-model", "opus"] if model == "fable" else []),
         input=prompt, cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
     )

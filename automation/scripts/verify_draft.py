@@ -3,7 +3,7 @@
 
 Usage: verify_draft.py <pr_number>
 
-1. Three independent verifiers (Opus 4.8, Fable 5, GPT via Codex CLI)
+1. Three independent verifiers (Opus 5.5, Fable 5.1, GPT via Codex CLI)
    check every claim: cited? source supports it? For uncited claims they
    search the web for a suitable source and record it.
 2. If any verifier flags issues, the writer model revises the article on
@@ -19,6 +19,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+CLAUDE = "/home/mia/bin/claude-pipe"  # tools, MCP and usage limits: see automation/scripts/claude-pipe
 SCRIPTS = REPO_ROOT / "automation" / "scripts"
 PROMPTS = REPO_ROOT / "automation" / "prompts"
 
@@ -64,7 +65,7 @@ def sh(*cmd, timeout=300):
 
 def claude_verify(content: str, model: str) -> str | None:
     run = subprocess.run(
-        ["claude", "-p", "--output-format", "text", "--model", model,
+        [CLAUDE, "-p", "--output-format", "text", "--model", model,
          "--allowedTools", "WebFetch", "WebSearch"],
         input=VERIFY_PROMPT + "\n\n## 待核查文章\n\n" + content,
         cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
@@ -124,7 +125,7 @@ def fix_article(branch: str, rel: str, reports: list[str], base: str | None = No
         + "\n\n## 文章当前版本\n\n" + article
     )
     run = subprocess.run(
-        ["claude", "-p", "--output-format", "text",
+        [CLAUDE, "-p", "--output-format", "text",
          "--model", "fable", "--fallback-model", "opus",
          "--allowedTools", "WebFetch", "WebSearch"],
         input=prompt, cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
@@ -180,7 +181,7 @@ def main():
     for rel in md_files:
         content = sh("git", "show", f"{src_ref}:{rel}")
         file_reports = []
-        for model, label in [("opus", "Opus 4.8"), ("fable", "Fable 5")]:
+        for model, label in [("opus", "Opus 5.5"), ("fable", "Fable 5.1")]:
             out = claude_verify(content, model)
             file_reports.append(
                 f"### `{rel}` · 核查员 {label}\n\n{out or '⚠️ 核查器运行失败'}")
@@ -215,7 +216,7 @@ def main():
                   if fixed_files else "无需修正或修正未产生变化。"))
     body = (
         "\n\n".join(all_reports) + summary
-        + "\n\n*三方核查：Opus 4.8、Fable 5（各自独立上下文）+ GPT（跨厂商，经 Codex CLI）；"
+        + "\n\n*三方核查：Opus 5.5、Fable 5.1（各自独立上下文）+ GPT（跨厂商，经 Codex CLI）；"
           "缺引用的断言由核查员找源、写作模型补引，无法核实的自动降级。*"
         + "\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)"
     )

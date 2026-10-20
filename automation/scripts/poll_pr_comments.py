@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+CLAUDE = "/home/mia/bin/claude-pipe"  # tools, MCP and usage limits: see automation/scripts/claude-pipe
 DATA = REPO_ROOT / "automation" / "data"
 STATE_FILE = DATA / "state" / "pr_comments.json"
 SCRIPTS = REPO_ROOT / "automation" / "scripts"
@@ -55,7 +56,7 @@ def revise(pr_number: int, branch: str, rel: str, feedback: str) -> bool:
         + "\n\n## 文章当前版本\n\n" + article
     )
     run = subprocess.run(
-        ["claude", "-p", "--output-format", "text",
+        [CLAUDE, "-p", "--output-format", "text",
          "--model", "fable", "--fallback-model", "opus",
          "--allowedTools", "WebFetch", "WebSearch"],
         input=prompt, cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,

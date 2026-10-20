@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+CLAUDE = "/home/mia/bin/claude-pipe"  # tools, MCP and usage limits: see automation/scripts/claude-pipe
 SCRIPTS = REPO_ROOT / "automation" / "scripts"
 PROMPTS = REPO_ROOT / "automation" / "prompts"
 
@@ -91,7 +92,7 @@ def sync_counterpart(branch: str, rel: str) -> bool:
         + "\n\n## 目标版（待同步）\n\n" + target
     )
     run = subprocess.run(
-        ["claude", "-p", "--output-format", "text",
+        [CLAUDE, "-p", "--output-format", "text",
          "--model", "fable", "--fallback-model", "opus"],
         input=prompt, cwd=REPO_ROOT, capture_output=True, text=True, timeout=900,
     )
