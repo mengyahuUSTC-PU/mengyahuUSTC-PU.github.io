@@ -183,13 +183,15 @@ def main():
     load_env()
     pid = os.environ["GA4_PROPERTY_ID"]
     tok = token()
+    # --days N: the window length (7 for the weekly report, 30 for the monthly).
+    days = int(sys.argv[sys.argv.index("--days") + 1]) if "--days" in sys.argv else 7
     end = date.today() - timedelta(days=1)
-    start = end - timedelta(days=6)
+    start = end - timedelta(days=days - 1)
     s, e = start.isoformat(), end.isoformat()
     gsc_end = date.today() - timedelta(days=3)
-    gsc_start = gsc_end - timedelta(days=6)
+    gsc_start = gsc_end - timedelta(days=days - 1)
 
-    ps, pe = (start - timedelta(days=7)).isoformat(), (end - timedelta(days=7)).isoformat()
+    ps, pe = (start - timedelta(days=days)).isoformat(), (end - timedelta(days=days)).isoformat()
     out = {
         "window": {"start": s, "end": e},
         "headline": headline(tok, pid, s, e),
@@ -201,6 +203,11 @@ def main():
         "by_page": ga4_report(tok, pid, ["pagePath"],
                               ["screenPageViews", "activeUsers", "userEngagementDuration"], s, e),
         "by_day": ga4_report(tok, pid, ["date"], ["sessions", "engagedSessions", "activeUsers"], s, e),
+        "by_device": ga4_report(tok, pid, ["deviceCategory"],
+                                ["sessions", "engagedSessions", "userEngagementDuration"], s, e),
+        # Sign-up funnel (site events since 2026-10-20): a box seen, then a sign-up.
+        "subscribe_funnel": [r for r in ga4_report(tok, pid, ["eventName", "pagePath"], ["eventCount"], s, e, limit=200)
+                             if r["eventName"] in ("subscribe_view", "sign_up")],
         "gsc_window": {"start": gsc_start.isoformat(), "end": gsc_end.isoformat()},
         "gsc_queries": gsc_query(tok, ["query"], gsc_start.isoformat(), gsc_end.isoformat()),
         "gsc_pages": gsc_query(tok, ["page"], gsc_start.isoformat(), gsc_end.isoformat()),

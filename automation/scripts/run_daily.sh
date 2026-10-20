@@ -47,7 +47,9 @@ for f in sorted(glob.glob('$DATA/selection-*.json'))[-7:]:
     except Exception: pass
 print(chr(10).join('- ' + t for t in titles if t))
 ")
+# topic-performance.md: monthly reader numbers per topic kind (topic_performance.py).
 cat "$PROMPTS/editorial-baseline.md" "$PROMPTS/editorial-lessons.md" "$PROMPTS/topic-selection.md" \
+  <(cat "$DATA/topic-performance.md" 2>/dev/null || true) \
   <(echo "## 近 7 天已推荐过的选题（同一事件除非有重大新进展，否则不得再次推荐）") \
   <(echo "$RECENT_TOPICS") \
   <(echo "## 当日条目池 JSON") "$POOL" \
