@@ -1,0 +1,71 @@
+---
+title: "DHS 的 DeepSeek 禁令，难点在「基于 DeepSeek 实现」这七个字"
+description: "逐条读 DHS 的 FASCSA 命令：官方 App、云上托管、自部署权重、蒸馏模型，哪些被禁令覆盖，哪些还说不准，联邦承包商又要承担什么。"
+pubDate: 2026-10-20
+tags: [ai-governance, ai-policy, supply-chain-security]
+lang: zh
+slug: deepseek-federal-ban-scope
+translationOf: deepseek-federal-ban-scope
+---
+
+10 月 20 日，美国国土安全部（DHS）在 Federal Register 发了一份通知（[91 FR 66346](https://www.federalregister.gov/documents/2026/10/20/2026-21447/notice-of-order-regarding-exclusion-and-removal-of-deepseek-products-from-federal-civilian-executive)）。通知摘要说了两件事。第一，联邦文职机构不得再采购杭州深度求索及其关联方的 IT 产品和服务。第二，已经在用的要移除，移除范围除了 DeepSeek 自家产品，还包括"使用 DeepSeek 实现开发的第三方产品和服务"（third-party products and services developed using DeepSeek implementations）。
+
+如果只是 DeepSeek 自家的 App 和 API，这条新闻一句话就讲完了。麻烦在后半句。DeepSeek 的权重以 MIT 许可证公开（[Hugging Face 模型卡](https://huggingface.co/deepseek-ai/DeepSeek-R1)），云厂商在托管，第三方拿它做蒸馏、做微调。大量产品身上都带着 DeepSeek 的成分，但它们和杭州的服务器没有任何连接。
+
+## 命令本身说了什么
+
+法律依据是 2018 年的《联邦采购供应链安全法》（FASCSA，41 U.S.C. 1321–1328）。这部法律允许 DHS、国防部和国家情报总监对有供应链风险的产品下达"排除令"和"移除令"：排除令管以后不能买，移除令管已经在用的要拆掉。这次的命令由 DHS 部长签发，依据是联邦采购安全委员会（FASC）的建议。
+
+需要说明的是，命令正文在 Federal Register 里只有扫描图片附录（第 66347–66350 页），没有文字层。下面引用的几句原文来自多家媒体的转录，各家内容一致，但扫描件本身我没能逐字核对。
+
+转录显示，命令只覆盖文职机构，"国家安全系统"和敏感隔离信息系统不在范围内，那部分归国防部和情报总监管。命令给了两条风险理由：一是 DeepSeek 的服务器在中国，二是"模型本身可能含有恶意代码或其他安全漏洞"。第三方条款还附了一条脚注，把范围扩展到"用于向文职机构提供产品和服务的 DeepSeek 第三方实现"。至于"implementation"具体指什么，命令没有定义。
+
+## 两条理由，各自圈出不同的范围
+
+判断你的产品算不算被覆盖，关键在于看清这两条理由各自管到哪里。
+
+第一条是数据出境。DeepSeek 隐私政策写得很直白：个人数据"在中华人民共和国收集、处理和存储"（[DeepSeek 隐私政策](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html)）。这条理由只管请求会发到 DeepSeek 服务器的用法，也就是官方 App 和官方 API。
+
+第二条针对模型本身：权重里可能藏了东西，跑在哪儿都一样。这条理由会跟着权重文件走。AWS 在 2025 年 3 月把 R1 作为全托管模型上架 Bedrock，跑在美国区域（[AWS 公告](https://aws.amazon.com/about-aws/whats-new/2025/03/deepseek-r1-fully-managed-amazon-bedrock)）。机构自己下载权重、部署在内网，同样不碰中国的服务器。这两种情形躲得开第一条理由，躲不开第二条。
+
+所以按命令自己的逻辑，可以这样分：
+
+- 官方 App、官方 API：明确覆盖。
+- 云厂商托管的 DeepSeek 模型、自部署的开放权重：两条理由占了一条，再加上那条脚注，基本可以认定在范围内。
+- 蒸馏模型：说不准。
+
+蒸馏这一类值得单独说。DeepSeek 官方发布的 R1-Distill 系列，权重底座是 Qwen2.5 和 Llama 3.x，用 R1 生成的样本微调而成（[模型卡](https://huggingface.co/deepseek-ai/DeepSeek-R1)）。按字面读，"使用 DeepSeek 实现开发"可以套上去；可按第二条理由读，这些模型里没有一个参数来自 DeepSeek 的权重，"模型里藏东西"的担忧很难成立。再往外一层是第三方自己用 R1 的输出造合成数据、训练自家模型。这种情况连训练者以外的人都无从知道。命令没有处理这一层。
+
+## 承包商要承担什么
+
+FASCSA 命令落到承包商身上，走的是 FAR 52.204-30 条款（[条款原文](https://www.acquisition.gov/far/52.204-30)）。几处要点：
+
+承包商"不得在合同履行中提供或使用"被命令覆盖的产品；发现在用的，3 个工作日内向合同官报告，10 个工作日内补交缓解措施；至少每三个月查一次 SAM.gov 上的 FASCSA 命令；条款要逐级写进分包合同。另外，对已签的合同，新命令要经合同修订加进去才生效。
+
+有一处设计决定了灰色地带最后怎么落地。条款要求的是"合理询问"，定义里明说这种询问"不需要内部或第三方审计"。也就是说，承包商只对自己已知的情况负责。一个 SaaS 供应商的模型如果是用 R1 合成数据训练的，只要它不披露，下游承包商没有义务、也没有手段查出来。
+
+和先例放在一起看，这次的范围窄在一处、宽在另一处。窄的是"使用"：针对华为、中兴等电信设备的 889 条款 B 部分，禁止政府和任何使用涵盖设备的企业签约，哪怕这种使用和政府合同毫无关系（[FAR 52.204-25](https://www.acquisition.gov/far/52.204-25)）。FASCSA 条款只管合同履行中的使用，承包商员工私下用 DeepSeek 写代码，只要不进入合同交付，就不在条款范围内。宽的是"对象"：TikTok 禁令点名的是一个应用及其后继产品（[FAR 52.204-27](https://www.acquisition.gov/far/52.204-27)），名单可以照着查；DeepSeek 命令点的是一类技术来源，没有名单可查。
+
+这也不是 FASCSA 第一次被动用。2025 年 9 月，国家情报总监办公室对瑞士公司 Acronis 下过排除和移除令，范围是情报系统（据 [Mayer Brown 整理](https://www.mayerbrown.com/en/insights/publications/2025/10/dni-issues-first-fascsa-exclusion-and-removal-order-against-acronis-ag)）。DeepSeek 这份是 DHS 在文职一侧的对应动作，对象从一家备份软件公司换成了一个开放权重的模型家族。
+
+## 关键结论
+
+如果你的产品卖给联邦文职机构，或者是这类产品的上游：
+
+先把模型清单列到"训练血统"这一层，不只写底座模型，还要写有没有用过 DeepSeek 的输出做蒸馏或合成数据。官方 API 和托管或自部署的 DeepSeek 权重，按"在范围内"处理。蒸馏和合成数据属于未定义地带，处理不了也要把事实写下来，等合同官或 CISA 的解释。
+
+不卖给联邦的，这份命令不直接管你。它不覆盖私营企业、州政府和个人用户。
+
+这份命令把"一个模型是用什么训练出来的"变成了采购属性，但联邦采购体系里目前没有任何字段、任何检测标准能核验这件事。下一步值得盯的是 CISA 会不会对"implementation"出补充说明，以及 GSA 在采购目录里如何处理那些用过 DeepSeek 却没有标注的模型。前者决定灰色地带有多大，后者决定这些地带最后由谁来认定。
+
+## 参考来源
+
+- [Federal Register 91 FR 66346 通知（DHS-2026-0628）](https://www.federalregister.gov/documents/2026/10/20/2026-21447/notice-of-order-regarding-exclusion-and-removal-of-deepseek-products-from-federal-civilian-executive)：命令摘要、法律依据、第三方条款原文、签发流程
+- [govinfo 版 PDF](https://www.govinfo.gov/content/pkg/FR-2026-10-20/pdf/2026-21447.pdf)：命令附录（扫描图片）
+- [FAR 52.204-30](https://www.acquisition.gov/far/52.204-30)：承包商义务、报告时限、"合理询问"不含审计、分包流转
+- [FAR 52.204-25](https://www.acquisition.gov/far/52.204-25)：889 条款对"使用"的覆盖范围
+- [FAR 52.204-27](https://www.acquisition.gov/far/52.204-27)：TikTok 禁令的涵盖范围
+- [DeepSeek-R1 模型卡](https://huggingface.co/deepseek-ai/DeepSeek-R1)：MIT 许可证、蒸馏模型底座与训练方式
+- [DeepSeek 隐私政策](https://cdn.deepseek.com/policies/en-US/deepseek-privacy-policy.html)：数据存储于中国
+- [AWS：DeepSeek-R1 在 Bedrock 全托管上线](https://aws.amazon.com/about-aws/whats-new/2025/03/deepseek-r1-fully-managed-amazon-bedrock)：云端托管、美国区域
+- [Mayer Brown：DNI 对 Acronis 的 FASCSA 命令](https://www.mayerbrown.com/en/insights/publications/2025/10/dni-issues-first-fascsa-exclusion-and-removal-order-against-acronis-ag)：FASCSA 先例
