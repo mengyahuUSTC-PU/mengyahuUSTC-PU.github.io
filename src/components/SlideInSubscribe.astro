@@ -13,7 +13,7 @@ const copy =
   lang === 'zh'
     ? {
         heading: '读到这里，说明合你口味',
-        blurb: '订阅后新文章直接进邮箱。不发快讯，随时退订。',
+        blurb: '每周日一封信，汇总这周的新文章。随时退订。',
         placeholder: '你的邮箱',
         button: '订阅',
         success: '确认邮件已发出，点一下里面的链接。',
@@ -21,7 +21,7 @@ const copy =
       }
     : {
         heading: 'Still reading? Then this is for you',
-        blurb: 'New essays in your inbox. No briefings, unsubscribe anytime.',
+        blurb: "One email every Sunday with the week's new essays. Unsubscribe anytime.",
         placeholder: 'you@example.com',
         button: 'Subscribe',
         success: 'Check your inbox to confirm.',
@@ -55,7 +55,10 @@ const copy =
       let deepEnough = false;
       let longEnough = false;
       const maybeShow = () => {
-        if (deepEnough && longEnough) box.hidden = false;
+        if (!(deepEnough && longEnough) || !box.hidden) return;
+        box.hidden = false;
+        (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.(
+          'event', 'subscribe_view', { placement: 'slide-in' });
       };
       setTimeout(() => { longEnough = true; maybeShow(); }, 40_000);
       addEventListener('scroll', () => {
@@ -79,6 +82,8 @@ const copy =
         const data = await resp.json();
         if (!resp.ok || data.ok === false) throw new Error('rejected');
         localStorage.setItem('nl-subscribed', '1');
+        (window as unknown as { gtag?: (...a: unknown[]) => void }).gtag?.(
+          'event', 'sign_up', { method: 'newsletter', placement: 'slide-in' });
         form.outerHTML = `<p class="sis-blurb">${form.dataset.success ?? ''}</p>`;
         setTimeout(() => { box.hidden = true; }, 2500);
       } catch {
