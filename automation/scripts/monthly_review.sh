@@ -49,5 +49,9 @@ git add "$REPORTS/monthly-$MONTH.md"
 git -c user.name="$(git config user.name)" commit -q -m "Monthly review $MONTH" || true
 git push -q origin master || true
 
-"$PY" automation/scripts/send_email.py "📈 博客月度复盘 $MONTH" "$REPORTS/monthly-$MONTH.md"
-"$PY" automation/scripts/discord_notify.py "📈 $MONTH 月度复盘已发到邮箱（automation/reports/monthly-$MONTH.md）。想实施里面的建议，来 Claude Code 说「做月度优化」。"
+if "$PY" automation/scripts/send_email.py "📈 博客月度复盘 $MONTH" "$REPORTS/monthly-$MONTH.md"; then
+  WHERE="已发到邮箱"
+else
+  WHERE="已生成（邮件没发出去，见 ~/cron-monthly.log）"
+fi
+"$PY" automation/scripts/discord_notify.py "📈 $MONTH 月度复盘$WHERE：automation/reports/monthly-$MONTH.md。想实施里面的建议，来 Claude Code 说「做月度优化」。"

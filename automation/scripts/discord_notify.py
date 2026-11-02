@@ -29,7 +29,14 @@ def load_env():
             line = line.strip()
             if line and not line.startswith("#") and "=" in line:
                 k, v = line.split("=", 1)
-                os.environ.setdefault(k.strip(), v.strip())
+                v = v.strip()
+                # Values with spaces are quoted so the shell can source .env;
+                # the quotes are not part of the value. Keeping them broke the
+                # Gmail login (app password) from mid-September to 2026-11-02,
+                # so no weekly report email went out in that time.
+                if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+                    v = v[1:-1]
+                os.environ.setdefault(k.strip(), v)
 
 
 def send(text: str):

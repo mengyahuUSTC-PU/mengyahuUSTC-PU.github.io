@@ -128,7 +128,8 @@ def main():
     if not quiet:
         sys.path.insert(0, str(HERE))
         try:
-            from discord_notify import send
+            from discord_notify import load_env, send
+            load_env()  # without it the webhook URL is missing and the notice is lost
             send(text)
         except Exception as exc:  # noqa: BLE001 — a failed notice must not fail the check
             print("discord notice failed:", str(exc)[:120])

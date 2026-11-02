@@ -36,5 +36,9 @@ git add "$REPORTS/$DATE.md"
 git -c user.name="$(git config user.name)" commit -q -m "Weekly report $DATE" || true
 git push -q origin master || true
 
-"$PY" automation/scripts/send_email.py "📊 博客周报 $DATE" "$REPORTS/$DATE.md"
-"$PY" automation/scripts/discord_notify.py "📊 本周周报已生成并发送邮箱：$DATE（repo: automation/reports/$DATE.md）"
+# A failed email must not swallow the Discord notice (it did, for weeks).
+if "$PY" automation/scripts/send_email.py "📊 博客周报 $DATE" "$REPORTS/$DATE.md"; then
+  "$PY" automation/scripts/discord_notify.py "📊 本周周报已生成并发送邮箱：$DATE（repo: automation/reports/$DATE.md）"
+else
+  "$PY" automation/scripts/discord_notify.py "📊 本周周报已生成，但邮件没发出去：$DATE（repo: automation/reports/$DATE.md，VM 日志 ~/cron-weekly.log）"
+fi
